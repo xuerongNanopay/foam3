@@ -484,6 +484,10 @@ foam.CLASS({
           data: `
             protected Logger logger_ = null;
             protected volatile long entryCurStep_ = 0;
+<<<<<<< HEAD
+=======
+            protected volatile SFEntry curSFEntry_ = null;
+>>>>>>> d0ead45dd3a445807c755b7b99d826da96b9ca16
 
             final protected AtomicLong entryIndex_ = new AtomicLong(0);
             final protected Map<String, SFFileJournal> journalMap_ = new ConcurrentHashMap<String, SFFileJournal>();
