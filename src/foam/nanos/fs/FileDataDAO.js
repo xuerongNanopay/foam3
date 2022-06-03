@@ -54,24 +54,21 @@ foam.CLASS({
             type = fileType.toSummary();
             file.setMimeType(type);
           }
+          // Find MimeType from file extension.
           if ( foam.util.SafetyUtil.isEmpty(type) ) {
-            type = "text";
-            String subType = "html";
+            String fileExtention = "";
             if ( ! foam.util.SafetyUtil.isEmpty(file.getFilename()) &&
                  file.getFilename().lastIndexOf(".") != -1 &&
                  file.getFilename().lastIndexOf(".") != 0 ) {
-              subType = file.getFilename().substring(file.getFilename().lastIndexOf(".")+1);
+              fileExtention = file.getFilename().substring(file.getFilename().lastIndexOf(".")+1);
             }
 
-            fileType = (FileType) fileTypeDAO.find(
-              AND(
-                EQ(FileType.TYPE, type),
-                EQ(FileType.SUB_TYPE, subType)
-              ));
+            if ( ! foam.util.SafetyUtil.isEmpty(fileExtention) ) fileType = (FileType) fileTypeDAO.find(EQ(FileType.ABBREVIATION, fileExtention.toUpperCase()));
+
             if ( fileType != null ) {
               file.setMimeType(fileType.toSummary());
             } else {
-              throw new foam.core.FOAMException("File type not supported. "+type+"/"+subType);
+              throw new foam.core.FOAMException("File type not supported: " + fileExtention);
             }
           }
           file.setDataString("data:"+file.getMimeType()+";base64," + encodedString);

@@ -53,3 +53,33 @@ p({
   enabled: true,
   lifecycleState:1
 })
+
+p({
+  class: "foam.nanos.ruler.Rule",
+  id: "foam-nanos-notification-email-EmailMessageAttachmentRetriveRule",
+  documentation: "The rule should apply when a new EmailMessage is created and the status is RECEIVED",
+  name: "EmailMessage Attachments Retrieving",
+  ruleGroup: "EmailMessage",
+  daoKey: "emailMessageDAO",
+  priority: 100,
+  operation: 0,
+  predicate: {
+    class: "foam.mlang.predicate.And",
+    args: [
+      {
+        class: "foam.nanos.ruler.predicate.PropertyEQValue",
+        propName: "status",
+        propValue:  {
+          class: "foam.nanos.notification.email.Status",
+          ordinal: 5
+        }
+      }
+    ]
+  },
+  action: {
+    class: "foam.nanos.notification.email.EmailMessageAttachmentRetriveRuleAction",
+  },
+  after: true,
+  enabled: true,
+  lifecycleState:1
+})

@@ -17,16 +17,26 @@ foam.CLASS({
   documentation: `Agent which retrieves a email folders messages`,
 
   javaImports: [
+    'foam.blob.Blob',
+    'foam.blob.InputStreamBlob',
     'foam.core.X',
     'foam.dao.DAO',
+    'foam.nanos.auth.LifecycleState',
     'foam.nanos.logger.PrefixLogger',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
     'foam.nanos.om.OMLogger',
+    'foam.nanos.fs.File',
+    'java.io.InputStream',
+    'java.io.ByteArrayOutputStream',
+    'java.io.ByteArrayInputStream',
     'java.util.Date',
     'java.util.Properties',
+    'java.util.List',
+    'java.util.ArrayList',
     'javax.mail.*',
     'javax.mail.Message',
+    'javax.mail.internet.MimeBodyPart'
   ],
 
   javaCode: `
@@ -143,6 +153,7 @@ foam.CLASS({
           Message[] messages = folder.getMessages();
           logger.debug("messages", messages.length);
           for ( Message message : messages ) {
+            System.out.println("^^^^ email: " + message.getSubject());
             dao.put(buildEmailMessage(x, message));
             message.setFlag(Flags.Flag.DELETED, getDelete());
           }
@@ -163,7 +174,7 @@ foam.CLASS({
       name: 'buildEmailMessage',
       args: 'X x, javax.mail.Message message',
       type: 'foam.nanos.notification.email.EmailMessage',
-      javaThrows: [ 'javax.mail.MessagingException' ],
+      javaThrows: [ 'javax.mail.MessagingException', 'java.io.IOException' ],
       javaCode: `
         EmailMessage emailMessage = new EmailMessage();
         emailMessage.setSubject(message.getSubject());
@@ -197,7 +208,37 @@ foam.CLASS({
         emailMessage.setSentDate(message.getSentDate());
         emailMessage.setStatus(Status.RECEIVED);
 
-        // TODO: Part, Multipart body, attachments
+        // Check if message contents multipart.
+        if ( message.getContentType().contains("multipart") ) {
+          Multipart multiPart = (Multipart) message.getContent();
+          List<File> attachments = new ArrayList<File>();
+          for (int i = 0; i < multiPart.getCount(); i++) {
+            MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
+            System.out.println("vv1: " + part.getDisposition());
+            // Check if part represents an email attachment.
+            if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+              System.out.println("vvv: " + part.getFileName());
+              try ( InputStream in = part.getInputStream();
+                    ByteArrayOutputStream os = new ByteArrayOutputStream() ) {
+                org.apache.commons.io.IOUtils.copy(in, os);
+                byte[] bytes = os.toByteArray();
+                long fileLength = bytes.length;
+                try ( ByteArrayInputStream bin = new ByteArrayInputStream(bytes); ) {
+                  Blob data = new InputStreamBlob(bin, fileLength);
+                  File file = new File();
+                  // Using system as File owner for now.
+                  file.setOwner(foam.nanos.auth.User.SYSTEM_USER_ID);
+                  file.setFilename(part.getFileName());
+                  file.setFilesize(fileLength);
+                  file.setData(data);
+                  file.setLifecycleState(LifecycleState.ACTIVE);
+                  attachments.add(file);
+                }
+              }
+            }
+          }
+          if ( attachments.size() > 0 ) emailMessage.setAttachmentFiles(attachments.toArray(new File[0]));
+        }
 
         return emailMessage;
       `

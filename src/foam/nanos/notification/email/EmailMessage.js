@@ -265,6 +265,14 @@ foam.CLASS({
       tableCellFormatter: function(value, obj, axiom) {
         this.add(value && value.length || 0);
       }
-    }
+    },
+    {
+      class: 'Array',
+      of: 'foam.nanos.fs.File',
+      name: 'attachmentFiles',
+      transient: true,
+      hidden: true,
+      documentation: 'This property can be used to reference File, when the File has not been in fileDAO',
+    },
   ]
 });

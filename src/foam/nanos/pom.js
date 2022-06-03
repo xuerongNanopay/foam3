@@ -439,6 +439,7 @@ foam.POM({
     { name: "notification/email/EmailFolderAgent",                                        flags: "java" },
     { name: "notification/email/EmailMessage",                                            flags: "js|java" },
     { name: "notification/email/EmailMessagePropertyServiceRuleAction",                   flags: "js|java" },
+    { name: "notification/email/EmailMessageAttachmentRetriveRuleAction",                 flags: "js|java" },
     { name: "notification/email/EmailMessageStatusRuleAction",                            flags: "js|java" },
     { name: "notification/email/EmailService",                                            flags: "js|java" },
     { name: "notification/email/EmailTemplate",                                           flags: "js|java" },

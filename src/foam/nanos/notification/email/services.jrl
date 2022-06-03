@@ -100,7 +100,15 @@ p({
   "class":"foam.nanos.boot.NSpec",
   "name":"SMTPConfig",
   "lazy": false,
-  "service":{"class":"foam.nanos.notification.email.SMTPConfig"}
+  "service":{
+    "class":"foam.nanos.notification.email.SMTPConfig",
+    "username":"etransfer-test@nanopay.net",
+    "password":"@a%^qDwUtAH4mBa",
+    "host":"smtp.gmail.com",
+    "port":587,
+    "authenticate":true,
+    "starttls":true
+  }
 })
 
 p({
