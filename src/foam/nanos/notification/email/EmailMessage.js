@@ -278,14 +278,6 @@ foam.CLASS({
       transient: true,
       hidden: true,
       javaFactory: 'return 1L;'
-    },
-    {
-      class: 'Array',
-      of: 'foam.nanos.fs.File',
-      name: 'attachmentFiles',
-      transient: true,
-      hidden: true,
-      documentation: 'This property can be used to reference File, when the File has not been in fileDAO',
     }
   ]
 });

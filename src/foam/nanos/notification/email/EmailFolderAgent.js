@@ -21,12 +21,14 @@ foam.CLASS({
     'foam.blob.InputStreamBlob',
     'foam.core.X',
     'foam.dao.DAO',
+    'foam.nanos.auth.User',
     'foam.nanos.auth.LifecycleState',
     'foam.nanos.logger.PrefixLogger',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
     'foam.nanos.om.OMLogger',
     'foam.nanos.fs.File',
+    'static foam.mlang.MLang.EQ',
     'java.io.InputStream',
     'java.io.ByteArrayOutputStream',
     'java.io.ByteArrayInputStream',
@@ -153,9 +155,12 @@ foam.CLASS({
           Message[] messages = folder.getMessages();
           logger.debug("messages", messages.length);
           for ( Message message : messages ) {
-            System.out.println("^^^^ email: " + message.getSubject());
-            dao.put(buildEmailMessage(x, message));
-            message.setFlag(Flags.Flag.DELETED, getDelete());
+            try {
+              dao.put(buildEmailMessage(x, message));
+              message.setFlag(Flags.Flag.DELETED, getDelete());
+            } catch ( Exception e ) {
+              logger.error("unable to process email ","email-from", message.getFrom()[0].toString(), "email-subject", message.getSubject(), e);
+            }
           }
         } catch ( Exception e ) {
           logger.error(e);
@@ -180,6 +185,16 @@ foam.CLASS({
         emailMessage.setSubject(message.getSubject());
         emailMessage.setFrom(message.getFrom()[0].toString());
         emailMessage.setReplyTo(message.getReplyTo()[0].toString());
+
+        String fromAddr = message.getFrom()[0].toString();
+        String fromEmail = fromAddr;
+        if ( fromAddr.contains("<") && fromAddr.contains(">") ) {
+          fromEmail = fromAddr.substring(fromAddr.indexOf("<")+1, fromAddr.indexOf(">"));
+        }
+
+        DAO userDAO = (DAO) getX().get("localUserDAO");
+        User user = (User) userDAO.find(EQ(User.EMAIL, fromEmail));
+        if ( user == null ) throw new foam.core.FOAMException("Can not find user: " + fromEmail);
 
         Address[] addresses = message.getRecipients(Message.RecipientType.TO);
         if ( addresses != null && addresses.length > 0 ) {
@@ -208,16 +223,16 @@ foam.CLASS({
         emailMessage.setSentDate(message.getSentDate());
         emailMessage.setStatus(Status.RECEIVED);
 
+        DAO fileDAO = (DAO) getX().get("fileDAO");
+
         // Check if message contents multipart.
         if ( message.getContentType().contains("multipart") ) {
           Multipart multiPart = (Multipart) message.getContent();
-          List<File> attachments = new ArrayList<File>();
+          List<String> attachments = new ArrayList<String>();
           for (int i = 0; i < multiPart.getCount(); i++) {
             MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
-            System.out.println("vv1: " + part.getDisposition());
             // Check if part represents an email attachment.
             if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-              System.out.println("vvv: " + part.getFileName());
               try ( InputStream in = part.getInputStream();
                     ByteArrayOutputStream os = new ByteArrayOutputStream() ) {
                 org.apache.commons.io.IOUtils.copy(in, os);
@@ -226,18 +241,18 @@ foam.CLASS({
                 try ( ByteArrayInputStream bin = new ByteArrayInputStream(bytes); ) {
                   Blob data = new InputStreamBlob(bin, fileLength);
                   File file = new File();
-                  // Using system as File owner for now.
-                  file.setOwner(foam.nanos.auth.User.SYSTEM_USER_ID);
+                  file.setOwner(user.getId());
                   file.setFilename(part.getFileName());
                   file.setFilesize(fileLength);
                   file.setData(data);
                   file.setLifecycleState(LifecycleState.ACTIVE);
-                  attachments.add(file);
+                  file = (File) fileDAO.put(file);
+                  attachments.add(file.getId());
                 }
               }
             }
           }
-          if ( attachments.size() > 0 ) emailMessage.setAttachmentFiles(attachments.toArray(new File[0]));
+          if ( attachments.size() > 0 ) emailMessage.setAttachments(attachments.toArray(new String[0]));
         }
 
         return emailMessage;
