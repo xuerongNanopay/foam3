@@ -43,7 +43,7 @@ foam.POM({
       'org.eclipse.jetty.websocket:websocket-server:9.4.51.v20230217',
       'org.java-websocket:Java-WebSocket:1.5.0',
       'org.jtwig:jtwig-core:5.87.0.RELEASE',
-      'org.mongodb:mongodb-driver:3.4.2',
+      'org.mongodb:mongodb-driver-sync:4.10.1',
       'org.postgresql:postgresql:42.3.8',
       'org.apache.commons:commons-lang3:3.12.0',
       'org.apache.commons:commons-text:1.10.0',
