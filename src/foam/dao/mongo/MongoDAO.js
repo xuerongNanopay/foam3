@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.dao.mongo',
   name: 'MongoDAO',
-  extends: 'foam.dao.AbstractDAO',
+  // extends: 'foam.dao.AbstractDAO',
 
   documentation: 'DAO for GRUD against MongoDB',
 
