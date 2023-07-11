@@ -4,6 +4,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+//**NOTE: below demo is based on Chart.js v4.3.0.
+
 //Demo1: Using CHART from library to directly Bar chart.
 const ctx = document.getElementById('barChat')
 const bar1 = new org.chartjs.Lib.CHART(ctx, {
