@@ -31,7 +31,7 @@ const bar1 = new org.chartjs.Lib.CHART(ctx.getContext('2d'), {
     ]
   },
   options: {
-    responsive: true
+    responsive: false
   }
 })
 
@@ -56,9 +56,6 @@ const bar = org.chartjs.Bar2.create({
         borderWidth: 1
       }
     ]
-  },
-  config: {
-    responsive: true
   }
 })
 bar.write();
