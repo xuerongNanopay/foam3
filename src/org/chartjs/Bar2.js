@@ -32,7 +32,7 @@ foam.CLASS({
 
   methods: [
     function initCView(x) {
-      this.chart = new this.Lib.CHART(x, this.config);
+      this.chart = new this.Lib.CHART(x, {type: 'bar', options: {...this.config}});
       this.update();
     },
     function paintSelf(x) {
