@@ -14,14 +14,6 @@ foam.CLASS({
   properties: [
     'chart',
     {
-      name: 'height',
-      value: 200
-    },
-    {
-      name: 'width',
-      value: 400
-    },
-    {
       name: 'data',
       factory: function() {
         return {

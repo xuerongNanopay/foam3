@@ -62,6 +62,7 @@ foam.CLASS({
     {
       name: 'config',
       factory: function() {
+        console.log(this.allOptions())
         return {
           type: 'line',
           data: this.data,
@@ -80,7 +81,7 @@ foam.CLASS({
       this.chart.render();
     },
     function allOptions() {
-      return this.options && new Map([...new Map(Object.entries(this.localOptions)), ...new Map(Object.entries(this.options))]) || this.localOptions;
+      return {...this.localOptions, ...this.options};
     }
   ],
   listeners: [
