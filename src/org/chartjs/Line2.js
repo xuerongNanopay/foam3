@@ -62,7 +62,6 @@ foam.CLASS({
     {
       name: 'config',
       factory: function() {
-        console.log(this.allOptions())
         return {
           type: 'line',
           data: this.data,
