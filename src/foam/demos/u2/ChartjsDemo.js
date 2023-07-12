@@ -56,6 +56,9 @@ const bar = org.chartjs.Bar2.create({
         borderWidth: 1
       }
     ]
+  },
+  config: {
+    responsive: false
   }
 })
 bar.write();
