@@ -33,14 +33,35 @@ foam.CLASS({
       }
     },
     {
+      name: 'options',
+      postSet: function() {
+        this.update();
+      }
+    },
+    {
+      name: 'defaultOptions',
+      factory: function() {
+        return {
+          responsive: false,
+          // maintainAspectRatio: false,
+        }
+      }
+    },
+    {
       name: 'config',
-      required: true
+      factory: function() {
+        return {
+          type: 'bar',
+          data: this.data,
+          options: {...this.defaultOptions, ...this.options}
+        };
+      }
     }
   ],
 
   methods: [
     function initCView(x) {
-      this.chart = new this.Lib.CHART(x, {type: 'bar', options: {...this.config}});
+      this.chart = new this.Lib.CHART(x, this.config);
       this.update();
     },
     function paintSelf(x) {

@@ -57,7 +57,7 @@ const bar = org.chartjs.Bar2.create({
       }
     ]
   },
-  config: {
+  options: {
     responsive: false
   }
 })
