@@ -25,7 +25,8 @@ foam.POM({
     { name: "jetty/pom"},
     { name: "ruler/pom"},
     { name: "referral/pom" },
-    { name: "so/pom"}
+    { name: "so/pom"},
+    { name: "geocode/pom"},
   ],
   files: [
     { name: "client/ClientBuilder",                                                       flags: "js" },
@@ -742,7 +743,6 @@ foam.POM({
     { name: "approval/SendGroupRequestApprovalDAO",                                       flags: "js|java" },
     { name: "approval/UCJApprovable",                                                     flags: "js|java" },
     { name: "auth/CapabilityAuthService",                                                 flags: "js|java" },
-    { name: "geocode/GoogleMapsCredentials",                                              flags: "js|java" },
     { name: "crunch/TopLevelCapabilityStatusUpdateNotification",                          flags: "js|java" },
     { name: "om/OMRuleAction",                                                            flags: "js|java" },
     { name: "om/CCOMRuleAction",                                                          flags: "js|java" },
