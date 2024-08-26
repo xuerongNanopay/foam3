@@ -25,7 +25,7 @@ foam.CLASS({
       args: 'Context x, PlaceAutocompleteReq req',
       type: 'PlaceAutocomplete',
       javaCode: `
-      
+        return null;
       `
     }
   ]
