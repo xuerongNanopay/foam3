@@ -4,7 +4,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.INTERFACE({
+foam.CLASS({
   package: 'foam.nanos.geocode',
   name: 'GooglePlaceService',
   documentation: `
@@ -15,10 +15,15 @@ foam.INTERFACE({
     'foam.nanos.geocode.PlaceService'
   ],
 
+  javaImports: [
+    'foam.nanos.geocode.model.*'
+  ],
+
   methods: [
     {
       name: 'placeAutocomplete',
       args: 'Context x, PlaceAutocompleteReq req',
+      type: 'PlaceAutocomplete',
       javaCode: `
       
       `

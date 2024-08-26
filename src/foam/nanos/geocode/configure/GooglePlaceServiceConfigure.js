@@ -19,6 +19,13 @@ foam.CLASS({
       documentation: `API_KEY for your google place service`
     },
     {
+      class: 'Int',
+      name: 'maxPlaceAutocompleteLength',
+      documentation: `
+        The return length of placeAutocomplete service.
+      `
+    },
+    {
       class: 'StringArray',
       name: 'placeAutocompleteComponents',
       documentation: `

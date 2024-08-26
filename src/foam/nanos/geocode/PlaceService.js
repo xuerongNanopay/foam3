@@ -15,7 +15,8 @@ foam.INTERFACE({
   methods: [
     {
       name: 'placeAutocomplete',
-      args: 'Context x'
+      args: 'Context x, foam.nanos.geocode.model.PlaceAutocompleteReq req',
+      type: 'foam.nanos.geocode.model.PlaceAutocomplete',
     }
   ]
 })

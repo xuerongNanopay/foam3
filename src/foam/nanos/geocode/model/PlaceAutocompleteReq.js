@@ -4,7 +4,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.INTERFACE({
+foam.CLASS({
   package: 'foam.nanos.geocode.model',
   name: 'PlaceAutocompleteReq',
   documentation: `
@@ -14,11 +14,27 @@ foam.INTERFACE({
   properties: [
     {
       class: 'String',
-      name: 'region',
-      documentation: `
-        The region code, specified as a ccTLD ("top-level domain") two-character value.
-        see: https://en.wikipedia.org/wiki/Country_code_top-level_domain
-      `
+      name: 'address1'
+    },
+    {
+      class: 'String',
+      name: 'address2'
+    },
+    {
+      class: 'String',
+      name: 'city'
+    },
+    {
+      class: 'String',
+      name: 'region'
+    },
+    {
+      class: 'String',
+      name: 'country'
+    },
+    {
+      class: 'String',
+      name: 'postalCode'
     }
   ]
 })

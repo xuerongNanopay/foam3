@@ -13,12 +13,24 @@ foam.POM({
       flags: "js|java" 
     },
     { 
+      name: "GooglePlaceService",
+      flags: "java" 
+    },
+    { 
       name: "configure/GooglePlaceServiceConfigure",
       flags: "js|java" 
     },
     { 
       name: "constant/GooglePlaceServiceConstant",
       flags: "java" 
+    },
+    { 
+      name: "model/PlaceAutocomplete",
+      flags: "js|java" 
+    },
+    { 
+      name: "model/PlaceAutocompleteItem",
+      flags: "js|java" 
     },
     { 
       name: "model/PlaceAutocompleteReq",
