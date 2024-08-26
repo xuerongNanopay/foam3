@@ -5,15 +5,11 @@
  */
 
 foam.INTERFACE({
-  package: 'foam.nanos.geocode',
-  name: 'GooglePlaceService',
+  package: 'foam.nanos.geocode.model',
+  name: 'PlaceAutocompleteReq',
   documentation: `
-    Implement PlaceService using Google Place Service API.
+    Model that using by 'placeAutocomplete' method in PlaceService 
   `,
-
-  implements: [
-    'foam.nanos.geocode.PlaceService'
-  ],
 
   methods: [
     {
