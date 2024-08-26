@@ -7,4 +7,12 @@
 foam.CLASS({
   package: 'foam.nanos.geocode.configure',
   name: 'GooglePlaceServiceConfigure',
+
+  properties: [
+    {
+      class: 'String',
+      name: 'apiKey',
+      documentation: `API_KEY for your google place service`
+    }
+  ]
 })

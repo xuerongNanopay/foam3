@@ -16,5 +16,9 @@ foam.POM({
       name: "configure/GooglePlaceServiceConfigure",
       flags: "js|java" 
     },
+    { 
+      name: "constant/GooglePlaceServiceConstant",
+      flags: "java" 
+    },
   ]
 })
