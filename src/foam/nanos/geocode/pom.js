@@ -47,6 +47,6 @@ foam.POM({
   ],
 
   javaDependencies: [
-    'com.google.maps:google-maps-services:2.2.0',
+    'com.google.maps:google-maps-places:0.19.0',
   ],
 })

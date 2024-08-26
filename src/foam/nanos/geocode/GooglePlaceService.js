@@ -16,7 +16,10 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.nanos.geocode.model.*'
+    'foam.nanos.geocode.model.*',
+    'com.google.maps.places.v1.AutocompletePlacesRequest',
+    'com.google.maps.places.v1.AutocompletePlacesResponse',
+    'com.google.maps.places.v1.PlacesClient',
   ],
 
   methods: [
