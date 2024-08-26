@@ -11,12 +11,13 @@ foam.INTERFACE({
     Model that using by 'placeAutocomplete' method in PlaceService 
   `,
 
-  methods: [
+  properties: [
     {
-      name: 'placeAutocomplete',
-      args: 'Context x, PlaceAutocompleteReq req',
-      javaCode: `
-      
+      class: 'String',
+      name: 'region',
+      documentation: `
+        The region code, specified as a ccTLD ("top-level domain") two-character value.
+        see: https://en.wikipedia.org/wiki/Country_code_top-level_domain
       `
     }
   ]

@@ -11,8 +11,45 @@ foam.CLASS({
   properties: [
     {
       class: 'String',
+      name: 'id'
+    },
+    {
+      class: 'String',
       name: 'apiKey',
       documentation: `API_KEY for your google place service`
+    },
+    {
+      class: 'StringArray',
+      name: 'placeAutocompleteComponents',
+      documentation: `
+        A grouping of places to which you would like to restrict your results
+        See: https://developers.google.com/maps/documentation/places/web-service/autocomplete#components
+      `,
+      javaCode: `
+        return new String[]{
+          "ca"
+        }
+      `
+    },
+    {
+      class: 'StringArray',
+      name: 'placeAutocompleteTypes',
+      documentation: `
+        You can restrict results from a Place Autocomplete request to be of a certain type.
+        See: https://developers.google.com/maps/documentation/places/web-service/autocomplete#types
+        for more options.
+        In our case, we mostly use the API for address completion to the customer home, so see
+        https://developers.google.com/maps/documentation/geocoding/requests-geocoding#Types
+      `,
+      javaCode: `
+        return new String[]{
+          "street_number", "route", "room", "postal_code", "locality"
+        }
+      `
+    },
+    {
+      class: 'Boolean',
+      name: 'useMock'
     }
   ]
 })
