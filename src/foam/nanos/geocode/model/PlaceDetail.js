@@ -9,5 +9,29 @@ foam.CLASS({
   name: 'PlaceDetail',
 
   properties: [
+    {
+      class: 'String',
+      name: 'address1'
+    },
+    {
+      class: 'String',
+      name: 'address2'
+    },
+    {
+      class: 'String',
+      name: 'city'
+    },
+    {
+      class: 'String',
+      name: 'region'
+    },
+    {
+      class: 'String',
+      name: 'country'
+    },
+    {
+      class: 'String',
+      name: 'postalCode'
+    }
   ]
 })

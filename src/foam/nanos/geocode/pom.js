@@ -29,6 +29,10 @@ foam.POM({
       flags: "js|java" 
     },
     { 
+      name: "model/PlaceDetailReq",
+      flags: "js|java" 
+    },
+    { 
       name: "model/PlaceAutocomplete",
       flags: "js|java" 
     },
