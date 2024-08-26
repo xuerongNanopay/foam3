@@ -6,16 +6,19 @@
 
 foam.INTERFACE({
   package: 'foam.nanos.geocode',
-  name: 'PlaceService',
+  name: 'GooglePlaceService',
 
-  proxy: true,
-  skeleton: true,
-  client: true,
+  implements: [
+    'foam.nanos.geocode.PlaceService'
+  ],
 
   methods: [
     {
       name: 'placeAutocomplete',
-      args: 'Context x'
+      args: 'Context x',
+      javaCode: `
+      
+      `
     }
   ]
 })
