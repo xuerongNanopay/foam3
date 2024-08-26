@@ -6,7 +6,7 @@
 
 foam.CLASS({
   package: 'foam.nanos.geocode.model',
-  name: 'PlaceAutocompleteReq',
+  name: 'PlaceDetailReq',
   documentation: `
     Model that using by 'placeAutocomplete' method in PlaceService 
   `,
@@ -18,27 +18,7 @@ foam.CLASS({
     },
     {
       class: 'String',
-      name: 'address1'
-    },
-    {
-      class: 'String',
-      name: 'address2'
-    },
-    {
-      class: 'String',
-      name: 'city'
-    },
-    {
-      class: 'String',
-      name: 'region'
-    },
-    {
-      class: 'String',
-      name: 'country'
-    },
-    {
-      class: 'String',
-      name: 'postalCode'
+      name: 'placeId'
     }
   ]
 })
