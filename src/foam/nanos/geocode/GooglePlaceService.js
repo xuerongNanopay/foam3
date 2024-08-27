@@ -23,6 +23,7 @@ foam.CLASS({
     'com.google.maps.places.v1.AutocompletePlacesRequest',
     'com.google.maps.places.v1.AutocompletePlacesResponse',
     'com.google.maps.places.v1.PlacesClient',
+    'java.util.Arrays'
   ],
 
   methods: [
@@ -47,9 +48,25 @@ foam.CLASS({
       javaCode: `
 
         try (PlacesClient placesClient = PlacesClient.create()) {
-          // AutocompletePlacesRequest request =
-          //   AutocompletePlacesRequest.newBuilder()
-          //   .setInput("input100358090")
+          var config = getConfigure(x);
+          var input = req.getAddress1() +  ", " + req.getAddress2() + ", " + req.getCity() + ", " + req.getRegion() + ", " + req.getCountry() + ", " + req.getPostalCode();
+          AutocompletePlacesRequest request =
+          AutocompletePlacesRequest.newBuilder()
+              .setInput("input100358090")
+              .setLocationBias(AutocompletePlacesRequest.LocationBias.newBuilder().build())
+              .setLocationRestriction(
+                  AutocompletePlacesRequest.LocationRestriction.newBuilder().build())
+              .addAllIncludedPrimaryTypes(Arrays.asList(config.getPlaceAutocompleteTypes()))
+              .addAllIncludedRegionCodes(Arrays.asList(config.getPlaceAutocompleteRegionCodes()))
+              .setLanguageCode("en")
+              .setRegionCode(req.getCountry().toUpperCase())
+              // .setOrigin(LatLng.newBuilder().build())
+              // .setInputOffset(1010406056)
+              // .setIncludeQueryPredictions(true)
+              .setSessionToken(req.getSessionToken())
+              .build();
+          AutocompletePlacesResponse response = placesClient.autocompletePlaces(request);
+          var l = response.getSuggestionsList();
 
         } catch ( Exception e ) {
 

@@ -27,14 +27,14 @@ foam.CLASS({
     },
     {
       class: 'StringArray',
-      name: 'placeAutocompleteComponents',
+      name: 'placeAutocompleteRegionCodes',
       documentation: `
         A grouping of places to which you would like to restrict your results
         See: https://developers.google.com/maps/documentation/places/web-service/autocomplete#components
       `,
       javaCode: `
         return new String[]{
-          "ca"
+          "ca", "pk"
         }
       `
     },
@@ -61,7 +61,8 @@ foam.CLASS({
     },
     {
       class: 'Boolean',
-      name: 'useMock'
+      name: 'isEnable',
+      value: false
     }
   ]
 })

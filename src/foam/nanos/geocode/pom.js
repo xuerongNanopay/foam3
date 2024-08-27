@@ -21,10 +21,6 @@ foam.POM({
       flags: "js|java" 
     },
     { 
-      name: "constant/GooglePlaceServiceConstant",
-      flags: "java" 
-    },
-    { 
       name: "model/PlaceDetail",
       flags: "js|java" 
     },
