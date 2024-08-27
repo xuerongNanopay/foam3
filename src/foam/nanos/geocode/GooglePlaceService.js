@@ -52,10 +52,10 @@ foam.CLASS({
           var input = req.getAddress1() +  ", " + req.getAddress2() + ", " + req.getCity() + ", " + req.getRegion() + ", " + req.getCountry() + ", " + req.getPostalCode();
           AutocompletePlacesRequest request =
           AutocompletePlacesRequest.newBuilder()
-              .setInput("input100358090")
-              .setLocationBias(AutocompletePlacesRequest.LocationBias.newBuilder().build())
-              .setLocationRestriction(
-                  AutocompletePlacesRequest.LocationRestriction.newBuilder().build())
+              .setInput(input)
+              // .setLocationBias(AutocompletePlacesRequest.LocationBias.newBuilder().build())
+              // .setLocationRestriction(
+              //     AutocompletePlacesRequest.LocationRestriction.newBuilder().build())
               .addAllIncludedPrimaryTypes(Arrays.asList(config.getPlaceAutocompleteTypes()))
               .addAllIncludedRegionCodes(Arrays.asList(config.getPlaceAutocompleteRegionCodes()))
               .setLanguageCode("en")
