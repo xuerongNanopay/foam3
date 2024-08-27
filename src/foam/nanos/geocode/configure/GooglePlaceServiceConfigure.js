@@ -55,6 +55,11 @@ foam.CLASS({
       `
     },
     {
+      class: 'Reference',
+      of: 'foam.nanos.auth.ServiceProvider',
+      name: 'spid'
+    },
+    {
       class: 'Boolean',
       name: 'useMock'
     }
