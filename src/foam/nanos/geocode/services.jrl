@@ -12,3 +12,21 @@ p({
     `,
   "client":"{\"of\":\"foam.nanos.geocode.configure.GooglePlaceServiceConfigure\"}"
 })
+
+p({
+  "class": "foam.nanos.boot.NSpec",
+  "name": "placeService",
+  "authenticate": true,
+  "serve": true,
+  "boxClass":"foam.nanos.geocode.PlaceServiceSkeleton",
+  "serviceClass": "foam.nanos.geocode.GooglePlaceService",
+  "client": """
+      {
+        "class":"foam.nanos.geocode.ClientPlaceService",
+        "delegate": {
+          "class": "foam.box.HTTPBox",
+          "url": "service/placeService"
+        }
+      }
+  """
+})
