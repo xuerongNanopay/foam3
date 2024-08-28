@@ -18,12 +18,14 @@ foam.CLASS({
   javaImports: [
     'foam.dao.DAO',
     'static foam.mlang.MLang.EQ',
+    'foam.nanos.logger.Loggers',
     'foam.nanos.geocode.model.*',
     'foam.nanos.geocode.configure.GooglePlaceServiceConfigure',
     'com.google.maps.places.v1.AutocompletePlacesRequest',
     'com.google.maps.places.v1.AutocompletePlacesResponse',
     'com.google.maps.places.v1.PlacesClient',
-    'java.util.Arrays'
+    'java.util.Arrays',
+    'java.util.ArrayList'
   ],
 
   methods: [
@@ -46,7 +48,7 @@ foam.CLASS({
       args: 'Context x, PlaceAutocompleteReq req',
       type: 'PlaceAutocomplete',
       javaCode: `
-
+        var ret = new PlaceAutocomplete();
         try (PlacesClient placesClient = PlacesClient.create()) {
           var config = getConfigure(x);
           var input = req.getAddress1() +  ", " + req.getAddress2() + ", " + req.getCity() + ", " + req.getRegion() + ", " + req.getCountry() + ", " + req.getPostalCode();
@@ -65,14 +67,24 @@ foam.CLASS({
               // .setIncludeQueryPredictions(true)
               .setSessionToken(req.getSessionToken())
               .build();
+      
           AutocompletePlacesResponse response = placesClient.autocompletePlaces(request);
-          var l = response.getSuggestionsList();
-
+          var suggestions = response.getSuggestionsList();
+          var items = new ArrayList<PlaceAutocompleteItem>(suggestions.size());
+          for ( var suggestion : suggestions ) {
+            if ( suggestion.hasPlacePrediction() ) {
+              var placePrediction = suggestion.getPlacePrediction();
+              var description = placePrediction.getPlace();
+              if (placePrediction.hasText()) description = placePrediction.getText().getText();
+              items.add(new PlaceAutocompleteItem(description, placePrediction.getPlaceId()));
+            }
+          }
+          ret.setResults(items.toArray(new PlaceAutocompleteItem[0]));
         } catch ( Exception e ) {
-
+          Loggers.logger(x, this).error("placeAutocomplete", e);
         }
 
-        return null;
+        return ret;
       `
     }
   ]

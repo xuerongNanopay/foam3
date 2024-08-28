@@ -1,0 +1,14 @@
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"googlePlaceServiceConfigureDAO",
+  "serve":true,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("googlePlaceServiceConfigures")
+      .setOf(foam.nanos.geocode.configure.GooglePlaceServiceConfigure.getOwnClassInfo())
+      .build();
+    `,
+  "client":"{\"of\":\"foam.nanos.geocode.configure.GooglePlaceServiceConfigure\"}"
+})
