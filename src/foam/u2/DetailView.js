@@ -37,6 +37,14 @@ foam.CLASS({
       properties: [ [ 'nodeName', 'TR' ] ],
 
       css: `
+        ^ .error input, ^ .error input:focus {
+          border-color: $destructive400!important;
+        }
+
+        ^colorText {
+          color: $destructive400;
+        }
+
         ^label {
           vertical-align: top;
           padding-top: 4px;
@@ -49,7 +57,7 @@ foam.CLASS({
         ^errorText {
           align-items: center;
           display: flex;
-          font-size: smaller;
+          font-size: small;
           gap: 0.2rem;
           justify-content: flex-start;
           min-height: 1.25em;
@@ -246,10 +254,13 @@ foam.CLASS({
         if ( route ) {
           self.currentData = self.data;
           var axiom = self.of.getAxiomByName(route);
-          this.br().add(axiom.__);
-        } else {
-          self.renderDetailView();
+          if ( axiom ) {
+            this.br().add(axiom.__);
+            return;
+          }
         }
+
+        self.renderDetailView();
       });
     },
 
@@ -322,7 +333,7 @@ foam.CLASS({
             this.start('tr').start('td').setAttribute('colspan', '2').add(tabs).end().end();
           }).
         end().
-        callIf(this.showActions && this.actions.length, function() {
+        callIf(self.showActions && self.actions.length, function() {
           this.start('div').addClass(self.myClass('toolbar')).add(self.actions).end();
         });
       })); // add

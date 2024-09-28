@@ -80,7 +80,7 @@ foam.CLASS({
     function toE() { return this; },
 
     function isLiteral(o) {
-      return foam.String.isInstance(o) || foam.Number.isInstance(o) || foam.Boolean.isInstance(o);
+      return foam.String.isInstance(o) || foam.Number.isInstance(o) || foam.Boolean.isInstance(o) || foam.Date.isInstance(o);
     }
   ]
 });
@@ -161,6 +161,10 @@ foam.CLASS({
           } else if ( val.then ) {
             val.then(n => update_(n));
             return;
+          } /* else if ( foam.core.FObject.isInstance(val) ) {
+            n = foam.u2.DetailView.create({data: val}, this);
+          } */ else if ( val.toE ) {
+            n = val.toE({}, this);
           } else {
             console.log('Unknown slot type: ', typeof val);
             debugger;
@@ -1206,11 +1210,9 @@ foam.CLASS({
           this.addChild_(c[i], parentNode);
         return;
       }
-
       if ( c.toE ) {
         c = c.toE(null, this.__subSubContext__);
       }
-
       if ( foam.core.DynamicFunction.isInstance(c) ) {
         this.addChild_(foam.u2.FunctionNode.create({fn: c, parentNode: this}, this), this);
         return
@@ -1245,6 +1247,9 @@ foam.CLASS({
         c.parentNode = parentNode;
         this.appendChild_(c.element_);
         c.load && c.load();
+      } else if ( foam.core.FObject.isInstance(c) ) {
+        this.addChild_(this);
+        this.addChild_(foam.u2.DetailView.create({data: c}, this), this);
       }
     },
 
@@ -2395,7 +2400,7 @@ foam.CLASS({
       name: 'update',
       code: function() {
         // TODO: add validation
-        this.element_.innerHTML = this.data;
+        this.element_.innerHTML = this.data || '';
       }
     }
   ]

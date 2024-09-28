@@ -158,6 +158,10 @@ foam.CLASS({
       name: 'of'
     },
     {
+      name: 'argSet',
+      factory: function() { return {}; }
+    },
+    {
       // The core query parser. Needs a fieldname symbol added to function
       // properly.
       name: 'baseGrammar_',
@@ -356,6 +360,11 @@ foam.CLASS({
             value: prop
           }));
         }
+
+        // CONSTANTS are regarded as fields that resolve to the constant value
+        // so it can be used directly in FScript query.
+        // Eg. query: 'accountNumber~ACC_NUM_REGEX' to match the accountNumber
+        // with ACC_NUM_REGEX constant defined in the same model.
         for ( var i = 0 ; i < constants.length ; i++ ) {
           var con = constants[i];
           fields.push(this.Literal.create({
@@ -415,9 +424,10 @@ foam.CLASS({
           unary: function(v) {
             var lhs = v[0];
             var op  = v[2];
+            /*
             if ( foam.mlang.predicate.Not.isInstance(op) ) {
 
-            }
+            }*/
             return op.call(self, lhs);
           },
 
@@ -431,6 +441,11 @@ foam.CLASS({
 
           field: function(v) {
             var expr = v[0];
+
+            // CONSTANT field is not a property and does not have a name so
+            // no need to be added to the validation predicate argSet
+            if ( expr.name ) self.argSet[expr.name] = true;
+
             if ( v[1] ) {
               var parts = v[1];
               for ( var i = 0 ; i < parts.length ; i++ ) {

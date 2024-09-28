@@ -17,7 +17,7 @@ foam.CLASS({
       2. Display Units, if set in Property's units:
       3. Show/Hide the View based on the Property's visibility:
       4. Change the underlying View's Visibility to RO/RW/etc based on visibility:
-      5. Display error messages based on teh Property's validateObj: & validationPredicates:
+      5. Display error messages based on the Property's validateObj: & validationPredicates:
       6. Add Property's help
   `,
 
@@ -83,18 +83,31 @@ foam.CLASS({
         this.ConstantSlot.create({ value: null });
       */
 
-
       var errorSlot;
-      if ( prop.validateObj && prop.validationTextVisible ) {
-        errorSlot = this.SimpleSlot.create({ value: null })
+      if ( prop.validationTextVisible && ( prop.validateObj || prop.internalValidateObj ) ) {
+        errorSlot = this.SimpleSlot.create({ value: null });
         let linkErrorSlot = () => {
           if ( ! this.data ) return;
-          errorSlot.follow(this.data.slot(prop.validateObj))
+          var slot;
+
+          // ???: Would it make more sense to combine these in Property as validateObj_?
+          if ( prop.validateObj && prop.internalValidateObj ) {
+            slot = foam.core.ExpressionSlot.create({
+              args: [ this.data.slot(prop.validateObj), this.data.slot(prop.internalValidateObj) ],
+              code: function (e1, e2) { return e1 ? e1 + ' ' + ( e2 || '' ) : e2; }
+            });
+          } else {
+            slot = prop.validateObj ?
+              this.data.slot(prop.validateObj) :
+              this.data.slot(prop.internalValidateObj);
+          }
+
+          errorSlot.follow(slot);
         }
         this.data$.sub(linkErrorSlot);
         linkErrorSlot();
       } else {
-        errorSlot = this.ConstantSlot.create({ value: null })
+        errorSlot = this.ConstantSlot.create({ value: null });
       }
 
       var modeSlot = this.prop.createVisibilityFor(
@@ -165,7 +178,7 @@ foam.CLASS({
         May cause weird styling outside nanos
       */
       min-height: 1.25em;
-      font-size: smaller;
+      font-size: small;
       justify-content: flex-start;
       gap: 0.2rem;
     }

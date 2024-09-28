@@ -126,7 +126,6 @@ foam.CLASS({
       tableWidth: 70,
       validationPredicates: [
         {
-          args: ['ttl'],
           query: 'ttl>=0',
           errorString: 'TTL must be 0 or greater.'
         }
@@ -213,12 +212,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
     },
     {
       name: 'validateRemoteHost',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        }
-      ],
+      args: 'Context x',
       javaThrows: ['foam.core.ValidationException'],
       javaCode: `
       String remoteIp = foam.net.IPSupport.instance().getRemoteIp(x);
@@ -254,9 +248,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
     {
       name: 'reset',
       type: 'Context',
-      args: [
-        { type: 'Context', name: 'x' }
-      ],
+      args: 'Context x',
       documentation: `
         Return a subcontext of the given context where the security-relevant
         entries have been reset to their empty default values.

@@ -10,7 +10,7 @@ foam.CLASS({
 
   documentation: 'Client-side NSpec which calls PushRegistry with subscription information.',
 
-  imports: [ 'pushRegistry', 'window', 'initSubject' ],
+  imports: [ 'pushRegistry', 'window', 'client' ],
 
   requires: ['foam.core.Latch'],
 
@@ -41,12 +41,13 @@ foam.CLASS({
   methods: [
     function init() {
       if ( ! globalThis.swPromise ) {
-        console.warn("PushRegistryAgent run without ServiceWorker creating globalThis.swPromise.");
+        console.log("PushRegistryAgent run without ServiceWorker creating globalThis.swPromise.");
+        this.currentState.resolve('')
         return;
       }
       // If there is no subject yet, this agent is useless
       // On subject change, this will be rebuilt anyway
-      if ( ! this.initSubject ) return;
+      if ( ! this.client?.initSubject?.user ) return;
       this.safeRegisterSub();
       // This isnt actually needed since on client reload ^ will be called anyway
       // this.__subContext__.loginSuccess$.sub(() => { this.register(); })
@@ -58,6 +59,8 @@ foam.CLASS({
     },
     function updateState() {
       this.currentState.then(v => {
+        // If granted the register() will update the status anyway so we dont need to do this
+        if ( v == 'GRANTED' ) return;
         this.pushRegistry.updatePermissionState(null, v);
       })
     },
@@ -144,7 +147,7 @@ foam.CLASS({
         }
       } else {
         if ( ! this.supportsNotifications ) return this.currentState.resolve('');
-        this.currentState.resolve(Notification.permission.toUpperCase() );
+        this.currentState.resolve(Notification.permission.toUpperCase());
         if ( Notification.permission === 'granted' ) {
           await this.subWhenReady();
         }

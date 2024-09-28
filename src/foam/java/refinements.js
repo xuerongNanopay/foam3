@@ -245,11 +245,13 @@ foam.CLASS({
     {
       class: 'String',
       name: 'javaValidateObj',
-      expression: function(required, validationPredicates) {
-        return validationPredicates.length == 0 ? `` : (required ? 'super.validateObj(x, obj);' : '') + `
+      expression: function(required, validationPredicates, internalValidationPredicates) {
+        validationPredicates = [...validationPredicates, ...internalValidationPredicates];
+
+        return validationPredicates.length == 0 ? '' : (required ? 'super.validateObj(x, obj);' : '') + `
 var sps    = new foam.lib.parse.StringPStream();
 var parser = new foam.parse.FScriptParser(this);
-var px = new foam.lib.parse.ParserContextImpl();` +
+var px     = new foam.lib.parse.ParserContextImpl();` +
         validationPredicates
           .map((vp) => {
             var exception = vp.errorMessage ?

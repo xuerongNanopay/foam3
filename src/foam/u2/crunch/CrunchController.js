@@ -246,8 +246,10 @@ foam.CLASS({
         This is intended for use with WizardFlow (Fluent/DSL for wizards).
       `,
       code: function createWizardFlowSequence(x) {
+        // for non-inline wizard only, clear old capas and wizardlets from x
+        var newX = x.createSubContext({ capabilities: [], wizardlets: []});
         return this.toWizardFlowSequence(
-          this.createTransientWizardSequence(x)
+          this.createTransientWizardSequence(newX)
         );
       }
     },
@@ -559,10 +561,13 @@ foam.CLASS({
       var p = Promise.resolve(true);
 
       intercept.capables.forEach(capable => {
+        // Create one capable wizard per capable requirement listed in capable.capabilityIds.
         capable.capabilityIds.forEach((c) => {
           var seq = this.toGraphAgentWizard(this.createCapableWizardSequence(intercept, capable, c, x));
-          p = p.then(() => {
-            return seq.execute().then(x => x);
+          p = p.then((x) => {
+            // Halt launching subsequent capable wizards if users closed the wizard.
+            return x?.wizardController?.status == 'DISCARDED' ? x
+              : seq.execute().then(x => x);
           });
         });
       });

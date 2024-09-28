@@ -14,10 +14,12 @@ foam.POM({
       { name: 'src/foam/nanos/analytics/mixpanel/pom' },
       { name: 'src/foam/net/ipgeo/pom' },
       { name: 'src/foam/u2/wizard/pom' },
+      { name: 'src/foam/u2/address/pom' },
       { name: 'src/foam/flow/laminar/pom' },
       { name: 'src/io/c9/ace/pom' },
       { name: 'webroot/pom' }
     ],
+    java: '21',
     javaDependencies: [
       'com.authy:authy-java:1.1.0',
       'com.google.api-client:google-api-client:1.22.0',

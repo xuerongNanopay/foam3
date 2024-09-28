@@ -11,14 +11,15 @@ foam.CLASS({
     {
       class: 'String',
       name: 'id'
-    }, 
-    'name', 
+    },
+    'name',
     'value'
   ],
   methods: [
     function toSummary() { return this.id + ' ' + this.value; }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.demos.u2',
@@ -29,9 +30,8 @@ foam.CLASS({
       name: 'firstName',
       label: 'First name',
       gridColumns: 6,
-      xxxvalidationPredicates: [
+      validationPredicates: [
         {
-          args: ['firstName'],
           query: 'firstName.len>0',
           errorString: 'Please enter a first name.'
         }
@@ -42,9 +42,8 @@ foam.CLASS({
       name: 'lastName',
       label: 'Last name',
       gridColumns: 6,
-      xxxvalidationPredicates: [
+      validationPredicates: [
         {
-          args: ['lastName'],
           query: 'lastName.len>0',
           errorString: 'Please enter a last name'
         }
@@ -52,6 +51,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.demos.u2',
@@ -67,17 +67,18 @@ foam.CLASS({
   ],
 });
 
+
 foam.CLASS({
   package: 'foam.demos.u2',
   name: 'AllViews',
 
   requires: [
-    'foam.demos.u2.SampleData',
     'foam.dao.EasyDAO',
     'foam.dao.MDAO',
+    'foam.demos.u2.SampleData',
+    'foam.u2.layout.DisplayWidth',
     'foam.u2.MultiView',
-    'foam.u2.view.ReferenceView',
-    'foam.u2.layout.DisplayWidth'
+    'foam.u2.view.ReferenceView'
    ],
 
   exports: [ 'sampleDataDAO', 'displayWidth' ],
@@ -163,6 +164,8 @@ foam.CLASS({
       view: {
         class: 'foam.u2.MultiView',
         views: [
+          /*
+          This code appears broken because data will be set to the dao.
           function(_, X) {
             return {
               class: 'foam.u2.view.DAOListWithCreateView',
@@ -171,6 +174,7 @@ foam.CLASS({
               of: 'foam.demos.u2.SampleData'
             };
           },
+          */
           {
             class: 'foam.u2.DAOList',
             rowView: { class: 'foam.demos.heroes.CitationView' }
@@ -581,7 +585,7 @@ foam.CLASS({
       of: 'foam.demos.u2.SampleData',
       view: { class: 'foam.u2.MultiView',
         views: [
-          { class: 'foam.u2.view.TitledArrayView', valueView: 'foam.demos.heroes.CitationView' },
+          { class: 'foam.u2.view.TitledArrayView',  valueView: 'foam.demos.heroes.CitationView' },
           { class: 'foam.u2.view.FObjectArrayView', valueView: 'foam.demos.heroes.CitationView' }
         ]
       }
@@ -734,10 +738,12 @@ foam.CLASS({
       class: 'PhoneNumber',
       name: 'defaultPhoneNumber'
     },
+    /*
     {
       class: 'UnitValue',
       name: 'defaultCurrency'
     },
+    */
     {
       class: 'Boolean',
       name: 'defaultBoolean',
@@ -848,8 +854,8 @@ foam.CLASS({
       view: {
         class: 'foam.u2.view.FObjectView',
         choices: [
-          [ 'foam.core.Property', 'Property' ],
-          [ 'foam.util.Timer', 'Timer' ],
+          [ 'foam.core.Property',       'Property' ],
+          [ 'foam.util.Timer',          'Timer' ],
           [ 'foam.nanos.menu.DAOMenu',  'DAO'     ],
           [ 'foam.nanos.menu.SubMenu',  'SubMenu' ],
           [ 'foam.nanos.menu.TabsMenu', 'Tabs'    ]
@@ -864,8 +870,8 @@ foam.CLASS({
         class: 'foam.u2.view.FObjectView',
         allowCustom: true,
         choices: [
-          [ 'foam.util.Timer', 'Timer' ],
-          [ 'foam.core.Property', 'Property' ],
+          [ 'foam.util.Timer',          'Timer' ],
+          [ 'foam.core.Property',       'Property' ],
           [ 'foam.nanos.menu.DAOMenu',  'DAO'     ],
           [ 'foam.nanos.menu.SubMenu',  'SubMenu' ],
           [ 'foam.nanos.menu.TabsMenu', 'Tabs'    ]
@@ -881,5 +887,5 @@ foam.CLASS({
         return errs.get();
       }
     }
-  ],
+  ]
 })

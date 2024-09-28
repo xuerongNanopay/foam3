@@ -441,7 +441,6 @@ foam.CLASS({
         this.pushMenu_(null, this.route)
       } else  {
         this.pushDefaultMenu();
-        return 1;
       }
     },
 
@@ -477,7 +476,6 @@ foam.CLASS({
 
         self.subToNotifications();
         let ret = await self.initMenu();
-        if ( ret ) return;
 
         await self.fetchGroup();
 
@@ -750,6 +748,7 @@ foam.CLASS({
       defaultMenu = defaultMenu != null ? defaultMenu : '';
       if ( defaultMenu ) {
         await this.pushMenu_('', defaultMenu.id ?? '');
+        this.route = '';
         return defaultMenu;
       }
       await this.fetchSubject();
@@ -860,10 +859,10 @@ foam.CLASS({
       await this.fetchTheme();
       var hash = this.window.location.hash;
       if ( hash ) hash = hash.substring(1);
-      if ( hash && hash != 'null' /* How does it even get set to null? */ && hash != this.currentMenu?.id ) {
+      if ( hash && hash != 'null' /* How does it even get set to null? */ && ( hash != this.currentMenu?.id || this.currentMenu.authenticate ) ) {
         this.window.onpopstate();
       } else {
-        this.pushDefaultMenu();
+        await this.pushDefaultMenu();
       }
       this.initLayout.resolve();
 
@@ -1033,7 +1032,7 @@ foam.CLASS({
       // Check if current menu has object
       if ( id && foam.nanos.menu.DAOMenu2.isInstance(this.currentMenu.handler) ) {
         try {
-          let result = await this.currentMenu.handler.config.dao.find(id);
+          let result = await this.currentMenu.handler.config_.dao.find(id);
           if ( result ) {
             this.routeTo(this.currentMenu.id + '/' + id);
             return;
@@ -1043,12 +1042,12 @@ foam.CLASS({
       // Finds the correct menu for a given dao and optionally an object
       let menuDAOs = (await this.__subContext__.menuDAO.select())
         .array?.filter(v => foam.nanos.menu.DAOMenu2.isInstance(v.handler));
-      menuDAOs = menuDAOs.filter(m => m.handler.config.dao.of?.isSubClass(dao.of) );
+      menuDAOs = menuDAOs.filter(m => m.handler.config_.dao.of?.isSubClass(dao.of) );
       if ( ! id ) {
         return this.routeTo(menuDAOs[0].id);
       }
       for ( var i = 0; i < menuDAOs.length; i++ ) {
-        var result = await menuDAOs[i].handler.config.dao.find(id);
+        var result = await menuDAOs[i].handler.config_.dao.find(id);
         if ( result ) {
           this.routeTo(menuDAOs[i].id + (id ? '/' + id : ''))
           return;
