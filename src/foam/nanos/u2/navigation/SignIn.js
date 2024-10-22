@@ -26,7 +26,8 @@ foam.CLASS({
     'routeTo',
     'stack',
     'subject',
-    'window'
+    'window',
+    'sessionID'
   ],
 
   requires: [
@@ -280,23 +281,49 @@ foam.CLASS({
       name: 'signInWithGoogle',
       label: 'Sign in With Google',
       section: 'footerSection',
-      isAvailable: function(showAction, appConfig$googleSignInClientId) { return showAction && !!appConfig$googleSignInClientId; },
-      code: function(X) {
+      isAvailable: function(showAction) { return showAction },
+      code: async function(X) {
         // TODO: Validate nonce
         var nonce = crypto.randomUUID();
 
         var reqParams = {
-          response_type: 'id_token',
+          response_type: 'code',
           client_id: this.appConfig.googleSignInClientId,
           scope: 'openid email',
-          redirect_uri: location.origin,
-          nonce: nonce
+          redirect_uri: location.origin + "/service/oidc",
+          nonce: nonce,
+          state: this.sessionID,
         }
 
         var uri = 'https://accounts.google.com/o/oauth2/v2/auth'
 
-        // Could also run this in a separate popup window as a separate webapp, but this works for now
-        window.location = uri + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&')
+        try {
+          await new Promise((resolve, reject) => {
+            let listener = (e) => {
+              if (e.origin == location.origin && e.data && e.data.sessionID == this.sessionID) {
+                window.removeEventListener('message', listener);
+                if (e.data.msg == "success") {
+                  resolve();
+                } else {
+                  reject(e.data.error)
+                }
+                authwindow.close();
+              }
+            }
+
+            window.addEventListener('message', listener);
+
+            let authwindow = window.open(uri + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&'))
+          });
+        } catch(e) {
+          this.notifyUser(undefined, e, this.LogLevel.ERROR);
+        }
+
+        this.subject = await this.auth.getCurrentSubject(x);
+        this.username = this.subject.user
+        await this.ctrl.reloadClient();
+        this.loginSuccess = true;
+        await this.ctrl.onUserAgentAndGroupLoaded();
       }
     },
     {

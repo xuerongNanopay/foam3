@@ -1,0 +1,9 @@
+p({
+    "class": "foam.nanos.boot.NSpec",
+    "name": "oidc",
+    "lazy": true,
+    "serve": false,
+    "serviceClass": "foam.nanos.auth.oidc.OIDCWebAgent",
+    "authenticate": false,
+    "pm": true
+})

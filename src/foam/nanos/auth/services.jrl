@@ -48,6 +48,16 @@ p({
   """
 })
 
+p({
+  "class": "foam.nanos.boot.NSpec",
+  "name": "authentication",
+  "serve": false,
+  "authenticate": false,
+  "serviceScript": """
+    return new foam.nanos.auth.AuthenticationService(x)
+  """
+})
+
 p({"class":"foam.nanos.boot.NSpec", "name":"agentAuth",                        "lazy":false, "serve":true, "authenticate": false, "description":"Permits users to act as others if permitted. Places user as an agent of the system.", "boxClass":"foam.nanos.auth.AgentAuthServiceSkeleton", "serviceScript":"return new foam.nanos.auth.AgentUserAuthService(x);", "client": "{\"class\":\"foam.nanos.auth.AgentAuthClient\",\"delegate\":{\"class\":\"foam.nanos.auth.ClientAgentAuthService\"}}"})
 
 p({

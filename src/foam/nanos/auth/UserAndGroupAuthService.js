@@ -29,7 +29,8 @@ foam.CLASS({
     'DAO localGroupDAO',
     'DAO localSessionDAO',
     'DAO localUserDAO',
-    'UniqueUserService uniqueUserService'
+    'UniqueUserService uniqueUserService',
+    'AuthenticationService authentication'
   ],
 
   javaImports: [
@@ -69,30 +70,36 @@ foam.CLASS({
   methods: [
     {
       name: 'authorizeAnonymous',
+      args: [
+        {
+          name: 'x',
+          type: 'Context'
+        }
+      ],
       documentation: `
         Authorizes an anonymous user that has no true ownership. The assigned anonymous user is relative to a spid,
         holding various permissions allowing a user who has not logged into the system to interact with it as if they had.
       `,
       javaCode: `
-        Session session = x.get(Session.class);
-        if ( session != null && session.getUserId() != 0 ) return (Subject) session.getContext().get("subject");
+        foam.nanos.session.Session session = x.get(foam.nanos.session.Session.class);
+        if ( session != null && session.getUserId() != 0 ) return (foam.nanos.auth.Subject) session.getContext().get("subject");
 
-        ServiceProvider serviceProvider = (ServiceProvider) ((DAO) x.get("localServiceProviderDAO")).find((String) x.get("spid"));
+        foam.nanos.auth.ServiceProvider serviceProvider = (foam.nanos.auth.ServiceProvider) ((foam.dao.DAO) x.get("localServiceProviderDAO")).find((String) x.get("spid"));
         if ( serviceProvider == null ) {
-          throw new AuthorizationException("Service Provider doesn't exist. Unable to authorize anonymous user.");
+          throw new foam.nanos.auth.AuthorizationException("Service Provider doesn't exist. Unable to authorize anonymous user.");
         }
 
-        User anonymousUser = (User) ((DAO) x.get("localUserDAO")).find(serviceProvider.getAnonymousUser());
+        foam.nanos.auth.User anonymousUser = (foam.nanos.auth.User) ((foam.dao.DAO) x.get("localUserDAO")).find(serviceProvider.getAnonymousUser());
         if ( anonymousUser == null ) {
-          throw new AuthorizationException("Anonymous user not found. spid: "+serviceProvider.getId()+" user: "+serviceProvider.getAnonymousUser());
+          throw new foam.nanos.auth.AuthorizationException("Anonymous user not found. spid: "+serviceProvider.getId()+" user: "+serviceProvider.getAnonymousUser());
         }
 
-        if ( session.getUserId() == anonymousUser.getId() ) return ((Subject) x.get("subject"));
+        if ( session.getUserId() == anonymousUser.getId() ) return ((foam.nanos.auth.Subject) x.get("subject"));
         session.setUserId(anonymousUser.getId());
         session.setAgentId(0);
         session.setContext(session.applyTo(session.getContext()));
-        ((DAO) getLocalSessionDAO()).inX(x).put(session);
-        return ((Subject) session.getContext().get("subject"));
+        ((foam.dao.DAO) getLocalSessionDAO()).inX(x).put(session);
+        return ((foam.nanos.auth.Subject) session.getContext().get("subject"));
       `
     },
     {
@@ -120,7 +127,7 @@ foam.CLASS({
           throw new InvalidPasswordException();
         }
         
-        return UserAndGroupAuthService.loginUser(getX(), x, user); 
+        return getAuthentication().login(x, user); 
       `
     },
     {
@@ -417,83 +424,5 @@ foam.CLASS({
         return true;
       `
     }
-  ],
-  static: [
-    {
-      name: 'loginUser',
-      documentation: `Helper function to reduce duplicated code.`,
-      type: 'User',
-      args: [
-        {
-          name: 'serviceX',
-          type: 'Context'
-        },
-        {
-          name: 'requestX',
-          type: 'Context'
-        },
-        {
-          name: 'user',
-          type: 'User'
-        },
-      ],
-      javaThrows: ['foam.nanos.auth.AuthenticationException'],
-      javaCode: `
-      try {
-        if ( user == null ) {
-          throw new UserNotFoundException();
-        }
-        user.validateAuth(requestX);
-        // check if user enabled
-        if ( user.getLifecycleState() != foam.nanos.auth.LifecycleState.ACTIVE ) {
-          throw new AccessDeniedException();
-        }
-        // check if user login enabled
-        if ( ! user.getLoginEnabled() ) {
-          throw new AccessDeniedException();
-        }
-        // check if group enabled
-        X userX = requestX.put("subject", new Subject.Builder(requestX).setUser(user).build());
-        Group group = user.findGroup(userX);
-        if ( group != null && ! group.getEnabled() ) {
-          throw new AccessDeniedException();
-        }
-        try {
-          group.validateCidrWhiteList(requestX);
-        } catch (foam.core.ValidationException e) {
-          throw new AccessDeniedException(e);
-        }
-
-        Session session = requestX.get(Session.class);
-        // check for two-factor authentication
-        if ( user.getTwoFactorEnabled() && ! session.getTwoFactorSuccess() ) {
-          throw new AuthenticationException("User requires two-factor authentication");
-        }
-        // Re use the session context if the current session context's user id matches the id of the user trying to log in
-        if ( session.getUserId() == user.getId() ) {
-          return user;
-        }
-
-        // Freeze user
-        user = (User) user.fclone();
-        user.freeze();
-        session.setUserId(user.getId());
-        if ( ((AuthService)serviceX.get("auth")).check(userX, "*") ) {
-          String msg = "Admin login for " + user.getId() + " succeeded on " + System.getProperty("hostname", "localhost");
-          ((foam.nanos.logger.Logger) requestX.get("logger")).warning(msg);
-        }
-        ((DAO)serviceX.get("localSessionDAO")).inX(requestX).put(session);
-        session.setContext(session.applyTo(session.getContext()));
-        return user;
-      } catch ( AuthenticationException e ) {
-        if ( user != null &&
-             ( ((AuthService)serviceX.get("auth")).check(requestX.put("subject", new Subject.Builder(requestX).setUser(user).build()), "*") ) ) {
-          String msg = "Admin login for " + user.getId() + " failed on " + System.getProperty("hostname", "localhost");
-          ((foam.nanos.logger.Logger) requestX.get("logger")).warning(msg);
-        }
-        throw e;
-      }
-      `
-    },
   ]
 });

@@ -3,9 +3,9 @@ foam.CLASS({
     name: 'JWTAuthService',
     extends: 'foam.nanos.auth.ProxyAuthService',
     imports: [
-        'foam.nanos.auth.AuthService auth',
-        'foam.dao.DAO localUserDAO',
+        'foam.nanos.auth.AuthenticationService authentication',
         'foam.nanos.auth.UniqueUserService uniqueUserService',
+        'foam.dao.DAO localUserDAO',
         'foam.dao.DAO jwkDAO',
     ],
     methods: [
@@ -117,7 +117,7 @@ foam.CLASS({
               throw new UserNotFoundException();
             }
             
-            return foam.nanos.auth.UserAndGroupAuthService.loginUser(getX(), x, user);
+            return getAuthentication().login(x, user);
             `
         }
     ]

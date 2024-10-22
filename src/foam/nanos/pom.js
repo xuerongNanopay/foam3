@@ -382,6 +382,7 @@ foam.POM({
     { name: "auth/Relationships",                                                         flags: "js|java" },
     { name: "NanoService",                                                                flags: "js|java" },
     { name: "auth/twofactor/OTPKey",                                                      flags: "js|java" },
+    { name: "auth/AuthenticationService",                                                           flags: "js|java" },
     { name: "auth/AuthService",                                                           flags: "js|java" },
     { name: "auth/ProxyAuthService",                                                      flags: "js|java" },
     { name: "auth/CachedAuthServiceProxy",                                                flags: "js" },
