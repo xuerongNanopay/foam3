@@ -512,15 +512,6 @@ foam.CLASS({
       name: 'internalValidationPredicates',
       factory: function() {
         var a = [];
-        if ( this.required ) {
-          a.push(
-            {
-              args: [ this.name ],
-              query: 'thisValue!=""',
-              errorString: this.EMAIL_REQUIRED
-            }
-          );
-        }
         a.push(
           {
             args: [ this.name ],
@@ -595,7 +586,7 @@ foam.CLASS({
   ]
 });
 
-
+/*
 foam.CLASS({
   package: 'foam.core',
   name: 'DatePropertyValidationRefinement',
@@ -607,10 +598,11 @@ foam.CLASS({
       of: 'foam.core.ValidationPredicate',
       name: 'internalValidationPredicates',
       factory: function() {
+        var query = 'thisValue !exists||thisValue<=' + foam.Date.MAX_DATE.toISOString().slice(1,16) + '&&thisValue>=' + foam.Date.MIN_DATE.toISOString().slice(0,16);
         return [
           {
             args: [ this.name ],
-            query: 'thisValue !exists||thisValue<=' + foam.Date.MAX_DATE.toISOString().slice(1,16) + '&&thisValue>=' + foam.Date.MIN_DATE.toISOString().slice(0,16),
+            query: query,
             errorString: 'Invalid date value'
           }
         ];
@@ -618,6 +610,7 @@ foam.CLASS({
     }
   ]
 });
+*/
 
 
 foam.CLASS({

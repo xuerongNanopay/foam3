@@ -64,6 +64,10 @@ foam.CLASS({
   ],
 
   methods: [
+    function layoutView(self, prop, viewSlot) {
+      this.add(viewSlot);
+    },
+
     function render() {
       var self = this;
       var prop = this.prop = this.prop.clone(this.__subContext__).copyFrom(this.config);
@@ -94,7 +98,10 @@ foam.CLASS({
           if ( prop.validateObj && prop.internalValidateObj ) {
             slot = foam.core.ExpressionSlot.create({
               args: [ this.data.slot(prop.validateObj), this.data.slot(prop.internalValidateObj) ],
-              code: function (e1, e2) { return e1 ? e1 + ' ' + ( e2 || '' ) : e2; }
+              // The commented out version will cause both internal and external errors to be displayed.
+              // code: function (e1, e2) { return e1 ? e1 + ' ' + ( e2 || '' ) : e2; }
+              // This version only displays internal errors or external errors if there are no internal.
+              code: function (e1, e2) { return e2 || e1; }
             });
           } else {
             slot = prop.validateObj ?
@@ -203,7 +210,11 @@ foam.CLASS({
     ^view {
       flex-grow: 1;
       max-width: 100%;
-     }
+      min-height: 34px;
+    }
+    ^helper-icon svg {
+      fill: currentColor;
+    }
   `,
 
   methods: [
@@ -218,9 +229,7 @@ foam.CLASS({
           addClass(this.myClass('propHolder')).
           start('span').
             addClass(this.myClass('propHolderInner')).
-            add(viewSlot).
-            // Not needed anymore since is now handled by TextField
-//            start('span').addClass(self.myClass('units')).add(prop.units$).end().
+            call(this.layoutView, [self, prop, viewSlot]).
           end().
           callIf(prop.help, function() {
             this.start().addClass(self.myClass('helper-icon'))

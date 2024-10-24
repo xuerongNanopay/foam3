@@ -70,18 +70,21 @@ foam.CLASS({
           errorMessage: 'INVALID_ADDRESS_1_REQUIRED'
         }
       ],
-      expression: function(suite, streetNumber, streetName) {
-        return [suite, streetNumber, streetName].filter(Boolean).join(' ');
+      expression: function(streetNumber, streetName) {
+        return [streetNumber, streetName].filter(Boolean).join(' ');
       }
     },
     {
       class: 'String',
       name: 'address2',
-      label: 'Address Line 2',
+      label: 'Address Line 2 (Apt, suite, etc.)',
       width: 70,
       displayWidth: 50,
       gridColumns: 6,
       documentation: 'An unstructured field for the sub postal address.',
+      expression: function(suite) {
+        return suite || '';
+      }
     },
     {
       class: 'Reference',
@@ -239,7 +242,7 @@ foam.CLASS({
         },
         {
           args: ['postalCode', 'countryId'],
-          query: 'countryId!="CA"||postalCode~/^[ABCEGHJ-NPRSTVXY]\\d[ABCEGHJ-NPRSTV-Z][ -]?\\d[ABCEGHJ-NPRSTV-Z]\\d$/i',
+          query: 'countryId!="CA"||postalCode==""||postalCode~/^[ABCEGHJ-NPRSTVXY]\\d[ABCEGHJ-NPRSTV-Z][ -]?\\d[ABCEGHJ-NPRSTV-Z]\\d$/i',
           errorMessage: 'INVALID_POSTAL_CODE',
           jsErr: function(X) {
             let postalCodeError = X.translationService.getTranslation(foam.locale, `${X.countryId.toLowerCase()}.foam.nanos.auth.Address.POSTAL_CODE.error`);
