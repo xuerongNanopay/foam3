@@ -104,11 +104,6 @@ foam.CLASS({
           let columnSettings = this.widgets[menu.id];
           widgetContainer.startContext().start(menu.handler.view).style({
             'grid-column': this.containerWidth$.map(v => {
-              if (columnSettings[`${v}Column`]) {
-                return 'span ' + columnSettings[`${v}Column`];
-              } else {
-                return 'span ' + columnSettings[`column`]; 
-              }   
               return 'span ' + (columnSettings[`${v}Column`] || columnSettings['column']);           
             })
           }).end();
