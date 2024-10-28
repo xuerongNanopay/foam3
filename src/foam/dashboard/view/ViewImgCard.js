@@ -10,7 +10,7 @@ foam.CLASS({
   name: 'ViewImgCard',
   extends: 'foam.dashboard.view.Card',
   
-  documentation: '',
+  documentation: 'A dashboard card the takes a view, background color and an img',
   
   css: `
   ^ {
