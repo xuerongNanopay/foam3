@@ -33,8 +33,8 @@ foam.CLASS({
   `,
 
   messages: [
-    { name: 'TITLE', message: 'Stay up to date with Foree!' },
-    { name: 'TEXT', message: 'We use on device notifications update you about your transaction status, latest rates & exciting promotions.' },
+    { name: 'TITLE', message: 'Stay up to date' },
+    { name: 'TEXT', message: 'We use on device notifications update you.' },
   ],
 
   methods: [
