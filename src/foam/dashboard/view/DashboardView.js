@@ -101,12 +101,16 @@ foam.CLASS({
       Object.keys(this.widgets).map(async menuId => {
         let menu = await this.menuDAO.find(menuId);
         if ( menu ) {
-          let aspectRatio = this.widgets[menu.id];
+          let columnSettings = this.widgets[menu.id];
           widgetContainer.startContext().start(menu.handler.view).style({
             'grid-column': this.containerWidth$.map(v => {
-              return 'span ' + (v?.cols ? Math.min(aspectRatio.split('/')[0], v?.cols) : aspectRatio.split('/')[0]);
-            }),
-            'grid-row': 'span ' + aspectRatio.split('/')[1]
+              if (columnSettings[`${v}Column`]) {
+                return 'span ' + columnSettings[`${v}Column`];
+              } else {
+                return 'span ' + columnSettings[`column`]; 
+              }   
+              return 'span ' + (columnSettings[`${v}Column`] || columnSettings['column']);           
+            })
           }).end();
         }
       });
