@@ -71,7 +71,7 @@ foam.CLASS({
       methods: [
         function render() {
           let self = this;
-          this.initContainerWidth();
+          this.initContainer();
           this.start().addClass(this.myClass('two-column'))
           .enableClass('lg', this.inlineSize$.map(v => v >= this.DisplayWidth.MD.minWidth ))
           .start(this.data.ADDRESS1.__, {

@@ -22,12 +22,13 @@ foam.CLASS({
   ],
 
   methods: [
-    function initContainerWidth(el) {
+    function initContainer(el) {
       el = el || this;
       let ro = new ResizeObserver(this.updateWidth);
       el.el().then(o => {
         ro.observe(o);
       });
+      return this;
     }
   ],
 
