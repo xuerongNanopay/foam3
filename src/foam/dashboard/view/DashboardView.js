@@ -174,7 +174,6 @@ foam.CLASS({
             widgetSetCount++;
             cm[v] = `span calc(var(--dashboard-max-col)/var(--split-row-${currentWidgetSet}))`;
           } else {
-            debugger;
             if ( widgetSetCount > 0 )
               this.document.documentElement.style.setProperty(`--split-row-${currentWidgetSet}`, widgetSetCount); 
             widgetSetCount = 0;
