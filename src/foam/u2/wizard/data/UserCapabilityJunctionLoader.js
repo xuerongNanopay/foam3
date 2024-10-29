@@ -43,7 +43,7 @@ foam.CLASS({
         initialData = await this.delegate.load({ old });
       }
 
-      if ( ! this.loadFromPath && Object.keys(ucj.data.instance_).length < Object.keys(initialData.instance_).length) {
+      if ( ! this.loadFromPath && foam.util.compare(initialData, ucj.data) ) {
         return initialData ? initialData : old;
       }
 
