@@ -437,7 +437,7 @@ foam.CLASS({
 
     async function initMenu() {
       if ( this.route ) {
-        this.pushMenu(null, this.route)
+        this.pushMenu(this.route)
       } else  {
         this.pushDefaultMenu();
       }
