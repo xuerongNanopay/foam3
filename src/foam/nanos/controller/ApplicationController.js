@@ -437,7 +437,7 @@ foam.CLASS({
 
     async function initMenu() {
       if ( this.route ) {
-        this.pushMenu_(null, this.route)
+        this.pushMenu(this.route)
       } else  {
         this.pushDefaultMenu();
       }
@@ -681,7 +681,7 @@ foam.CLASS({
        * This approach allows any generated menus to be permissioned/loaded as long as
        * they are a child of a real menuDAO menu
        * **/
-      if ( idCheck.includes('/') )
+      if ( idCheck && idCheck.includes('/') )
         realMenu = idCheck.split('/')[0];
 
       /** Used to checking validity of menu push and launching default on fail **/

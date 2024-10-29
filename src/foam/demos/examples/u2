@@ -56,6 +56,37 @@ test2()
 console.profileEnd('p2');
 
 ##   DSL
+The U3 library is structured as a Fluent Internal Domain Specific Language (DSL).
+<br>
+It is Domain-Specific because, rather than being a general all-purpose language,
+it is designed for the specific domain of creating DOM User Interfaces.
+<br>
+It is an Internal DSL (Domain Specific Language) because rather than inventing
+a whole new (and probably limited) language, it reuses a host language (Javascript, in our case).
+This means that there is no new syntax to learn, just new methods. Also, it means that you
+have the full power of our host language at your disposal.
+<br>
+It is Fluent because each method return's 'this' so that they can be chained.
+So instead of doing:
+--
+var tag = this.start('blockquote');
+tag.add('foo');
+var tag2 = tag.start('blockquote');
+tag2.add('bar');
+tag.add('baz');
+
+// You can just do:
+this.start('blockquote').
+  add('foo').
+  start('blockquote').
+    add('bar').
+  end().
+  add('baz').
+end();
+
+// The Fluent style more closely models the nested structure of HTML without requireming
+// the creation of temporary variables for each intermediate Element.
+--
 ##   Intro1
 ##   Hello World!
 Let's use U3 to say hello
@@ -402,7 +433,27 @@ start('div')
   .add('Breaking space').br()
   .add('NonBreaking').nbsp().add('space').br().
 end();
+
 ##    remove()
+Calling remove() on an Element will remove it from the DOM.
+--
+/*
+  TODO: Fix
+  This version doesn't work because 'this' in the callback binds to the real
+  DOM element rather that the U2/U3 Element.
+start().
+  start().add('1 remove me X').on('click', function() { this.remove(); }).end().
+  start().add('2 remove me X').on('click', function() { this.remove(); }).end().
+  start().add('3 remove me X').on('click', function() { this.remove(); }).end().
+end();
+*/
+// This works by capturing the correct 'this'
+start().
+  start().add('1 remove me X').call(function() { this.on('click', () => this.remove()); }).end().
+  start().add('2 remove me X').call(function() { this.on('click', () => this.remove()); }).end().
+  start().add('3 remove me X').call(function() { this.on('click', () => this.remove()); }).end().
+end();
+
 ##    add()
 --
 foam.CLASS({
@@ -445,18 +496,18 @@ foam.CLASS({
       // Dynamic Function
       this.add(this.dynamic(function(p1, p2) { this.add('dynamic: ' + p1 + ' ' + p2); })).br();
 
-      // Promise
+      // Promises
+      this.add('A Resolved Promise: ', Promise.resolve('already resolved')).br();
+
       var promise = new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve("resolved");
-        }, 1000);
+          resolve("resolved in future");
+        }, 3000);
       });
-      this.add('Promise: ', promise).br().br();
+      this.add('An Unresolved Promise: ', promise).br().br();
 
       // FObject
       this.add(foam.util.Timer.create()).br();
-
-      add('END');
     }
   ]
 });
@@ -464,9 +515,97 @@ tag(Example);
 
 ##     adding properties
 ##     toE()
+If an object implements the toE(args, X) function, it can control which
+view is used to when add()-ing it to a U3 Element.
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [ 'p1', 'p2', 'p3' ]
+});
+// Will be added as a foam.u2.DetailView, since that's what FObject.toE() returns.
+add(Example.create());
+
+// Now let's create a sub-class which overrides toE() to return a SectionedDetailView:
+foam.CLASS({
+  name: 'Example2',
+  extends: 'Example',
+  methods: [
+    function toE(args, X) {
+      return foam.u2.detail.SectionedDetailView({data: this});
+    }
+  ]
+});
+add(Example2.create());
+
 ##     view:
+It is the purpose of the view: Property Property to specify which View should be used for
+viewing or editing this property inside a DetailView or custom View when the property is added
+to the DOM with either cls.PROPERTY_CONSTANT or cls.PROPERTY_CONSTANT.__.
+Normally, when you specify a Property's class:, a suitable default view: is automatically provided.
+If however you would like to use a different View class, or even the same View class, but with a
+different configuration, then you can specify your desired view with view:.
+
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [
+    { class: 'String', name: 'prop1', required: true, help: 'Some help' },
+    { class: 'String', name: 'prop2', view: 'foam.u2.TextField' },
+    { class: 'String', name: 'prop3', view: 'foam.u2.view.ValueView', value: 'read-only' },
+    { class: 'String', name: 'prop4', view: { class: 'foam.u2.tag.TextArea', rows: 3, cols: 40 } },
+    { class: 'String', name: 'prop5', view: { class: 'foam.u2.view.ChoiceView', choices: ['Yes', 'No'] } },
+    { class: 'String', name: 'prop6', view: { class: 'foam.u2.view.RadioView', choices: ['Yes', 'No'] } }
+  ]
+});
+
+var e = Example.create();
+tag({class: 'foam.u2.DetailView', data: e});
+
+
+// Now create a custom View
+// Adding this.data.PROP1 adds just the View
+// Adding this.data.PROP1.__ add the View wrapped in a PropertyBorder, which adds:
+//  1. Display a Label from Property's label:
+//  2. Display Units, if set in Property's units:
+//  3. Show/Hide the View based on the Property's visibility:
+//  4. Change the underlying View's Visibility to RO/RW/etc based on visibility:
+//  5. Display error messages based on the Property's validateObj: & validationPredicates:
+//  6. Add Property's help
+
+foam.CLASS({
+  name: 'ExampleView',
+  extends: 'foam.u2.View',
+  methods: [
+    function render() {
+      this.add('Prop1: ', this.data.PROP1);
+      this.add('Prop2: ', this.data.PROP2);
+      this.add(this.data.PROP1.__);
+      this.add(this.data.PROP2.__);
+    }
+  ]
+});
+
+tag({class: 'ExampleView', data: e});
+
 ##    removeAllChildren()
+Calling removeAllChilfen() will remove all of an Element's children.
+--
+start('b').
+  add('Remove All Children').
+  start().add('child1').end().
+  start().add('child2').end().
+  start().add('child3').end().
+  call(function() {
+    // Use => instead of function() so that 'this' is the U2/U3 Element
+    // rather than the DOM element
+    this.on('click', () => this.removeAllChildren());
+  }).
+end();
+
 ##    setChildren()
+TODO: Is this needed? Is it used anywhere?
+--
+
 ##   Styling
 CSS styling can be added to your elements in two ways:
 <ol>
@@ -672,6 +811,29 @@ foam.CLASS({
 });
 add(some.good.package.Test.create());
 ##    removeClass()
+RemoveClass() removes a CSS class.
+--
+foam.CLASS({
+  name: 'Example',
+  extends: 'foam.u2.Controller',
+  css: `
+    .important { color: red }
+  `,
+  methods: [
+    function render() {
+      this.addClass('important').add('status ').add(this.REMOVE_CLS);
+    }
+  ],
+  actions: [
+    {
+      name: 'removeCls', // Don't name removeClass to avoid name conflict
+      labe: 'Remove Class',
+      code: function() { this.removeClass('important'); }
+    }
+  ]
+});
+
+tag(Example);
 
 ##   Attributes
 ##    attr() & setAttribute()
@@ -908,7 +1070,10 @@ This is typically only used for debugging purposes, not in production code.
 foam.u2.Element.create().start().add('Here I am, way at the bottom of the page!').end().write();
 
 ##   Tags
-##    attributes
+Tags let you register U3 Elements to replace regular DOM tags.
+For example, you might have a custom ImageView that you would like
+to use as a replacement whenever regular <img> tags are added.
+--
 ##    registerElement
 The Context method 'registerElement' can be used to declare that a specified
 Element subclass should be transparently used whenever an tag is created
@@ -950,6 +1115,16 @@ to determine if a node/tag name has a registered class associated with it.
 Isn't used directly by application developers.
 --
 add(foam.__context__.elementForName('blink').id);
+
+##    attributes
+If a property has 'attribute: true' it is treated as a psedo-attribute and can
+be set with with the setAttribute(), attr(), and attrs() methods.
+This is done for DOM compatibility.
+For example, if we had registered an ImageView to replace <img> tags, then:
+start('img').attr('src', 'http://acme.com/logo.png').end()
+when we set the 'src' attribute, it would instead set the value of the
+'src' Property.
+--
 
 ##   View
 The foam.u2.View class extends Element and adds a property named 'data', which it exports.
