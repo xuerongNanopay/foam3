@@ -12,7 +12,8 @@ foam.CLASS({
 
   imports: [
     'menuDAO',
-    'displayWidth?'
+    'displayWidth?',
+    'document'
   ],
 
   requires: [
@@ -63,6 +64,7 @@ foam.CLASS({
       documentation: 'The fixed number of grid columns for the dashboard.',
       expression: function(containerWidth) {
         if ( ! containerWidth ) return 'repeat(12, 1fr)';
+        this.document.documentElement.style.setProperty('--dashboard-max-col', containerWidth.cols); 
         return `repeat(${containerWidth.cols}, 1fr)`;
       }
     },
@@ -82,7 +84,34 @@ foam.CLASS({
       documentation: 'Mapping of menu id to aspect ratio for widgets that will be displayed in the dashboard.',
       factory: function() {
         return {};
-      }
+      },
+      description: `The map of widgets used to render the dashboard. Allows specifying different columns for various
+      widths of the dashboard container using '<displayWidth>Column'. A 0 column width implies that the number of columns should be equally split between 
+      the widgets with 0 width, this provides an equivalent to css's grid-auto-column: 1fr behaviour.
+      Ex:
+        widgets: {
+          <menu.id>: { column: 6, SMColumn: 12 .....}
+        }
+
+      Sample for equal width columns:
+        widgets: {
+          menuA: { column: 0 }
+          menuB: { column: 0 }
+          menuC: { column: 12 }
+          menuD: { column: 0 }
+          menuE: { column: 0 }
+          menuF: { column: 0 }
+        }
+      Resulting grid template: 
+        -menuA-- --menuB-
+        menuC menuC menuC
+        menuD menuE menuF
+      In this case, menuA and menuB will split available columns between the two of them and menu D,E,F will split the columns in row three between them.
+      `
+    },
+    {
+      class: 'Map',
+      name: 'containerMap'
     }
   ],
 
@@ -101,14 +130,18 @@ foam.CLASS({
       Object.keys(this.widgets).map(async menuId => {
         let menu = await this.menuDAO.find(menuId);
         if ( menu ) {
-          let columnSettings = this.widgets[menu.id];
           widgetContainer.startContext().start(menu.handler.view).style({
-            'grid-column': this.containerWidth$.map(v => {
-              return 'span ' + (columnSettings[`${v}Column`] || columnSettings['column']);           
+            'grid-column': this.containerMap$.map(v => {
+              return v[menuId] ?? this.containerWidth?.cols;
             })
           }).end();
+        } else {
+          delete this.widgets[menuId];
         }
       });
+
+      this.updateCols();
+      this.containerWidth$.sub(this.updateCols);
 
       this
         .addClass(this.myClass())
@@ -120,6 +153,36 @@ foam.CLASS({
           .add(this.dashboardTitle)
         .end()
         .tag(widgetContainer)
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'updateCols',
+      isFramed: true,
+      code: function() {
+        let cw = this.containerWidth;
+        let currentWidgetSet = 0;
+        let widgetSetCount = 0;
+        let cm = {}
+        Object.keys(this.widgets).forEach(v => {
+          let colConfig = this.widgets[v];
+          let col = colConfig[`${cw}Column`] ?? colConfig['column'];
+          if ( col == 0 ) {
+            if ( widgetSetCount == 0 )
+              currentWidgetSet++;
+            widgetSetCount++;
+            cm[v] = `span calc(var(--dashboard-max-col)/var(--split-row-${currentWidgetSet}))`;
+          } else {
+            debugger;
+            if ( widgetSetCount > 0 )
+              this.document.documentElement.style.setProperty(`--split-row-${currentWidgetSet}`, widgetSetCount); 
+            widgetSetCount = 0;
+            cm[v] = 'span ' + col;
+          }
+        })
+        this.containerMap = cm;
+      }
     }
   ]
 });
