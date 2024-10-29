@@ -7,6 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.layout',
   name: 'ContainerWidth',
+  extends: 'foam.u2.Element',
   documentation: 'Intended to be used with ResizeObserver',
 
   properties: [
@@ -22,12 +23,13 @@ foam.CLASS({
   ],
 
   methods: [
-    function initContainerWidth(el) {
+    function initContainer(el) {
       el = el || this;
       let ro = new ResizeObserver(this.updateWidth);
       el.el().then(o => {
         ro.observe(o);
       });
+      return this;
     }
   ],
 
