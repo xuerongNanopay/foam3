@@ -14,6 +14,10 @@ foam.CLASS({
       name: 'containerWidth',
       class: 'FObjectProperty',
       of: 'foam.u2.layout.DisplayWidth'
+    },
+    {
+      name: 'inlineSize',
+      class: 'Float'
     }
   ],
 
@@ -31,11 +35,11 @@ foam.CLASS({
     function updateWidth(entries) {
       if ( entries.length > 1 ) console.warn('ContainerWidth called with mutiple observe targets');
       for ( const entry of entries ) {
-        let width = entry.target.getBoundingClientRect().width;
+        this.inlineSize = entry.target.getBoundingClientRect().width;
         this.containerWidth = foam.u2.layout.DisplayWidth.VALUES
         .concat()
         .sort((a, b) => b.minWidth - a.minWidth)
-        .find(o => o.minWidth <= Math.min(width) );
+        .find(o => o.minWidth <= Math.min(this.inlineSize) );
       }
     }
   ]
