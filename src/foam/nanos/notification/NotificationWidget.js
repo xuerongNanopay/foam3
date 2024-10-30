@@ -27,8 +27,7 @@ foam.CLASS({
       gap: 1rem;
     }
     ^button-container {
-      display: flex;
-      gap: 1rem;
+      width: fit-content;
     }
   `,
 
@@ -48,13 +47,8 @@ foam.CLASS({
           .add(this.TEXT)
         .end()
         
-        .start().addClass(this.myClass('button-container'))
-          .start(this.ENABLE_NOTIF, { buttonStyle: 'PRIMARY' })
-              .addClass(this.myClass('button'))
-          .end()
-          .start(this.DONT_SHOW, { buttonStyle: 'LINK' })
-              .addClass(this.myClass('button'))
-          .end()
+        .start(this.ENABLE_NOTIF, { buttonStyle: 'PRIMARY' }).addClass(this.myClass('button-container'))
+            .addClass(this.myClass('button'))
         .end()
 
       .end();
@@ -66,14 +60,7 @@ foam.CLASS({
       name: 'enableNotif',
       label: 'Enable Notifications',
       code: function(X) {
-        this.pushMenu('notification-settings');
-      }
-    },
-    {
-      name: 'dontShow',
-      label: 'Dont Show Again',
-      code: function(X) {
-        // fill me in
+        this.RequestNotificationPermissionAgent.create({ title: this.NOTIFICATION_PROMPT_TITLE, affectUserChecks: false }, X).execute();
       }
     }
   ]
