@@ -641,6 +641,53 @@ foam.CLASS({
   ]
 });
 
+foam.CLASS({
+  package: 'com.google.flow',
+  name: 'Proxy',
+  extends: 'foam.graphics.CView',
+
+  imports: [
+    'scope'
+  ],
+
+  properties: [
+    {
+      class: 'String',
+      name: 'delegate'
+    },
+    {
+      class: 'Int',
+      name: 'maxDepth',
+      value: 3
+    },
+    {
+      class: 'Int',
+      name: 'depth_',
+      hidden: true
+    }
+  ],
+
+  methods: [
+    function paintSelf(x) {
+      if ( ! this.delegate ) return;
+
+      if ( this.depth_ >= this.maxDepth ) return;
+      this.depth_++;
+
+      try {
+        var obj = this.scope[this.delegate];
+
+        if ( obj ) {
+          obj.paintSelf(x);
+          obj.paintChildren(x);
+        }
+      } finally {
+        this.depth_--;
+      }
+    }
+  ]
+});
+
 
 foam.CLASS({
   package: 'com.google.flow',
