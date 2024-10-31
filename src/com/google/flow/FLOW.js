@@ -247,6 +247,7 @@ foam.CLASS({
           },
           clear: function() {
             self.updateMemento().then(function() {
+              // TODO: replace 4 with something more meaningful
               self.properties.skip(4).removeAll();
             });
           },
@@ -371,6 +372,7 @@ foam.CLASS({
         dao.put(com.google.flow.Strut.model_);
         dao.put(com.google.flow.Cursor.model_);
         dao.put(com.google.flow.Script.model_);
+        dao.put(com.google.flow.Proxy.model_);
         dao.put(foam.input.Gamepad.model_);
         dao.put(foam.core.Model.model_);
         // dao.put(com.google.dxf.ui.DXFDiagram.model_);
@@ -452,6 +454,7 @@ foam.CLASS({
         this.scope.physics = this.physics;
         this.scope.timer   = this.timer;
         this.scope.cycle   = this.timer.cycle.bind(this.timer);
+        this.scope.range   = this.timer.range.bind(this.timer);
 
         return dao;
       }

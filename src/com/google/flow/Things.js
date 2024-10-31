@@ -660,6 +660,8 @@ foam.CLASS({
       name: 'maxDepth',
       value: 3
     },
+    [ 'width', 50 ],
+    [ 'height', 50 ],
     {
       class: 'Int',
       name: 'depth_',
@@ -675,9 +677,14 @@ foam.CLASS({
       this.depth_++;
 
       try {
+        this.paintChildren(x);
+
         var obj = this.scope[this.delegate];
 
         if ( obj ) {
+          this.width  = obj.width  || (2 * obj.r);
+          this.height = obj.height || (2 * obj.r);
+
           obj.paintSelf(x);
           obj.paintChildren(x);
         }
