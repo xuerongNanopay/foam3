@@ -43,6 +43,7 @@ foam.CLASS({
     'foam.nanos.auth.User',
     'foam.nanos.auth.Subject',
     'foam.nanos.crunch.CapabilityIntercept',
+    'foam.nanos.crunch.CapabilityJunctionStatus',
     'foam.nanos.menu.VerticalMenu',
     'foam.nanos.notification.Notification',
     'foam.nanos.notification.ToastState',
