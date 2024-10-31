@@ -17,6 +17,12 @@ foam.CLASS({
     For example, to get city from user address:
 
     DOT(User.ADDRESS, Address.CITY).f(user); // return user.address.city
+
+    Since Dot implements foam.core.Indexer, it can be used as an Index
+    compoment for EasyDAO or on MDAO's directly.
+
+    Example:
+    easyDAO.addPropertyIndex(new foam.core.Indexer[] { foam.mlang.Mlang.DOT(User.ADDRESS, Address.CITY) });
   `,
 
   properties: [
