@@ -28,8 +28,8 @@ foam.CLASS({
     { name: 'GROUP_OR_USERS_REQUIRED', message: 'Group or Users are required' },
     { name: 'BODY_OR_TEMPLATE_OR_TOAST_REQUIRED', message: 'Notification body and/or template and/or toast required' },
     { name: 'TOAST_REQUIRED',       message: 'Toast Message is required when showing toast' },
-    { name: 'NOTIFICATION_SENT',    message: 'Notification Sent' },
-    { name: 'NOTIFICAITON_SUMMARY', message: 'notification to ' },
+    { name: 'NOTIFICATION_SENT',    message: 'Notification Created' },
+    { name: 'NOTIFICAITON_SUMMARY', message: 'notification(s)' },
     { name: 'NOTIFICATION_ERROR',   message: 'Notification Error' }
   ],
   properties: [
@@ -163,7 +163,7 @@ foam.CLASS({
 
   methods: [
     function toSummary() {
-      return this.NOTIFICAITON_SUMMARY + this.groupId;
+      return this.NOTIFICAITON_SUMMARY;
     }
   ],
 
