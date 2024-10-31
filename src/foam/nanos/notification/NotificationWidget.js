@@ -10,8 +10,11 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   imports: [
-    'pushMenu'
+    'pushMenu',
+    'pushRegistryAgent'
   ],
+
+  requires: ['foam.u2.crunch.wizardflow.RequestNotificationPermissionAgent'],
 
   css: `
     ^ {
@@ -39,7 +42,6 @@ foam.CLASS({
   methods: [
     function render() {
       this.start().addClass(this.myClass())
-
         .start().addClass(this.myClass('text-container'))
           .start().addClass('h400')
               .add(this.TITLE)
@@ -50,7 +52,6 @@ foam.CLASS({
         .start(this.ENABLE_NOTIF, { buttonStyle: 'PRIMARY' }).addClass(this.myClass('button-container'))
             .addClass(this.myClass('button'))
         .end()
-
       .end();
     }
   ],
@@ -59,8 +60,12 @@ foam.CLASS({
     {
       name: 'enableNotif',
       label: 'Enable Notifications',
-      code: function(X) {
-        this.RequestNotificationPermissionAgent.create({ title: this.NOTIFICATION_PROMPT_TITLE, affectUserChecks: false }, X).execute();
+      code: async function(X) {
+        foam.u2.crunch.wizardflow.RequestNotificationPermissionAgent.create({ affectUserChecks: false }, X).execute();
+        X.pushRegistryAgent.currentState$.sub(async () => {
+          await X.pushRegistryAgent.currentState.promise
+          X.pushMenu(X.currentMenu.id, true)
+        })
       }
     }
   ]

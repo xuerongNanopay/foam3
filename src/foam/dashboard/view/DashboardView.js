@@ -116,7 +116,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function render() {
+    async function render() {
       this.SUPER();
       this.initContainerWidth();
       var widgetContainer = this.E()
@@ -127,32 +127,39 @@ foam.CLASS({
           'grid-gap': this.gap$
         });
 
-      Object.keys(this.widgets).map(async menuId => {
-        let menu = await this.menuDAO.find(menuId);
-        if ( menu ) {
-          widgetContainer.startContext().start(menu.handler.view).style({
-            'grid-column': this.containerMap$.map(v => {
-              return v[menuId] ?? this.containerWidth?.cols;
-            })
-          }).end();
-        } else {
-          delete this.widgets[menuId];
-        }
-      });
+      this
+      .addClass(this.myClass())
+      .enableClass(this.myClass('main'), this.main)
+      .start()
+        .hide(!this.dashboardTitle)
+        .enableClass('h500', this.dashboardTitle)
+        .style({ height: '2em' })
+        .add(this.dashboardTitle)
+      .end()
+      .tag(widgetContainer)
+
+      let menuLength = Object.keys(this.widgets).length
+      let menuArray = Object.keys(this.widgets)
+      for(let step = 0; step < menuLength; step++) {
+
+          let menuId = menuArray[step];
+          let menu = await this.menuDAO.find(menuId);
+          if (! await menu?.readPredicate.f(menu)) {menu = null}
+          if ( menu ) {
+            widgetContainer.startContext().start(menu.handler.view).style({
+              'grid-column': this.containerMap$.map(v => {
+                return v[menuId] ?? this.containerWidth?.cols;
+              })
+            }).end();
+          } else {
+            delete this.widgets[menuId];
+          }
+      };
 
       this.updateCols();
       this.containerWidth$.sub(this.updateCols);
 
-      this
-        .addClass(this.myClass())
-        .enableClass(this.myClass('main'), this.main)
-        .start()
-          .hide(!this.dashboardTitle)
-          .enableClass('h500', this.dashboardTitle)
-          .style({ height: '2em' })
-          .add(this.dashboardTitle)
-        .end()
-        .tag(widgetContainer)
+
     }
   ],
 

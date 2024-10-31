@@ -428,6 +428,7 @@ foam.POM({
     { name: "notification/NotificationTemplateDAO",                                       flags: "js|java" },
     { name: "notification/NotificationView",                                              flags: "js" },
     { name: "notification/NotificationWidget",                                            flags: "js" },
+    { name: "notification/NotificationMenu",                                              flags: "js|java" },
     { name: "notification/NotificationRowView",                                           flags: "js" },
     { name: "notification/NotificationSetting",                                           flags: "js|java" },
     { name: "notification/NotificationSettingsView",                                      flags: "js" },

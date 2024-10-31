@@ -18,32 +18,36 @@ foam.CLASS({
     container-type: inline-size; 
     container-name: main-container;
     padding: 3.2rem;
+    overflow: hidden;
   }
   ^view-container {
     position: relative;
     z-index: 2; 
+    width: 75%;
   }
   ^ img{
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 12rem; 
     z-index: 1;
   }
   @container main-container (min-width: 600px) {
     ^ img{
       position: absolute;
       top: 50%;
-      right: 10%;
+      right: 5%;
       bottom: auto; 
       transform: translateY(-50%); 
-      width: 12rem; 
     }
   }
   `,
   properties: [
     {
       name: 'backgroundColor',
+      class: 'String'
+    },
+    {
+      name: 'imgWidth',
       class: 'String'
     },
     {
@@ -62,7 +66,8 @@ foam.CLASS({
         .start().addClass(this.myClass('view-container'))
           .tag(this.innerView)
         .end()
-        .start(foam.u2.tag.Image, {data: this.img }).addClass(this.myClass('img')).end();
+        .start(foam.u2.tag.Image, {data: this.img, displayWidth: this.imgWidth })
+        .addClass(this.myClass('img')).end();
     }
   ]
 });
