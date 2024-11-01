@@ -11,8 +11,9 @@ foam.CLASS({
   implements: [ 'foam.core.Serializable' ],
 
   documentation: 'Predicate which checks if objects are instances of the specified class.',
+
   javaCode: `
-public IsInstanceOf(foam.core.ClassInfo targetClass) {
+    public IsInstanceOf(foam.core.ClassInfo targetClass) {
       setTargetClass(targetClass);
     }
   `,
