@@ -641,6 +641,7 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'com.google.flow',
   name: 'Proxy',
@@ -712,6 +713,40 @@ foam.CLASS({
   ]
 });
 
+foam.CLASS({
+  package: 'com.google.flow',
+  name: 'KScope',
+  extends: 'foam.graphics.CView',
+
+  imports: [
+    'scope'
+  ],
+
+  properties: [
+    {
+      class: 'Int',
+      name: 'n',
+      value: 1
+    },
+    [ 'width',  50 ],
+    [ 'height', 50 ]
+  ],
+
+  methods: [
+    function paint(x) {
+      if ( this.n == 1 ) {
+        this.SUPER(x);
+        return;
+      }
+      var r = this.rotation;
+      for ( var i = 0 ; i < this.n ; i++ ) {
+        this.rotation = r + i * Math.PI * 2 / this.n;
+        this.SUPER(x);
+      }
+      this.rotation = r;
+    }
+  ]
+});
 
 foam.CLASS({
   package: 'com.google.flow',
