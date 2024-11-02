@@ -25,7 +25,7 @@ foam.CLASS({
     'login as importedLogin',
     'loginSuccess',
     'loginView?',
-    'notify?',
+    'notify',
     'pushMenu',
     'routeTo',
     'stack',
