@@ -508,7 +508,7 @@ foam.CLASS({
             this.cmdLine += 'flow> ';
           }
         } catch (x) {
-          log('ERROR:', x);
+          this.scope.log('ERROR:', x);
         } finally {
           this.cmdLineFeedback_ = false;
         }
