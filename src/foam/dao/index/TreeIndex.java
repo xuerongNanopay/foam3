@@ -135,8 +135,13 @@ public class TreeIndex
     try {
       key = indexer_.f(value);
     } catch (ClassCastException e) {
+      // Can happen when the Indexer is a PropertyInfo for a sub-class
+      key = null;
+    } catch (NullPointerException e) {
+      // Can happen when the Indexer is Dot(x, y) when x is null
       key = null;
     }
+
     return key;
   }
 
