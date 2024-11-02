@@ -660,11 +660,23 @@ foam.CLASS({
       name: 'maxDepth',
       value: 3
     },
-    [ 'width', 50 ],
-    [ 'height', 50 ],
     {
       class: 'Int',
+      name: 'maxCount',
+      value: 1000
+    },
+    [ 'width',  50 ],
+    [ 'height', 50 ],
+    {
+      // Make Simple so that when it updates it doesn't cause a redraw
+      class: 'Simple',
       name: 'depth_',
+      hidden: true
+    },
+    {
+      // Make Simple so that when it updates it doesn't cause a redraw
+      class: 'Simple',
+      name: 'count_',
       hidden: true
     }
   ],
@@ -673,19 +685,24 @@ foam.CLASS({
     function paintSelf(x) {
       if ( ! this.delegate ) return;
 
+      if ( ! this.depth_ ) { this.depth_ = 0; this.count_ = 0; }
       if ( this.depth_ >= this.maxDepth ) return;
+      if ( this.count_ >= this.maxCount ) return;
+
       this.depth_++;
 
       try {
+        // Paint children so that you can still add children to a Proxy
         this.paintChildren(x);
 
         var obj = this.scope[this.delegate];
 
         if ( obj ) {
-          this.width  = obj.width  || (2 * obj.r);
-          this.height = obj.height || (2 * obj.r);
+          this.width  = obj.width  || (2 * obj.radius);
+          this.height = obj.height || (2 * obj.radius);
 
           obj.paintSelf(x);
+          this.count_++;
           obj.paintChildren(x);
         }
       } finally {
