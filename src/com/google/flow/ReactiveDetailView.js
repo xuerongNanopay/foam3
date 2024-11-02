@@ -179,11 +179,13 @@ foam.CLASS({
     [ 'expandPropertyViews', false ]
   ],
 
-  methods: [
-    /*
+  methods: [/*
     function init() {
       this.SUPER();
     }*/
+    function renderTitle(self) {
+      this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add('Property: ').start({class: 'foam.u2.TextField'}, {data$: self.title$}).style({width: '300px'});
+    }
   ]
 });
 
