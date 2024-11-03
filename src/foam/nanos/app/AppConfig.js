@@ -103,11 +103,6 @@ foam.CLASS({
     {
       class: 'String',
       name: 'externalUrl'
-    },
-    {
-      class: 'String',
-      documentation: 'Used to identify the app to Google for Google Sign In support',
-      name: 'googleSignInClientId'
     }
   ],
 
