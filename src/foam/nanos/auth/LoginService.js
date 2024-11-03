@@ -28,14 +28,7 @@ foam.CLASS({
           throw new foam.nanos.auth.UserNotFoundException();
         }
         user.validateAuth(x);
-        // check if user enabled
-        if ( user.getLifecycleState() != foam.nanos.auth.LifecycleState.ACTIVE ) {
-          throw new foam.nanos.auth.AccessDeniedException();
-        }
-        // check if user login enabled
-        if ( ! user.getLoginEnabled() ) {
-          throw new foam.nanos.auth.AccessDeniedException();
-        }
+
         // check if group enabled
         foam.core.X userX = x.put("subject", new foam.nanos.auth.Subject.Builder(x).setUser(user).build());
         foam.nanos.auth.Group group = user.findGroup(userX);
