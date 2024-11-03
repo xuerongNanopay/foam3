@@ -22,18 +22,19 @@ foam.CLASS({
     'loginSuccess',
     'loginView?',
     'memento_',
-    'menuDAO',
     'routeTo',
     'stack',
     'subject',
     'window',
-    'sessionID'
+    'sessionID',
+    'oidcProviderDAO'
   ],
 
   requires: [
     'foam.log.LogLevel',
     'foam.nanos.auth.DuplicateEmailException',
     'foam.nanos.auth.UnverifiedEmailException',
+    'foam.nanos.auth.oidc.OIDCLoginState',
     'foam.u2.crunch.WizardRunner',
     'foam.u2.dialog.NotificationMessage',
     'foam.u2.stack.StackBlock',
@@ -184,6 +185,61 @@ foam.CLASS({
           type: type
         }));
       }
+    },
+    {
+      name: 'signInWithOIDC',
+      code: async function(provider) {
+        // TODO: Validate nonce
+        var nonce = crypto.randomUUID();
+
+        var reqParams = {
+          response_type: 'code',
+          client_id: provider.clientId,
+          scope: 'openid email',
+          redirect_uri: location.origin + "/service/oidc",
+          nonce: nonce,
+          state: foam.json.Network.stringify(this.OIDCLoginState.create({
+            sessionId: this.sessionID,
+            oidcProvider: provider.id,
+            returnToApp: false
+          }), this.OIDCLoginState),
+        }
+
+        let authURL = provider.authURL + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&')
+
+        /*
+        An alternative flow here
+         */
+
+
+        try {
+          await new Promise((resolve, reject) => {
+            let listener = (e) => {
+              if (e.origin == location.origin && e.data && e.data.sessionID == this.sessionID) {
+                window.removeEventListener('message', listener);
+                if (e.data.msg == "success") {
+                  resolve();
+                } else {
+                  reject(e.data.error)
+                }
+                authwindow.close();
+              }
+            }
+
+            window.addEventListener('message', listener);
+
+            let authwindow = window.open(authURL);
+          });
+        } catch(e) {
+          this.notifyUser(undefined, e, this.LogLevel.ERROR);
+        }
+
+        this.subject = await this.auth.getCurrentSubject(x);
+        this.username = this.subject.user
+        await this.ctrl.reloadClient();
+        this.loginSuccess = true;
+        await this.ctrl.onUserAgentAndGroupLoaded();
+      }
     }
   ],
 
@@ -275,55 +331,6 @@ foam.CLASS({
           // TODO: Add functionality to push to sign up if the user identifier doesnt exist
           this.notifyUser(undefined, this.ERROR_MSG2, this.LogLevel.ERROR);
         }
-      }
-    },
-    {
-      name: 'signInWithGoogle',
-      label: 'Sign in With Google',
-      section: 'footerSection',
-      isAvailable: function(showAction) { return showAction },
-      code: async function(X) {
-        // TODO: Validate nonce
-        var nonce = crypto.randomUUID();
-
-        var reqParams = {
-          response_type: 'code',
-          client_id: this.appConfig.googleSignInClientId,
-          scope: 'openid email',
-          redirect_uri: location.origin + "/service/oidc",
-          nonce: nonce,
-          state: this.sessionID,
-        }
-
-        var uri = 'https://accounts.google.com/o/oauth2/v2/auth'
-
-        try {
-          await new Promise((resolve, reject) => {
-            let listener = (e) => {
-              if (e.origin == location.origin && e.data && e.data.sessionID == this.sessionID) {
-                window.removeEventListener('message', listener);
-                if (e.data.msg == "success") {
-                  resolve();
-                } else {
-                  reject(e.data.error)
-                }
-                authwindow.close();
-              }
-            }
-
-            window.addEventListener('message', listener);
-
-            let authwindow = window.open(uri + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&'))
-          });
-        } catch(e) {
-          this.notifyUser(undefined, e, this.LogLevel.ERROR);
-        }
-
-        this.subject = await this.auth.getCurrentSubject(x);
-        this.username = this.subject.user
-        await this.ctrl.reloadClient();
-        this.loginSuccess = true;
-        await this.ctrl.onUserAgentAndGroupLoaded();
       }
     },
     {

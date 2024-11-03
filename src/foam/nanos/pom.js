@@ -241,6 +241,8 @@ foam.POM({
     { name: "auth/LastModifiedByAwareMixin",                                              flags: "js" },
     { name: "auth/LastModifiedByAgentNameAware",                                          flags: "js|java" },
     { name: "auth/predicate/IsAnonymousPredicate",                                        flags: "js|java" },
+    { name: "auth/oidc/OIDCProvider",                                                     flags: "js|java" },
+    { name: "auth/oidc/OIDCLoginState",                                                   flags: "js|java" },
     { name: "bench/Benchmark",                                                            flags: "js|java" },
     { name: "bench/BenchmarkResult",                                                      flags: "js|java" },
     { name: "bench/BenchmarkResultReportingDAO",                                          flags: "js|java" },
