@@ -775,32 +775,6 @@ foam.CLASS({
         });
       }
 
-      // pull JWT from hash if present and use it to login
-
-      if ( hashParams.id_token ) {
-        return new Promise(function(resolve, reject) {
-          self.loginSuccess$.sub(resolve);
-          self.clientPromise.then(c =>
-              c.auth.loginWithCredentials(this.__context__, self.JWTCredentials.create({
-                token: hashParams.id_token
-              })).then(() => {
-                location.hash = '';
-                self.loginSuccess = true;
-              }, (e) => {
-                // if the login fails
-                // TODO this could be refactored better, its also duplicated in SignIn
-                self.add(self.NotificationMessage.create({
-                  message: e.message,
-                  type: self.LogLevel.ERROR,
-                }));
-                self.stack.set({
-                  ...(self.loginView ?? { class: 'BaseUnAuthBorder' }),
-                  children: [ { class: 'foam.u2.view.LoginView', mode_: 'SignIn' } ]
-                }, self);
-              }));
-        });
-      }
-
       return new Promise(function(resolve, reject) {
         self.stack.set({
             ...(self.loginView ?? { class: 'BaseUnAuthBorder' }),
