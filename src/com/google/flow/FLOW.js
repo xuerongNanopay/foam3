@@ -212,6 +212,7 @@ foam.CLASS({
       .foam-u2-TableView td { padding-left: 6px; }
       .foam-u2-TableView-selected { outline: 1px solid red; }
       // ^ canvas { border: none; width: 800px; height: 700px; }
+      ^ canvas { margin-left: 12px; border: 1px solid; border-color: /*$grey400*/ #B2B6BD; box-shadow: 3px 3px 6px 0 gray; }
       ^ .foam-u2-ActionView { margin: 10px; }
       ^cmd { box-shadow: 3px 3px 6px 0 gray; width: 100%; margin-bottom: 8px; }
       ^properties { margin-right: 8px; height: auto; }
