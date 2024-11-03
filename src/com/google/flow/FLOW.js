@@ -507,13 +507,13 @@ foam.CLASS({
           with ( this.scope ) {
             log();
             log(eval(cmd));
-            this.cmdLine += 'flow> ';
           }
         } catch (x) {
           this.scope.log('ERROR:', x);
         } finally {
           this.cmdLineFeedback_ = false;
         }
+        this.cmdLine += 'flow> ';
       },
       view: { class: 'foam.u2.tag.TextArea', rows: 3, cols: 80 }
     }
