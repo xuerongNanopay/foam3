@@ -81,25 +81,25 @@ foam.CLASS({
         holding various permissions allowing a user who has not logged into the system to interact with it as if they had.
       `,
       javaCode: `
-        foam.nanos.session.Session session = x.get(foam.nanos.session.Session.class);
-        if ( session != null && session.getUserId() != 0 ) return (foam.nanos.auth.Subject) session.getContext().get("subject");
+        Session session = x.get(Session.class);
+        if ( session != null && session.getUserId() != 0 ) return (Subject) session.getContext().get("subject");
 
-        foam.nanos.auth.ServiceProvider serviceProvider = (foam.nanos.auth.ServiceProvider) ((foam.dao.DAO) x.get("localServiceProviderDAO")).find((String) x.get("spid"));
+        ServiceProvider serviceProvider = (ServiceProvider) ((DAO) x.get("localServiceProviderDAO")).find((String) x.get("spid"));
         if ( serviceProvider == null ) {
-          throw new foam.nanos.auth.AuthorizationException("Service Provider doesn't exist. Unable to authorize anonymous user.");
+          throw new AuthorizationException("Service Provider doesn't exist. Unable to authorize anonymous user.");
         }
 
-        foam.nanos.auth.User anonymousUser = (foam.nanos.auth.User) ((foam.dao.DAO) x.get("localUserDAO")).find(serviceProvider.getAnonymousUser());
+        User anonymousUser = (User) ((DAO) x.get("localUserDAO")).find(serviceProvider.getAnonymousUser());
         if ( anonymousUser == null ) {
-          throw new foam.nanos.auth.AuthorizationException("Anonymous user not found. spid: "+serviceProvider.getId()+" user: "+serviceProvider.getAnonymousUser());
+          throw new AuthorizationException("Anonymous user not found. spid: "+serviceProvider.getId()+" user: "+serviceProvider.getAnonymousUser());
         }
 
-        if ( session.getUserId() == anonymousUser.getId() ) return ((foam.nanos.auth.Subject) x.get("subject"));
+        if ( session.getUserId() == anonymousUser.getId() ) return ((Subject) x.get("subject"));
         session.setUserId(anonymousUser.getId());
         session.setAgentId(0);
         session.setContext(session.applyTo(session.getContext()));
-        ((foam.dao.DAO) getLocalSessionDAO()).inX(x).put(session);
-        return ((foam.nanos.auth.Subject) session.getContext().get("subject"));
+        ((DAO) getLocalSessionDAO()).inX(x).put(session);
+        return ((Subject) session.getContext().get("subject"));
       `
     },
     {
