@@ -207,10 +207,9 @@ foam.CLASS({
 
         let authURL = provider.authURL + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&')
 
-        /*
-        An alternative flow here
-         */
-
+        // If you want to run the login flow in the same window with a redirect
+        // set returnToApp: true in the above OICDLoginState and redirect the current
+        // page to the authURL
 
         try {
           await new Promise((resolve, reject) => {
