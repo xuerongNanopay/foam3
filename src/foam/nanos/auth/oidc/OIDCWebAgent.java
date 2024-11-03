@@ -18,6 +18,9 @@ import foam.nanos.logger.Logger;
 import foam.nanos.auth.oidc.OIDCProvider;
 import foam.nanos.auth.oidc.OIDCLoginState;
 
+// Open ID Connect (OIDC) Web Agent
+// The openid identity provider (ex Google/Apple) will redirect the user to this
+// web agent after successfully authenticating the user.
 public class OIDCWebAgent implements WebAgent {
     @Override
     public void execute(X x) {
