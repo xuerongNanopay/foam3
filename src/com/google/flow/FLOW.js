@@ -207,10 +207,11 @@ foam.CLASS({
       ^sheet { width: 100%; overflow-y: auto; }
       ^tools thead, ^properties thead { display: none }
       ^tools tr { height: 30px }
+      .foam-u2-TableView div tr td { font-weight: bold; } // TODO: I don't think that div should be there (but is)
       .foam-u2-TableView { border-collapse: collapse; }
       .foam-u2-TableView td { padding-left: 6px; }
       .foam-u2-TableView-selected { outline: 1px solid red; }
-      ^ canvas { border: none; width: 800px; height: 700px; }
+      // ^ canvas { border: none; width: 800px; height: 700px; }
       ^ .foam-u2-ActionView { margin: 10px; }
       ^cmd { box-shadow: 3px 3px 6px 0 gray; width: 100%; margin-bottom: 8px; }
       ^properties { margin-right: 8px; height: auto; }
