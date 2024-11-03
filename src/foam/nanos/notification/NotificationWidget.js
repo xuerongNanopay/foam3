@@ -61,7 +61,7 @@ foam.CLASS({
       name: 'enableNotif',
       label: 'Enable Notifications',
       code: async function(X) {
-        foam.u2.crunch.wizardflow.RequestNotificationPermissionAgent.create({ affectUserChecks: false }, X).execute();
+        foam.u2.crunch.wizardflow.RequestNotificationPermissionAgent.create({ affectUserChecks: false, hideDontShowAgain: true }, X).execute();
         X.pushRegistryAgent.currentState$.sub(async () => {
           await X.pushRegistryAgent.currentState.promise
           X.pushMenu(X.currentMenu.id, true)

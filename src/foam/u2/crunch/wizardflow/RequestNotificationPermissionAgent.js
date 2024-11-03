@@ -63,6 +63,10 @@ foam.CLASS({
         {
           class: 'String',
           name: 'prefix'
+        },
+        {
+          class: 'Boolean',
+          name: 'hideDontShowAgain'
         }
       ],
       methods: [
@@ -76,7 +80,7 @@ foam.CLASS({
               .addClass(this.myClass('buttons'))
               .tag(this.ALLOW_NOTIFICATIONS)
               .tag(this.NOT_NOW)
-              .tag(this.DONT_SHOW_AGAIN)
+              .start(this.DONT_SHOW_AGAIN).hide(this.hideDontShowAgain).end()
             .end()
           .endContext();
         }
@@ -140,6 +144,11 @@ foam.CLASS({
       name: 'affectUserChecks',
       description: 'If set to false, all user checks are ignored',
       value: true
+    },
+    {
+      class: 'Boolean',
+      name: 'hideDontShowAgain',
+      value: false
     }
   ],
 
@@ -156,7 +165,7 @@ foam.CLASS({
       // Using timestamps as it allows us to set this to an interval later if we need to
       this.affectUserChecks && localStorage.setItem(this.LAST_SHOWN_TIME, Date.now());
 
-      this.popup = this.StyledModal.create({ title$: this.title$, closeable: false }).tag(this.RequestPermissionView, { prefix$: this.desc$ });
+      this.popup = this.StyledModal.create({ title$: this.title$, closeable: false }).tag(this.RequestPermissionView, { prefix$: this.desc$, hideDontShowAgain: this.hideDontShowAgain });
       this.popup.open();
 
       return;

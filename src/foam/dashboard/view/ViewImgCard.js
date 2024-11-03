@@ -19,20 +19,21 @@ foam.CLASS({
     container-name: main-container;
     padding: 3.2rem;
     overflow: hidden;
+    --img-postion: auto;
   }
   ^view-container {
     position: relative;
     z-index: 2; 
     width: 75%;
   }
-  ^ img{
+  ^img{
     position: absolute;
-    bottom: 0;
-    right: 0;
     z-index: 1;
+    inset: var(--img-postion);
+    width: fit-content; height: fit-content;
   }
   @container main-container (min-width: 600px) {
-    ^ img{
+    ^img{
       position: absolute;
       top: 50%;
       right: 5%;
@@ -57,6 +58,10 @@ foam.CLASS({
     {
       class: 'foam.u2.ViewSpec',
       name: 'innerView'
+    },
+    {
+      class: 'String',
+      name: 'insetPos'
     }
   ],
   methods: [
@@ -66,8 +71,12 @@ foam.CLASS({
         .start().addClass(this.myClass('view-container'))
           .tag(this.innerView)
         .end()
-        .start(foam.u2.tag.Image, {data: this.img, displayWidth: this.imgWidth })
+        .start(foam.u2.tag.Image, {data: this.img, displayWidth: this.imgWidth})
         .addClass(this.myClass('img')).end();
+
+        this.el().then((v) => {
+          v.style.setProperty(`--img-postion`, this.insetPos);
+        })
     }
   ]
 });
