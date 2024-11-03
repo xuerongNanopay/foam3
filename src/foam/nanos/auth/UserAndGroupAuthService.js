@@ -30,7 +30,7 @@ foam.CLASS({
     'DAO localSessionDAO',
     'DAO localUserDAO',
     'UniqueUserService uniqueUserService',
-    'AuthenticationService authentication'
+    'LoginService loginService'
   ],
 
   javaImports: [
@@ -107,30 +107,6 @@ foam.CLASS({
       javaCode: '// nothing here'
     },
     {
-      name: 'loginWithCredentials',
-      javaCode: `
-        if ( ! ( credentials instanceof UsernamePasswordCredentials ) ) {
-          throw new AuthenticationException("unsupported credentials");
-        }
-        
-        UsernamePasswordCredentials creds = (UsernamePasswordCredentials)credentials;
-        String username = creds.getUsername();
-        String password = creds.getPassword();
-        
-        User user = getUniqueUserService().getUser(x, username);
-        
-        if ( user == null ) {
-          throw new UserNotFoundException();
-        }
-        
-        if ( ! Password.verify(password, user.getPassword()) ) {
-          throw new InvalidPasswordException();
-        }
-        
-        return getAuthentication().login(x, user); 
-      `
-    },
-    {
       name: 'getCurrentSubject',
       javaCode: `
         try {
@@ -161,7 +137,17 @@ foam.CLASS({
       documentation: `Login a user by their identifier (email or username) provided, validate the password and
         return the user in the context`,
       javaCode: `
-        return loginWithCredentials(x, new UsernamePasswordCredentials(x, identifier, password));
+        User user = getUniqueUserService().getUser(x, identifier);
+        
+        if ( user == null ) {
+          throw new UserNotFoundException();
+        }
+        
+        if ( ! Password.verify(password, user.getPassword()) ) {
+          throw new InvalidPasswordException();
+        }
+        
+        return getLoginService().login(x, user); 
       `
     },
     {

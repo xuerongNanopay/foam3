@@ -87,7 +87,7 @@ public class OIDCWebAgent implements WebAgent {
                 throw new RuntimeException("session not found");
             }
 
-            foam.nanos.auth.LoginService login = (foam.nanos.auth.LoginService)x.get("login");
+            foam.nanos.auth.LoginService login = (foam.nanos.auth.LoginService)x.get("loginService");
             login.login(session.getContext(), user);
 
             if (state.getReturnToApp()) {

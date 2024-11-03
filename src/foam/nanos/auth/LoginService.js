@@ -1,6 +1,6 @@
 foam.CLASS({
     package: 'foam.nanos.auth',
-    name: 'AuthenticationService',
+    name: 'LoginService',
     documentation: 'Server only service for signing a session into a particular user',
     imports: [
         'foam.dao.DAO localSessionDAO',
