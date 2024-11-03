@@ -68,9 +68,7 @@ public class OIDCWebAgent implements WebAgent {
                 throw new foam.nanos.auth.AuthenticationException("expired token");
             }
 
-            String expectedAudience = provider.getClientId();
-
-            if (!bodyObject.getString("aud").equals(expectedAudience)) {
+            if (!bodyObject.getString("aud").equals(provider.getClientId())) {
                 throw new foam.nanos.auth.AuthenticationException("incorrect audience");
             }
 
