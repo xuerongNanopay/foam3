@@ -12,7 +12,7 @@ foam.CLASS({
   properties: [
     [ 'autoRepaint', true ],
     [ 'width', 800 ],
-    [ 'height', 700 ],
+    [ 'height', 800 ],
     [ 'color', '#f3f3f3' ]
   ]
 });
@@ -515,7 +515,7 @@ foam.CLASS({
         }
         this.cmdLine += 'flow> ';
       },
-      view: { class: 'foam.u2.tag.TextArea', rows: 3, cols: 80 }
+      view: { class: 'foam.u2.tag.TextArea', rows: 8, cols: 80 }
     }
   ],
 
