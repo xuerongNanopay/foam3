@@ -13,12 +13,12 @@ p({
       title: "Ops Dashboard",
       main: true,
       widgets: {
-        "foam.nanos.cron.cronJobWidget": "6/1",
-        "foam.nanos.alarming.alarmWidget": "6/1",
-        "foam.nanos.er.eventRecordWidget": "6/1",
-        "foam.nanos.medusa.medusaHealthWidget": "6/1",
-        "foam.nanos.logger.logMessageWidget": "12/1",
-        "foam.nanos.medusa.medusaIndexChartWidget": "12/1"
+        "foam.nanos.cron.cronJobWidget": { column: 6 },
+        "foam.nanos.alarming.alarmWidget": { column: 6 },
+        "foam.nanos.er.eventRecordWidget": { column: 6 },
+        "foam.nanos.medusa.medusaHealthWidget": { column: 6 },
+        "foam.nanos.logger.logMessageWidget": { column: 12 },
+        "foam.nanos.medusa.medusaIndexChartWidget": { column: 12 }
       }
     }
   },

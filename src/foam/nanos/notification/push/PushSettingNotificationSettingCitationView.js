@@ -15,8 +15,7 @@ foam.CLASS({
   messages: [
     { name: 'ALREADY_GRANTED', message: 'You are receiving push notifications on this device.'},
     { name: 'ALREADY_DENIED', message: 'Push Notifications have been disabled on this device, please reset your browser/app settings to enable push notifications.' },
-    { name: 'INACTIVE_NOTIFICATIONS', message: 'Push Notifications are not enabled on this device. To enable push notifications, ' },
-    { name: 'NOTIFICATION_PROMPT_TITLE', message: 'Register for Notifications!' }
+    { name: 'INACTIVE_NOTIFICATIONS', message: 'Push Notifications are not enabled on this device. To enable push notifications, ' }
   ],
   properties: [
 
@@ -61,7 +60,7 @@ foam.CLASS({
       name: 'clickHere',
       buttonStyle: 'LINK',
       code: async function(X) {
-        this.RequestNotificationPermissionAgent.create({ title: this.NOTIFICATION_PROMPT_TITLE, affectUserChecks: false }, X).execute();
+        this.RequestNotificationPermissionAgent.create({ affectUserChecks: false }, X).execute();
       }
     }
   ]
