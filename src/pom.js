@@ -964,6 +964,7 @@ foam.POM({
     { name: "foam/dashboard/view/GroupByCitationView",                flags: "js" },
     { name: "foam/dashboard/view/Card",                               flags: "js" },
     { name: "foam/dashboard/view/BackgroundCard",                     flags: "js" },
+    { name: "foam/dashboard/view/ViewImgCard",                flags: "js" },
     { name: "foam/dashboard/view/CardWrapper",                        flags: "js" },
     { name: "foam/dashboard/view/Dashboard",                          flags: "js" },
     { name: "foam/dashboard/view/DashboardView",                      flags: "js" },
