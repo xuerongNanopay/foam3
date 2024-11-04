@@ -5,16 +5,14 @@ foam.CLASS({
 
 
    properties: [
-   {
-      name: 'readPredicate',
-      initObject: function(o) {
-      /* ignoreWarning */
-      o.readPredicate = foam.mlang.predicate.Func.create({
-         fn: async function(o) {
-               if ((await o.__subContext__.pushRegistryAgent.currentState.promise) == 'DEFAULT') {
-                  return true;
-               } 
-               return false;
+      {
+         name: 'readPredicate',
+         initObject: function(o) {
+         /* ignoreWarning */
+         o.readPredicate = foam.mlang.predicate.Func.create({
+            fn: async function(o) {
+               return !localStorage.getItem('refusedNotification') && 
+                  (await o.__subContext__.pushRegistryAgent.currentState.promise) === 'DEFAULT';
                }
             }, this)
          }
