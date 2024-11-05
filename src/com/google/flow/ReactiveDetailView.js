@@ -168,15 +168,25 @@ foam.CLASS({
 
   requires: [ 'com.google.flow.PropertyBorder' ],
 
+  imports: [ 'renameProperty' ],
+
   css: `
    // ^ { margin: inherit !important; }
    // ^ table { width: auto !important; }
+   ^title input { font-size: large; }
+   ^title { font-size: large; }
    ^collapsePropertyViews .com-google-flow-PropertyBorder-propHolder { width: auto; display: inline-flex; }
   `,
 
   properties: [
     [ 'showActions', true ],
-    [ 'expandPropertyViews', false ]
+    [ 'expandPropertyViews', false ],
+    {
+      name: 'title',
+      postSet: function(o, n) {
+        this.renameProperty(o, n);
+      }
+    }
   ],
 
   methods: [/*

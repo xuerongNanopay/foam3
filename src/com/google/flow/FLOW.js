@@ -183,6 +183,7 @@ foam.CLASS({
     'as data',
     'physics',
     'properties',
+    'renameProperty',
     'scope',
     'timer',
     'updateMemento'
@@ -267,6 +268,7 @@ foam.CLASS({
           add: function(obj, opt_name, opt_parent) {
             this.addProperty(obj, opt_name, undefined, opt_parent || 'canvas1');
           }.bind(this),
+          rename: this.renameProperty.bind(this),
           hsl: function(h, s, l) {
             return 'hsl(' + (h%360) + ',' + s + '%,' + l + '%)';
           },
@@ -528,6 +530,7 @@ foam.CLASS({
       this.properties.on.put.sub(this.onPropertyPut);
       this.properties.on.remove.sub(this.onPropertyRemove);
 
+      // TODO: A better design for custom Halos which only creates when needed.
       var halo = this.Halo.create();
       halo.selected$.linkFrom(this.selected$);
 
@@ -614,6 +617,10 @@ foam.CLASS({
         this.properties.put(p);
         this.selected = p;
       }
+    },
+
+    function renameProperty(oldName, newName) {
+      console.log('***** rename', oldName, newName);
     },
 
     function updateMemento() {
