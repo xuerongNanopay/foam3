@@ -21,6 +21,11 @@ foam.POM({
     http://www.apache.org/licenses/LICENSE-2.0
     `
   ],
+
+  setFlags: {
+    u3: true
+  },
+
   files: [
     { name: "foam/core/lib",                                          flags: "js" },
     { name: "foam/core/stdlib",                                       flags: "js" },
@@ -227,7 +232,7 @@ foam.POM({
     { name: "foam/u2/DisplayMode",                                    flags: "web" },
     { name: "foam/u2/CSS",                                            flags: "web" },
     { name: "foam/u2/Element",                                        predicate: function() { return ! foam.flags.u3; }, flags: "web" },
-    { name: "foam/u2/Element2",                                       flags: "u3" },
+    { name: "foam/u2/Element2",                                       flags: "u3&web" },
     { name: "foam/u2/U2Context",                                      flags: "web" },
     { name: "foam/u2/Router",                                         flags: "web" },
     { name: "foam/u2/MNRowFormatter",                                 flags: "web" },
