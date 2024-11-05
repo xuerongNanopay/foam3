@@ -350,10 +350,10 @@ task('Deploy journal files from JOURNAL_OUT to JOURNAL_HOME.', [], function depl
   copyDir(JOURNAL_OUT, JOURNAL_HOME);
 });
 
-// task('Deploy documents, journals.', [ 'deployDocuments','deployJournals'], function deploy() {
-task('Deploy journals.', [ 'deployJournals'], function deploy() {
+task('Deploy documents, journals.', [ 'deployDocuments','deployJournals'], function deploy() {
   if ( ! RUN_JAR && ! TEST && ! BENCHMARK ) {
     deployJournals();
+    deployDocuments();
   }
 });
 

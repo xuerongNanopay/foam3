@@ -33,7 +33,7 @@ foam.POM({
       'commons-net:commons-net:3.6',
       'jakarta.mail:jakarta.mail-api:2.1.2',
       'jakarta.activation:jakarta.activation-api:2.1.2',
-      'javax.json:javax.json-api:1.0',
+      'javax.json:javax.json-api:1.1.4',
       'javax.ws.rs:javax.ws.rs-api:2.1.1',
       'jstl:jstl:1.2',
       'org.apache-extras.beanshell:bsh:2.0b6',
@@ -58,6 +58,7 @@ foam.POM({
       'org.eclipse.jetty:jetty-util-ajax:11.0.23', // for source build
       'org.eclipse.jetty.http2:http2-server:11.0.23',
       'org.eclipse.jetty.websocket:websocket-jetty-server:11.0.23',
+      'org.glassfish:javax.json:1.1.4',
       'org.java-websocket:Java-WebSocket:1.5.0',
       'org.jtwig:jtwig-core:5.87.0.RELEASE',
       'org.mongodb:mongodb-driver:3.4.2',
