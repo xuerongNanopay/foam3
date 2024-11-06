@@ -1219,7 +1219,7 @@ foam.CLASS({
       }
       if ( foam.core.DynamicFunction.isInstance(c) ) {
         this.addChild_(foam.u2.FunctionNode.create({fn: c, parentNode: this}, this), this);
-        return
+        return;
       }
       if ( foam.Function.isInstance(c) ) {
         this.addChild_((this.__subContext__.data || this).dynamic(c), parentNode);
