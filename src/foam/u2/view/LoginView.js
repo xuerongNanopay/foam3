@@ -42,6 +42,7 @@ foam.CLASS({
   ],
 
   requires: [
+    'foam.core.Action',
     'foam.u2.Element',
     'foam.u2.borders.SplitScreenGridBorder',
     'foam.nanos.u2.navigation.SignIn',
@@ -189,6 +190,19 @@ foam.CLASS({
         .end()
         .start(this.data.LOGIN)
           .attrs({ type: 'submit', form: 'login' })
+        .end()
+        .start().style({ display: 'contents' })
+          .select(this.data.oidcProviderDAO, function(provider) {
+            let action = self.Action.create({
+              name: 'signIn',
+              label: provider.description,
+              code: async function () {
+                await self.data.signInWithOIDC(provider)
+              }
+            });
+
+            return self.E().style({ display: "contents" }).startContext({ data: self.data }).add(action).endContext();
+          })
         .end()
         .add(
           this.slot(function(data$showAction, data$disclaimer, appConfig) {

@@ -91,7 +91,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'appLink',
-      value: 'https://www.apple.com/lae/ios/app-store/',
+      documentation: 'Link to Apple App Store for the app',
       visibility: 'HIDDEN'
     },
     {
