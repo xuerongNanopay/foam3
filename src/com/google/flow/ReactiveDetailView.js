@@ -160,7 +160,6 @@ foam.CLASS({
 });
 
 
-
 foam.CLASS({
   package: 'com.google.flow',
   name: 'ReactiveDetailView',
