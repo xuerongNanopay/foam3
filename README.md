@@ -106,6 +106,7 @@ to run the unit tests.
 - [DAO Examples](doc/guides/DaoExamples.md)
 - [Easy DAO](doc/guides/EasyDao.md)
 - [Enums](doc/guides/Enum.md)
+- [Project Object Models (POMs)](doc/guides/POM.md)
 - [Porting](doc/guides/Porting.md)
 - [Services](doc/guides/Services.md)
 
