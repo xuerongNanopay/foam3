@@ -8,7 +8,7 @@
 foam.CLASS({
   package: 'foam.nanos.notification',
   name: 'NotificationSetting',
-  label: 'In-App Notification Setting',
+  label: 'In-App Notifications',
 
   implements: [
     'foam.mlang.Expressions',

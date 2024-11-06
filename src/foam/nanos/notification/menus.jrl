@@ -53,6 +53,7 @@ p({
       daoKey: "notificationSettingDefaultsDAO",
       of: "foam.nanos.notification.NotificationSetting",
       browseTitle: "Default Notification Settings",
+      createTitle: "Create Default Notification Setting",
       createPredicate: {class:"foam.mlang.predicate.True"},
       editPredicate: {class:"foam.mlang.predicate.True"},
       deletePredicate: {class:"foam.mlang.predicate.True"}
@@ -72,6 +73,7 @@ p({
       daoKey: "notificationSettingDAO",
       of: "foam.nanos.notification.NotificationSetting",
       browseTitle: "User Notification Settings",
+      createTitle: "Create User Notification Setting",
       createPredicate: {class:"foam.mlang.predicate.True"},
       editPredicate: {class:"foam.mlang.predicate.True"},
       deletePredicate: {class:"foam.mlang.predicate.True"}
