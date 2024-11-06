@@ -619,8 +619,14 @@ foam.CLASS({
       }
     },
 
-    function renameProperty(oldName, newName) {
+    async function renameProperty(oldName, newName) {
       console.log('***** rename', oldName, newName);
+      var p = await this.properties.find(oldName);
+      if ( p ) {
+        p.name = newName;
+        await this.properties.remove(p);
+        this.properties.put(p);
+      }
     },
 
     function updateMemento() {
