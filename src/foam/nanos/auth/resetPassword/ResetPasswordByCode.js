@@ -31,13 +31,15 @@ foam.CLASS({
 
   sections: [
     {
-      name: 'verificationCodeSection'
+      name: 'verificationCodeSection',
+      title: ''
     },
     {
       name: 'resetPasswordSection'
     },
     {
       name: 'resetPasswordWizardSection',
+      title: '',
       properties: [ 'newPassword', 'confirmationPassword' ]
     }
   ],
@@ -58,8 +60,8 @@ foam.CLASS({
     .foam-u2-detail-SectionView-verificationCodeSection .foam-u2-ActionView-resendCode {
       padding: 0;
     }
-    
-    .foam-u2-dialog-ApplicationPopup-bodyWrapper .subTitle {
+
+    .foam-u2-detail-SectionView-verificationCodeSection .subTitle, .foam-u2-detail-SectionView-verificationCodeSection .foam-u2-detail-SectionView-section-title {
       text-align: center;
     }
     .foam-u2-dialog-ApplicationPopup-bodyWrapper .foam-u2-detail-SectionView-verificationCodeSection {
