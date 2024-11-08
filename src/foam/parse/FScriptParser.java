@@ -27,7 +27,7 @@ import static foam.mlang.MLang.*;
 
 
 public class FScriptParser {
-  static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
+  private final static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
 
   private final static Map map__ = new ConcurrentHashMap();
 
