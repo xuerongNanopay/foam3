@@ -20,12 +20,31 @@ import foam.mlang.predicate.Not;
 import foam.util.SafetyUtil;
 import java.lang.Exception;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import static foam.mlang.MLang.*;
 
 
 public class FScriptParser {
   static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
+
+  /**
+   * Implement the multiton pattern so we don't create the same
+   * parser more than once.
+   **/
+  public static FScriptParser create(ClassInfo cls) {
+    FScriptParser p = (FScriptParser) map__.get(cls.getId());
+
+    if ( p == null ) {
+      p = new FScriptParser(cls);
+      map__.put(cls.getId(), p);
+    }
+
+    return p;
+  }
+
+  private final static Map map__ = new ConcurrentHashMap();
 
   ClassInfo classInfo_;
   protected List expressions;

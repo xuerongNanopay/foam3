@@ -39,8 +39,11 @@ foam.CLASS({
       },
       javaCode: `
       FScriptParser parser;
-      if ( getProp() != null ) parser = new FScriptParser(getProp());
-      else parser = new FScriptParser(((foam.core.FObject) obj).getClassInfo());
+      if ( getProp() != null ) {
+        parser = new FScriptParser(getProp());
+      } else {
+        parser = FScriptParser.create(((foam.core.FObject) obj).getClassInfo());
+      }
       StringPStream sps = new StringPStream();
       sps.setString(getQuery());
       PStream ps = sps;
