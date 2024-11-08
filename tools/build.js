@@ -778,7 +778,7 @@ const ARGS = {
     () => PROFILER = true ],
   P: [ "pom file : name and path of the root pom file. Defaults to 'pom' at the root of the project.",
     args => { POM = args; info('POM=' + POM); } ],
-  r: [ 'Start nanos with whatever was last built.',
+  r: [ 'Run NANOS with whatever was last built.',
     () => RESTART_ONLY = true ],
   R: [ 'Set app deployment root directory',
         args => { APP_ROOT = args } ],
