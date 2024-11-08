@@ -66,7 +66,8 @@ public class FScriptParser {
     setup(property.getClassInfo(), props);
   }
 
-  private FScriptParser(ClassInfo classInfo) {
+  // Strongly consider using FScriptParser.create() instead
+  public FScriptParser(ClassInfo classInfo) {
     Map props = new HashMap<String, PropertyInfo>();
     setup(classInfo, props);
   }
