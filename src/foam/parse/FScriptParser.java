@@ -7,6 +7,8 @@
 package foam.parse;
 
 import foam.core.*;
+import foam.lib.json.BooleanParser;
+import foam.lib.json.NullParser;
 import foam.lib.json.Whitespace;
 import foam.lib.parse.*;
 import foam.lib.parse.Action;
@@ -22,8 +24,9 @@ import java.util.regex.Pattern;
 import static foam.mlang.MLang.*;
 
 
-public class FScriptParser
-{
+public class FScriptParser {
+  static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
+
   ClassInfo classInfo_;
   protected List expressions;
 
@@ -214,7 +217,7 @@ public class FScriptParser
       Whitespace.instance(),
       new Alt(
         grammar.sym("VALUE"),
-        new Literal("null", null)
+        NullParser.instance()
       ))
     );
 
@@ -496,9 +499,8 @@ public class FScriptParser
       grammar.sym("DATE"),
       grammar.sym("VAR"),
       grammar.sym("STRING"),
-      new Literal("true", true),
-      new Literal("false", false),
-      new Literal("null", null),
+      BooleanParser.instance(),
+      NullParser.instance(),
       grammar.sym("FORMULA"),
       grammar.sym("NUMBER"),
       grammar.sym("FIELD_LEN"),
@@ -600,7 +602,7 @@ public class FScriptParser
       new Seq1(1,
         Literal.create("\""),
         new Repeat(new Alt(
-          new Literal("\\\"", "\""),
+          ESCAPED_QUOTE_PARSER,
           new NotChars("\"")
         )),
         Literal.create("\"")
@@ -609,7 +611,7 @@ public class FScriptParser
     grammar.addAction("STRING", (val, x) -> compactToString(val));
     var stringParser = new Repeat(new NotChars("{{"));
     var stringParser2 = new Repeat(new Alt(
-      new Literal("\\\"", "\""),
+      ESCAPED_QUOTE_PARSER,
       new NotChars("}}")
     ));
 
