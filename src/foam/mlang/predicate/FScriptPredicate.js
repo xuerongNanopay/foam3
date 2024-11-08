@@ -33,9 +33,6 @@ foam.CLASS({
   ],
 
   methods: [
-    function init() {
-      console.log('*************************', this.query, this.prop);
-    },
     {
       name: 'f',
       code: function(o) {
