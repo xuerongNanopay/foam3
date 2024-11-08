@@ -29,10 +29,23 @@ import static foam.mlang.MLang.*;
 public class FScriptParser {
   static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
 
+  private final static Map map__ = new ConcurrentHashMap();
+
   /**
    * Implement the multiton pattern so we don't create the same
    * parser more than once.
    **/
+  public static FScriptParser create(PropertyInfo prop) {
+    FScriptParser p = (FScriptParser) map__.get(prop);
+
+    if ( p == null ) {
+      p = new FScriptParser(prop);
+      map__.put(prop, p);
+    }
+
+    return p;
+  }
+
   public static FScriptParser create(ClassInfo cls) {
     FScriptParser p = (FScriptParser) map__.get(cls.getId());
 
@@ -44,18 +57,16 @@ public class FScriptParser {
     return p;
   }
 
-  private final static Map map__ = new ConcurrentHashMap();
-
   ClassInfo classInfo_;
   protected List expressions;
 
-  public FScriptParser(PropertyInfo property) {
+  private FScriptParser(PropertyInfo property) {
     Map<String, PropertyInfo> props = new HashMap();
     props.put("thisValue", property);
     setup(property.getClassInfo(), props);
   }
 
-  public FScriptParser(ClassInfo classInfo) {
+  private FScriptParser(ClassInfo classInfo) {
     Map props = new HashMap<String, PropertyInfo>();
     setup(classInfo, props);
   }

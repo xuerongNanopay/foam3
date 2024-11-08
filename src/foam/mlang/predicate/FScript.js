@@ -40,7 +40,7 @@ foam.CLASS({
       javaCode: `
       FScriptParser parser;
       if ( getProp() != null ) {
-        parser = new FScriptParser(getProp());
+        parser = FScriptParser.create(getProp());
       } else {
         parser = FScriptParser.create(((foam.core.FObject) obj).getClassInfo());
       }
