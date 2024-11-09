@@ -7,6 +7,8 @@
 package foam.parse;
 
 import foam.core.*;
+import foam.lib.json.BooleanParser;
+import foam.lib.json.NullParser;
 import foam.lib.json.Whitespace;
 import foam.lib.parse.*;
 import foam.lib.parse.Action;
@@ -18,21 +20,53 @@ import foam.mlang.predicate.Not;
 import foam.util.SafetyUtil;
 import java.lang.Exception;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import static foam.mlang.MLang.*;
 
 
-public class FScriptParser
-{
+public class FScriptParser {
+  private final static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
+
+  private final static Map map__ = new ConcurrentHashMap();
+
+  /**
+   * Implement the multiton pattern so we don't create the same
+   * parser more than once.
+   **/
+  public static FScriptParser create(PropertyInfo prop) {
+    FScriptParser p = (FScriptParser) map__.get(prop);
+
+    if ( p == null ) {
+      p = new FScriptParser(prop);
+      map__.put(prop, p);
+    }
+
+    return p;
+  }
+
+  public static FScriptParser create(ClassInfo cls) {
+    FScriptParser p = (FScriptParser) map__.get(cls.getId());
+
+    if ( p == null ) {
+      p = new FScriptParser(cls);
+      map__.put(cls.getId(), p);
+    }
+
+    return p;
+  }
+
   ClassInfo classInfo_;
   protected List expressions;
 
-  public FScriptParser(PropertyInfo property) {
+  private FScriptParser(PropertyInfo property) {
     Map<String, PropertyInfo> props = new HashMap();
     props.put("thisValue", property);
     setup(property.getClassInfo(), props);
   }
 
+  // Strongly consider using FScriptParser.create() instead
   public FScriptParser(ClassInfo classInfo) {
     Map props = new HashMap<String, PropertyInfo>();
     setup(classInfo, props);
@@ -214,7 +248,7 @@ public class FScriptParser
       Whitespace.instance(),
       new Alt(
         grammar.sym("VALUE"),
-        new Literal("null", null)
+        NullParser.instance()
       ))
     );
 
@@ -496,9 +530,8 @@ public class FScriptParser
       grammar.sym("DATE"),
       grammar.sym("VAR"),
       grammar.sym("STRING"),
-      new Literal("true", true),
-      new Literal("false", false),
-      new Literal("null", null),
+      BooleanParser.instance(),
+      NullParser.instance(),
       grammar.sym("FORMULA"),
       grammar.sym("NUMBER"),
       grammar.sym("FIELD_LEN"),
@@ -600,7 +633,7 @@ public class FScriptParser
       new Seq1(1,
         Literal.create("\""),
         new Repeat(new Alt(
-          new Literal("\\\"", "\""),
+          ESCAPED_QUOTE_PARSER,
           new NotChars("\"")
         )),
         Literal.create("\"")
@@ -609,7 +642,7 @@ public class FScriptParser
     grammar.addAction("STRING", (val, x) -> compactToString(val));
     var stringParser = new Repeat(new NotChars("{{"));
     var stringParser2 = new Repeat(new Alt(
-      new Literal("\\\"", "\""),
+      ESCAPED_QUOTE_PARSER,
       new NotChars("}}")
     ));
 
