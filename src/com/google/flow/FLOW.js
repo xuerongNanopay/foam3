@@ -181,6 +181,7 @@ foam.CLASS({
   exports: [
     'addProperty',
     'as data',
+    'dblclick',
     'depth_',
     'physics',
     'properties',
@@ -240,6 +241,8 @@ foam.CLASS({
       .foam-u2-view-TreeViewRow .p-semiBold { font-weight: bold; font-size: 1rem; }
       .child-menu { margin-left: 18px; }
       .foam-u2-view-TreeViewRow-LabelView-select-level-selected { background: #D7E4FF; }
+      .property-selectedName input { width: auto; }
+      .foam-u2-ActionView-copyProperty, .foam-u2-ActionView-deleteProperty  { float: right; margin: 0 0 8px 8px !important; }
 `,
 
   properties: [
@@ -613,11 +616,18 @@ foam.CLASS({
             addClass(this.myClass('properties')).
             start(this.PROPERTIES, {selection$: this.selected$}).end().
           end().
-          add(this.SELECTED_NAME).
-          start(this.VALUE).
-            addClass(this.myClass('sheet')).
-            show(this.slot(function(selected) { return !! selected; })).
+          start().
+            style({width: '100%'}).
+            start().add('Property: ', this.SELECTED_NAME, this.DELETE_PROPERTY, this.COPY_PROPERTY).end().
+            start(this.VALUE).
+              addClass(this.myClass('sheet')).
+              show(this.slot(function(selected) { return !! selected; })).
+            end().
           end();
+    },
+
+    function dblclick() {
+      console.log('**** dblclick');
     },
 
     function addProperty(value, opt_name, opt_i, opt_parent) {
@@ -804,5 +814,21 @@ foam.CLASS({
       if ( this.feedback_ ) return;
       this.onMemento_();
     }
+  ],
+
+  actions: [
+    {
+      name: 'copyProperty',
+      label: 'Copy',
+      code: function deleteRow(X) {
+      }
+    },
+    {
+      name: 'deleteProperty',
+      label: 'Delete',
+      code: function deleteRow(X) {
+      }
+    }
   ]
+
 });
