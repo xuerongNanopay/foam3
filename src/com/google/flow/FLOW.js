@@ -244,6 +244,7 @@ foam.CLASS({
       .property-selectedName input { width: auto; }
       .foam-u2-ActionView-copyProperty, .foam-u2-ActionView-deleteProperty  { float: right; margin: 0 0 8px 8px !important; }
       .com-google-flow-FLOWController-sheet { height: 96% }
+      .com-google-flow-FLOWController-tools tr:first-child { font-style: italic; }
 `,
 
   properties: [
