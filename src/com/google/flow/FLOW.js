@@ -181,9 +181,9 @@ foam.CLASS({
   exports: [
     'addProperty',
     'as data',
+    'depth_',
     'physics',
     'properties',
-    'renameProperty',
     'scope',
     'timer',
     'updateMemento'
@@ -407,7 +407,19 @@ foam.CLASS({
     },
     {
       name: 'selected',
-      postSet: function(o, n) { this.value = n && n.value; }
+      postSet: function(o, n) {
+        this.selectedName = n ? n.name : '';
+        this.value = n && n.value;
+      }
+    },
+    {
+      class: 'String',
+      name: 'selectedName',
+      postSet: function(o, n) {
+        if ( this.selected && n !== this.selected.name ) {
+          this.renameProperty(this.selected.name, n);
+        }
+      }
     },
     {
       name: 'properties',
@@ -518,6 +530,13 @@ foam.CLASS({
         this.cmdLine += 'flow> ';
       },
       view: { class: 'foam.u2.tag.TextArea', rows: 8, cols: 80 }
+    },
+    {
+      // Make Simple so that when it updates it doesn't cause a redraw
+//      class: 'Simple',
+      class: 'Int',
+      name: 'depth_',
+      hidden: true
     }
   ],
 
@@ -590,9 +609,10 @@ foam.CLASS({
             addClass(this.myClass('properties')).
             start(this.PROPERTIES, {selection$: this.selected$}).end().
           end().
+          add(this.SELECTED_NAME).
           start(this.VALUE).
             addClass(this.myClass('sheet')).
-            show(this.slot(function(selected) { return !!selected; })).
+            show(this.slot(function(selected) { return !! selected; })).
           end();
     },
 
@@ -626,6 +646,7 @@ foam.CLASS({
         p.name = newName;
         await this.properties.remove(p);
         this.properties.put(p);
+        this.selected = p;
       }
     },
 
