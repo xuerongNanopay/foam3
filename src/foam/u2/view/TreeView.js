@@ -116,6 +116,7 @@ foam.CLASS({
           });
           this.
           addClass(this.myClass('select-level')).
+          enableClass(this.myClass('select-level-selected'), row.selected_$).
           callIfElse(row.rowConfig?.[row.data.id],
             function() {
               this.tag(row.rowConfig?.[row.data.id])
