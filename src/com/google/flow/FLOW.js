@@ -243,6 +243,7 @@ foam.CLASS({
       .foam-u2-view-TreeViewRow-LabelView-select-level-selected { background: #D7E4FF; }
       .property-selectedName input { width: auto; }
       .foam-u2-ActionView-copyProperty, .foam-u2-ActionView-deleteProperty  { float: right; margin: 0 0 8px 8px !important; }
+      .com-google-flow-FLOWController-sheet { height: 96% }
 `,
 
   properties: [
