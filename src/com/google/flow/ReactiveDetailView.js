@@ -167,8 +167,6 @@ foam.CLASS({
 
   requires: [ 'com.google.flow.PropertyBorder' ],
 
-  imports: [ 'renameProperty' ],
-
   css: `
    // ^ { margin: inherit !important; }
    // ^ table { width: auto !important; }
@@ -180,12 +178,6 @@ foam.CLASS({
   properties: [
     [ 'showActions', true ],
     [ 'expandPropertyViews', false ],
-    {
-      name: 'title',
-      postSet: function(o, n) {
-        this.renameProperty(o, n);
-      }
-    }
   ],
 
   methods: [/*
@@ -193,7 +185,7 @@ foam.CLASS({
       this.SUPER();
     }*/
     function renderTitle(self) {
-      this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add('Property: ').start({class: 'foam.u2.TextField'}, {data$: self.title$}).style({width: '300px'});
+//      this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add('Property: ').start({class: 'foam.u2.TextField'}, {data$: self.title$}).style({width: '300px'});
     }
   ]
 });
