@@ -648,7 +648,8 @@ foam.CLASS({
   extends: 'foam.graphics.CView',
 
   imports: [
-    'scope'
+    'scope',
+    'depth_',
   ],
 
   properties: [
@@ -668,12 +669,6 @@ foam.CLASS({
     },
     [ 'width',  50 ],
     [ 'height', 50 ],
-    {
-      // Make Simple so that when it updates it doesn't cause a redraw
-      class: 'Simple',
-      name: 'depth_',
-      hidden: true
-    },
     {
       // Make Simple so that when it updates it doesn't cause a redraw
       class: 'Simple',
