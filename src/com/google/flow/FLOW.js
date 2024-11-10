@@ -815,6 +815,10 @@ foam.CLASS({
     function onMemento() {
       if ( this.feedback_ ) return;
       this.onMemento_();
+    },
+
+    function createCopyName(original) {
+      return original + '_copy';
     }
   ],
 
@@ -822,13 +826,18 @@ foam.CLASS({
     {
       name: 'copyProperty',
       label: 'Copy',
-      code: function deleteRow(X) {
+      code: async function deleteRow(X) {
+        var copy = await this.properties.put(this.selected.clone().copyFrom({name: this.createCopyName(this.selected.name)}));
+        this.selected = copy;
+        this.updateMemento();
       }
     },
     {
       name: 'deleteProperty',
       label: 'Delete',
       code: function deleteRow(X) {
+        this.properties.remove(this.selected);
+        this.updateMemento();
       }
     }
   ]
