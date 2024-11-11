@@ -207,7 +207,8 @@ foam.CLASS({
       ^tools { width: 100px; }
       ^tools, ^properties, ^sheet { box-shadow: 3px 3px 6px 0 gray; height: 100%; padding: 1px; }
       ^sheet { width: 100%; overflow-y: auto; }
-      ^tools thead, ^properties thead { display: none }
+      ^tools thead, ^properties thead { display: none; } // Hide Table Column in Tools U2
+      ^tools table div { display: none; } // Hide Table Column in Tools U3
       ^tools tr { height: 30px }
       .foam-u2-TableView div tr td { font-weight: bold; } // TODO: I don't think that div should be there (but is)
       .foam-u2-TableView { border-collapse: collapse; }
