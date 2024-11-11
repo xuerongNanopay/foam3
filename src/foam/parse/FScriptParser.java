@@ -57,6 +57,14 @@ public class FScriptParser {
     return p;
   }
 
+  public static FScriptParser create(ClassInfo classInfo, List expressions) {
+    if ( expressions == null ||
+         expressions.size() == 0 ) {
+      return FScriptParser.create(classInfo);
+    }
+    return new FScriptParser(classInfo, expressions);
+  }
+
   protected ClassInfo classInfo_;
   protected List      expressions;
   protected Grammar   grammar_;
@@ -65,15 +73,23 @@ public class FScriptParser {
     Map<String, PropertyInfo> props = new HashMap();
     props.put("thisValue", property);
     setup(property.getClassInfo(), props);
+    grammar_ = getGrammar();
   }
 
-  // Strongly consider using FScriptParser.create() instead
-  public FScriptParser(ClassInfo classInfo) {
+  private FScriptParser(ClassInfo classInfo) {
     Map props = new HashMap<String, PropertyInfo>();
     setup(classInfo, props);
+    grammar_ = getGrammar();
   }
 
-  public void addExpressions(List expressions) {
+  private FScriptParser(ClassInfo classInfo, List expressions) {
+    Map props = new HashMap<String, PropertyInfo>();
+    setup(classInfo, props);
+    addExpressions(expressions);
+    grammar_ = getGrammar();
+  }
+
+  private void addExpressions(List expressions) {
     this.expressions.addAll(expressions);
     this.expressions.sort(Comparator.comparing(LiteralIC::getString).reversed());
     // foam.nanos.logger.StdoutLogger.instance().info(this.getClass().getSimpleName(), "expressions", this.expressions.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(",")));
@@ -111,8 +127,6 @@ public class FScriptParser {
     for (String propName : sortedKeys) {
       expressions.add(new LiteralIC(propName, props.get(propName)));
     }
-
-    grammar_ = getGrammar();
   }
 
   public Object parse(String s) {
