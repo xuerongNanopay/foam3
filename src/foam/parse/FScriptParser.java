@@ -57,8 +57,9 @@ public class FScriptParser {
     return p;
   }
 
-  ClassInfo classInfo_;
-  protected List expressions;
+  protected ClassInfo classInfo_;
+  protected List      expressions;
+  protected Grammar   grammar_;
 
   private FScriptParser(PropertyInfo property) {
     Map<String, PropertyInfo> props = new HashMap();
@@ -86,7 +87,7 @@ public class FScriptParser {
   }
 
   public void setup(ClassInfo classInfo, Map<String, PropertyInfo> props) {
-    classInfo_ = classInfo;
+    classInfo_  = classInfo;
     expressions = new ArrayList();
     List<PropertyInfo> properties = classInfo_.getAxiomsByClass(PropertyInfo.class);
 
@@ -103,12 +104,15 @@ public class FScriptParser {
         }
       }
     }
+
     ArrayList<String> sortedKeys = new ArrayList<String>(props.keySet());
 
     Collections.sort(sortedKeys, Collections.reverseOrder());
     for (String propName : sortedKeys) {
       expressions.add(new LiteralIC(propName, props.get(propName)));
     }
+
+    grammar_ = getGrammar();
   }
 
   public Object parse(String s) {
@@ -121,13 +125,13 @@ public class FScriptParser {
   }
 
   public PStream parse(PStream ps, ParserContext x) {
-    return getGrammar().parse(ps, x, "");
+    return grammar_.parse(ps, x, "");
   }
 
   protected Grammar getGrammar() {
     Grammar grammar = new Grammar();
-    grammar.addSymbol("FIELD_NAME", new Alt(new Alt(expressions)));
-    grammar.addSymbol("START", new Seq1(1,new Optional(grammar.sym("LET")), grammar.sym("START_VALUES"), EOF.instance()));
+    grammar.addSymbol("FIELD_NAME",   new Alt(new Alt(expressions)));
+    grammar.addSymbol("START",        new Seq1(1,new Optional(grammar.sym("LET")), grammar.sym("START_VALUES"), EOF.instance()));
     grammar.addSymbol("START_VALUES", new Alt(grammar.sym("OR"), grammar.sym("TEMPLATE_STRING"), grammar.sym("FORMULA"), grammar.sym("IF_ELSE")));
 
     grammar.addSymbol(
