@@ -376,14 +376,7 @@ foam.CLASS({
     },
     {
       name: 'route',
-      memorable: true,
-      postSet: function(_, n) {
-        // only pushmenu on route change after the fetchsubject process has been initiated
-        // as the init process will also check the route and pushmenu if required
-        if (this.initSubject) {
-          n ? this.pushMenu_(null, n) : this.pushDefaultMenu();
-        }
-      }
+      memorable: true
     },
     'currentMenu',
     'lastMenuLaunched',
@@ -996,6 +989,17 @@ foam.CLASS({
           const style = this.styles[eid];
           text = foam.CSS.replaceTokens(style.text, style.cls, this.__subContext__, this.THEME_OVERRIDE_REGEXP);
           this.replaceStyleTag(text, eid);
+        }
+      }
+    },
+    {
+      name: 'routeUpdated',
+      on: ['this.propertyChange.route'],
+      code: function() {
+        // only pushmenu on route change after the fetchsubject process has been initiated
+        // as the init process will also check the route and pushmenu if required
+        if (this.initSubject) {
+          this.route ? this.pushMenu_(null, this.route) : this.pushDefaultMenu();
         }
       }
     },
