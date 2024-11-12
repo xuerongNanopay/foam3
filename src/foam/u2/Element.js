@@ -451,7 +451,7 @@ foam.CLASS({
         var self  = this;
 
         if ( ! foam.dao.DAO.isInstance(this.dao) ) {
-          throw new Exception("You must set the 'dao' property of RenderSink.");
+          throw new Error("You must set the 'dao' property of RenderSink.");
         }
 
         var dao = this.dao;
