@@ -12,7 +12,7 @@ import foam.dao.index.TreeNode;
 public class TreeLookupFindPlan implements FindPlan {
 
   protected Indexer prop_;
-  protected long size_;
+  protected long    size_;
 
   public TreeLookupFindPlan(Indexer prop, long size) {
     prop_ = prop;
