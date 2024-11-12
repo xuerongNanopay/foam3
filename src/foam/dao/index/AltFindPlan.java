@@ -12,16 +12,17 @@ import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Not;
 import foam.mlang.predicate.Predicate;
 
+// Needed to remember both the state and plan
 public class AltFindPlan implements FindPlan {
   protected Object   state_;
   protected FindPlan bestPlan_ = NotFoundPlan.instance();
 
-  public AltFindPlan(Object state, FindPlan bestPlan){
+  public AltFindPlan(Object state, FindPlan bestPlan) {
     state_    = state;
     bestPlan_ = bestPlan;
   }
 
-  public FObject find(Object state, Object key){
+  public FObject find(Object state, Object key) {
     return bestPlan_.find(state_, key);
   }
 
