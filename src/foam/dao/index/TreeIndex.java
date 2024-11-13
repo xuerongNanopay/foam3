@@ -122,13 +122,13 @@ public class TreeIndex
   public Object put(Object state, FObject value) {
     if ( state == null ) state = TreeNode.getNullNode();
     Object key = returnKeyForValue(value);
-// if ( key == null ) return state;
+    // key could be null for values like Date fields, but that works
     return ((TreeNode) state).putKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object remove(Object state, FObject value) {
     Object key = returnKeyForValue(value);
-// if ( key == null ) return state;
+    // key could be null for values like Date fields, but that works
     return ((TreeNode) state).removeKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
