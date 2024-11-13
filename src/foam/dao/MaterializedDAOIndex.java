@@ -36,9 +36,8 @@ public class MaterializedDAOIndex
     return dao_.indexRemoveAll();
   }
 
-  // Create a Plan for a find()
-  public FindPlan planFind(Object state, Object key) {
-    return NoPlan.instance();
+  public FObject find(Object state, Object key) {
+    return null;
   }
 
   // Create a Plan for a select()

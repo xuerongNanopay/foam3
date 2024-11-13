@@ -10,7 +10,7 @@ import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 
-public class ValuePlan implements FindPlan, SelectPlan {
+public class ValuePlan implements SelectPlan {
   protected final static ValuePlan instance_ = new ValuePlan();
 
   public static ValuePlan instance() { return instance_; }
@@ -18,10 +18,6 @@ public class ValuePlan implements FindPlan, SelectPlan {
   protected ValuePlan() {}
 
   public long cost() { return 1; }
-
-  public FObject find(Object state, Object key) {
-    return null;
-  }
 
   public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     if ( predicate != null && ! predicate.f((FObject) state) ) return;

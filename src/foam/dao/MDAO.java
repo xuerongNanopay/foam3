@@ -191,16 +191,16 @@ public class MDAO
 
     if ( o == null ) return null;
 
-    // TODO: PM unindexed plans
-    return objOut(
-      getOf().isInstance(o)
-        ? (FObject) index_.planFind(state, getPrimaryKey().get(o)).find(state, getPrimaryKey().get(o))
-        : (FObject) index_.planFind(state, o).find(state, o)
-    );
+    // Convert full FObjects to just the primary key
+    if ( getOf().isInstance(o) ) {
+      o = getPrimaryKey().get(o);
+    }
+
+    return objOut((FObject) index_.find(state, o));
+//    return objOut((FObject) index_.planFind(state, o).find(state, o));
   }
 
   public Sink select_(X x, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    Logger     logger = (Logger) x.get("logger");
     SelectPlan plan;
     Predicate  simplePredicate = null;
     PM         pm = null;
@@ -229,6 +229,7 @@ public class MDAO
     if ( state != null && simplePredicate != null && simplePredicate != MLang.TRUE && plan.cost() > 10 && plan.cost() >= index_.size(state) ) {
       pm = new PM(this.getClass(), "MDAO:UnindexedSelect:" + getOf().getId());
       if ( ! unindexed_.contains(getOf().getId()) ) {
+        Logger logger = (Logger) x.get("logger");
         if ( ! predicate.equals(simplePredicate) && logger != null ) {
           logger.warning(String.format("The original predicate was %s but it was simplified to %s.", predicate.toString(), simplePredicate.toString()));
         }

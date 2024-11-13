@@ -38,8 +38,8 @@ public class ValueIndex
     return null;
   }
 
-  public FindPlan planFind(Object state, Object key) {
-    return (FindPlan) plan;
+  public FObject find(Object state, Object key) {
+    return null; // Why doesn't this return state?
   }
 
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {

@@ -17,7 +17,7 @@ import foam.mlang.predicate.Predicate;
  * the search more faster.
  */
 public class ScanPlan
-  implements FindPlan, SelectPlan
+  implements SelectPlan
 {
   protected Object     state_;
   protected long       skip_;
@@ -67,10 +67,6 @@ public class ScanPlan
 
   public long cost() { return cost_; }
 
-  public FObject find(Object state, Object key) {
-    return null;
-  }
-
   @Override
   public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     if ( state_ == null ) return;
@@ -81,8 +77,7 @@ public class ScanPlan
   @Override
   public String toString() {
     var sortRequired = order_ != null;
-    var size = state_ == null ? 0
-                : state_ instanceof TreeNode ? ((TreeNode) state_).size : 1;
+    var size = state_ == null ? 0 : state_ instanceof TreeNode ? ((TreeNode) state_).size : 1;
     return "scan(size:" + size + ", cost:" + cost() + ", sortRequired:" + sortRequired + ")";
   }
 }

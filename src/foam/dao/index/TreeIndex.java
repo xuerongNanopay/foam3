@@ -48,9 +48,9 @@ public class TreeIndex
 
   /**
    * This fuction helps to create a smaller state by applying predicates.
-   * @param state: When we could deal with predicate efficiently by index, the returned sate will be smaller than original state
-   * @param predicate: If the state is kind of Binary state, when we deal with it it will become null. If it is kind of N-arry state, the part of their predicate will become True or null.
-   * @return Return an Object[] which contains two elements, first one is update state and second one is update predicate.
+   * @param state: When we could deal with predicate efficiently by index, the returned state will be smaller than original state
+   * @param predicate: If the state is kind of Binary state, when we deal with it and it will become null. If it is kind of N-arry state, the part of their predicate will become True or null.
+   * @return Return an Object[] which contains two elements, first one is updated state and second one is updated predicate.
    */
   protected Object[] simplifyPredicate(Object state, Predicate predicate) {
     Predicate p = predicate;
@@ -122,39 +122,44 @@ public class TreeIndex
   public Object put(Object state, FObject value) {
     if ( state == null ) state = TreeNode.getNullNode();
     Object key = returnKeyForValue(value);
+// if ( key == null ) return state;
     return ((TreeNode) state).putKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object remove(Object state, FObject value) {
     Object key = returnKeyForValue(value);
+// if ( key == null ) return state;
     return ((TreeNode) state).removeKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object returnKeyForValue(FObject value) {
-    Object key;
     try {
-      key = indexer_.f(value);
+      return indexer_.f(value);
     } catch (ClassCastException e) {
       // Can happen when the Indexer is a PropertyInfo for a sub-class
-      key = null;
     } catch (NullPointerException e) {
-      // Can happen when the Indexer is Dot(x, y) when x is null
-      key = null;
+      // Can happen when the Indexer is Dot(x, y) when x is nullf
     }
 
-    return key;
+    return null;
   }
 
   public Object removeAll() {
     return TreeNode.getNullNode();
   }
 
-  //TODO
-  @Override
-  public FindPlan planFind(Object state, Object key) {
-    return new TreeLookupFindPlan(indexer_, (state != null ? ((TreeNode) state).size : 0) );
-  }
+  public FObject find(Object state, Object key) {
+    if ( state instanceof TreeNode ) {
+      TreeNode stateNode = (TreeNode) state;
+      TreeNode valueNode = stateNode.get(stateNode, key, indexer_);
 
+      // If the object being searched for isn't in the tree, then valueNode will
+      // be null.
+      return valueNode == null ? null : (FObject) valueNode.value;
+    }
+
+    return null;
+  }
 
   /**
    * This function tries to return an optimal plan based on its arguments.
@@ -163,7 +168,7 @@ public class TreeIndex
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     if ( state == null || predicate instanceof False ) return NotFoundPlan.instance();
 
-    Object   originalState = state;
+    Object   originalState  = state;
     Object[] statePredicate = simplifyPredicate(state, predicate);
     state     = statePredicate[0];
     predicate = (Predicate) statePredicate[1];
