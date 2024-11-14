@@ -160,7 +160,6 @@ foam.CLASS({
 });
 
 
-
 foam.CLASS({
   package: 'com.google.flow',
   name: 'ReactiveDetailView',
@@ -171,19 +170,23 @@ foam.CLASS({
   css: `
    // ^ { margin: inherit !important; }
    // ^ table { width: auto !important; }
+   ^title input { font-size: large; }
+   ^title { font-size: large; }
    ^collapsePropertyViews .com-google-flow-PropertyBorder-propHolder { width: auto; display: inline-flex; }
   `,
 
   properties: [
     [ 'showActions', true ],
-    [ 'expandPropertyViews', false ]
+    [ 'expandPropertyViews', false ],
   ],
 
-  methods: [
-    /*
+  methods: [/*
     function init() {
       this.SUPER();
     }*/
+    function renderTitle(self) {
+//      this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add('Property: ').start({class: 'foam.u2.TextField'}, {data$: self.title$}).style({width: '300px'});
+    }
   ]
 });
 

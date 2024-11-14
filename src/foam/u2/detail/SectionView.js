@@ -35,7 +35,7 @@ foam.CLASS({
     }
 
     ^actionDiv {
-      justify-content: end !important;
+      justify-content: end;
     }
     ^grid {
       grid-gap: 16px 12px;

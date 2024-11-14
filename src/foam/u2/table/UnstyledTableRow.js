@@ -163,7 +163,7 @@ foam.CLASS({
   imports: [
     'colWidthUpdated',
     'props',
-    'selectedColumnsWidth'
+    'selectedColumnsWidth?'
   ],
 
   properties: [

@@ -644,6 +644,107 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'com.google.flow',
+  name: 'Proxy',
+  extends: 'foam.graphics.CView',
+
+  imports: [
+    'scope',
+    'depth_',
+  ],
+
+  properties: [
+    {
+      class: 'String',
+      name: 'delegate'
+    },
+    {
+      class: 'Int',
+      name: 'maxDepth',
+      value: 3
+    },
+    {
+      class: 'Int',
+      name: 'maxCount',
+      value: 1000
+    },
+    [ 'width',  50 ],
+    [ 'height', 50 ],
+    {
+      // Make Simple so that when it updates it doesn't cause a redraw
+      class: 'Simple',
+      name: 'count_',
+      hidden: true
+    }
+  ],
+
+  methods: [
+    function paintSelf(x) {
+      if ( ! this.delegate ) return;
+
+      if ( ! this.depth_ ) { this.depth_ = 0; this.count_ = 0; }
+      if ( this.depth_ >= this.maxDepth ) return;
+      if ( this.count_ >= this.maxCount ) return;
+
+      this.depth_++;
+
+      try {
+        // Paint children so that you can still add children to a Proxy
+        this.paintChildren(x);
+
+        var obj = this.scope[this.delegate];
+
+        if ( obj ) {
+          this.width  = obj.width  || (2 * obj.radius);
+          this.height = obj.height || (2 * obj.radius);
+
+          obj.paintSelf(x);
+          this.count_++;
+          obj.paintChildren(x);
+        }
+      } finally {
+        this.depth_--;
+      }
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'com.google.flow',
+  name: 'KScope',
+  extends: 'foam.graphics.CView',
+
+  imports: [
+    'scope'
+  ],
+
+  properties: [
+    {
+      class: 'Int',
+      name: 'n',
+      value: 1
+    },
+    [ 'width',  50 ],
+    [ 'height', 50 ]
+  ],
+
+  methods: [
+    function paint(x) {
+      if ( this.n == 1 ) {
+        this.SUPER(x);
+        return;
+      }
+      var r = this.rotation;
+      for ( var i = 0 ; i < this.n ; i++ ) {
+        this.rotation = r + i * Math.PI * 2 / this.n;
+        this.SUPER(x);
+      }
+      this.rotation = r;
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'com.google.flow',
   name: 'Script',
 
   imports: [

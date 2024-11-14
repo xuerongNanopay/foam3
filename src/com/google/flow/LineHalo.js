@@ -37,7 +37,7 @@ foam.CLASS({
 
         this.parent && this.parent.remove(this);
 
-        if ( com.google.flow.Line.isInstance(n.value) ) {
+        if ( n && com.google.flow.Line.isInstance(n.value) ) {
           var v = n.value;
           v.add(this);
 

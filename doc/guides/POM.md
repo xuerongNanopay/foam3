@@ -70,11 +70,22 @@ Ex.
   }
 ```
 
+### setFlags
+Flags can be set which will control which files are included and excluded.
+The top-most setFlags: takes precedence over lower-level setFlags: from
+sub-POMs. This allows the top-level POM to override sub-POM defaults.
+```
+  setFlags: [ u3: true, sql: false ]
+```
+
 ### projects
 List of sub-projects / POM's to be recursively loaded. Sub-projects are loaded before files:.
 If you need a sub-project to be loaded after some files, then either move those files
 to another sub-project which is listed before the dependent POM, or else you can list
 a POM in the files section in the required position.
+
+Like with files, individual projects can include flags: information which determines
+when the project is and isn't loaded. (See below.)
 
 ### files
 List of source files to be loaded.
@@ -91,6 +102,41 @@ predicate: () => foam.flags.web && foam.flags.debug;
 Can combine | and &:
 flags: "java|web&debug"   (& is higher precedence)
 ```
+The default value for flags is defined in foam.js as foam.defaultFlags, which is currently:
+```
+defaultFlags: {
+  dev:   true,
+  debug: true,
+  java:  false,
+  js:    true,
+  node:  false,
+  swift: false,
+  web:   true
+}
+```
+
+When not running from a packaged foam-bin (ie. not including -u in your build command line)
+then you can specify flags on either the command-line or in the <script> tag that loads foam.js.
+
+Allow flags to be set in loading script tag"
+Ex.: <script language="javascript" src="../../../foam.js" flags="u3,-debug"></script>
+
+In the URL flags can be set by assiging them to either 'true' or 'false' as URL parameters:
+```
+http://somewhere.com/index.html?u3=true&debug=false
+```
+
+Flags can be specified to PMake with the -flags parameter. Ex.:
+```
+./tools/pmake.js -flags=web,java ...
+```
+
+Different build.sh targets alter the flags to include or exclude things like 'java', which is needed
+when generating java source but not when generating the foam-bin.
+
+The pmake command-line is parsed by processArgs() in processArgs.js. It sets flag values in both globalThis.flags
+and foam.flags and reuses the flags for both Maker-dependent values like 'verbose' and 'loadFiles' as well as for
+the traditional POM flags like 'java' and 'web'. Developers should be aware of the potential for naming conflicts.
 
 #### predicate
 

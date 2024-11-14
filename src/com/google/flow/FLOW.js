@@ -12,7 +12,7 @@ foam.CLASS({
   properties: [
     [ 'autoRepaint', true ],
     [ 'width', 800 ],
-    [ 'height', 700 ],
+    [ 'height', 800 ],
     [ 'color', '#f3f3f3' ]
   ]
 });
@@ -181,6 +181,8 @@ foam.CLASS({
   exports: [
     'addProperty',
     'as data',
+    'dblclick',
+    'depth_',
     'physics',
     'properties',
     'scope',
@@ -205,16 +207,20 @@ foam.CLASS({
       ^tools { width: 100px; }
       ^tools, ^properties, ^sheet { box-shadow: 3px 3px 6px 0 gray; height: 100%; padding: 1px; }
       ^sheet { width: 100%; overflow-y: auto; }
-      ^tools thead, ^properties thead { display: none }
+      ^tools thead, ^properties thead { display: none; } // Hide Table Column in Tools U2
+      ^tools table div { display: none; } // Hide Table Column in Tools U3
       ^tools tr { height: 30px }
+      .foam-u2-TableView div tr td { font-weight: bold; } // TODO: I don't think that div should be there (but is)
       .foam-u2-TableView { border-collapse: collapse; }
       .foam-u2-TableView td { padding-left: 6px; }
       .foam-u2-TableView-selected { outline: 1px solid red; }
-      ^ canvas { border: none; width: 800px; height: 700px; }
+      // ^ canvas { border: none; width: 800px; height: 700px; }
+      ^ canvas { margin-left: 12px; border: 1px solid; border-color: /*$grey400*/ #B2B6BD; box-shadow: 3px 3px 6px 0 gray; }
       ^ .foam-u2-ActionView { margin: 10px; }
       ^cmd { box-shadow: 3px 3px 6px 0 gray; width: 100%; margin-bottom: 8px; }
       ^properties { margin-right: 8px; height: auto; }
       ^properties .foam-u2-view-TreeViewRow { position: relative; width: 200px; }
+      ^properties .foam-u2-view-TreeViewRow-heading { min-height: 30px; }
       ^properties .foam-u2-ActionView, ^properties .foam-u2-ActionView:hover {
         background: none;
         border: none;
@@ -233,6 +239,13 @@ foam.CLASS({
       .foam-u2-Tabs { padding-top: 0 !important; margin-right: -8px; }
 //      input[type="range"] { width: 60px; }
       input[type="color"] { width: 60px; }
+      .foam-u2-view-TreeViewRow .p-semiBold { font-weight: bold; font-size: 1rem; }
+      .child-menu { margin-left: 18px; }
+      .foam-u2-view-TreeViewRow-LabelView-select-level-selected { background: #D7E4FF; }
+      .property-selectedName input { width: auto; }
+      .foam-u2-ActionView-copyProperty, .foam-u2-ActionView-deleteProperty  { float: right; margin: 0 0 8px 8px !important; }
+      .com-google-flow-FLOWController-sheet { height: 96% }
+      .com-google-flow-FLOWController-tools tr:first-child { font-style: italic; }
 `,
 
   properties: [
@@ -247,6 +260,7 @@ foam.CLASS({
           },
           clear: function() {
             self.updateMemento().then(function() {
+              // TODO: replace 4 with something more meaningful
               self.properties.skip(4).removeAll();
             });
           },
@@ -264,6 +278,7 @@ foam.CLASS({
           add: function(obj, opt_name, opt_parent) {
             this.addProperty(obj, opt_name, undefined, opt_parent || 'canvas1');
           }.bind(this),
+          rename: this.renameProperty.bind(this),
           hsl: function(h, s, l) {
             return 'hsl(' + (h%360) + ',' + s + '%,' + l + '%)';
           },
@@ -371,6 +386,8 @@ foam.CLASS({
         dao.put(com.google.flow.Strut.model_);
         dao.put(com.google.flow.Cursor.model_);
         dao.put(com.google.flow.Script.model_);
+        dao.put(com.google.flow.Proxy.model_);
+        dao.put(com.google.flow.KScope.model_);
         dao.put(foam.input.Gamepad.model_);
         dao.put(foam.core.Model.model_);
         // dao.put(com.google.dxf.ui.DXFDiagram.model_);
@@ -400,7 +417,19 @@ foam.CLASS({
     },
     {
       name: 'selected',
-      postSet: function(o, n) { this.value = n && n.value; }
+      postSet: function(o, n) {
+        this.selectedName = n ? n.name : '';
+        this.value = n && n.value;
+      }
+    },
+    {
+      class: 'String',
+      name: 'selectedName',
+      postSet: function(o, n) {
+        if ( this.selected && n !== this.selected.name ) {
+          this.renameProperty(this.selected.name, n);
+        }
+      }
     },
     {
       name: 'properties',
@@ -452,6 +481,7 @@ foam.CLASS({
         this.scope.physics = this.physics;
         this.scope.timer   = this.timer;
         this.scope.cycle   = this.timer.cycle.bind(this.timer);
+        this.scope.range   = this.timer.range.bind(this.timer);
 
         return dao;
       }
@@ -501,15 +531,22 @@ foam.CLASS({
           with ( this.scope ) {
             log();
             log(eval(cmd));
-            this.cmdLine += 'flow> ';
           }
         } catch (x) {
-          log('ERROR:', x);
+          this.scope.log('ERROR:', x);
         } finally {
           this.cmdLineFeedback_ = false;
         }
+        this.cmdLine += 'flow> ';
       },
-      view: { class: 'foam.u2.tag.TextArea', rows: 3, cols: 80 }
+      view: { class: 'foam.u2.tag.TextArea', rows: 8, cols: 80 }
+    },
+    {
+      // Make Simple so that when it updates it doesn't cause a redraw
+//      class: 'Simple',
+      class: 'Int',
+      name: 'depth_',
+      hidden: true
     }
   ],
 
@@ -522,6 +559,7 @@ foam.CLASS({
       this.properties.on.put.sub(this.onPropertyPut);
       this.properties.on.remove.sub(this.onPropertyRemove);
 
+      // TODO: A better design for custom Halos which only creates when needed.
       var halo = this.Halo.create();
       halo.selected$.linkFrom(this.selected$);
 
@@ -581,10 +619,18 @@ foam.CLASS({
             addClass(this.myClass('properties')).
             start(this.PROPERTIES, {selection$: this.selected$}).end().
           end().
-          start(this.VALUE).
-            addClass(this.myClass('sheet')).
-            show(this.slot(function(selected) { return !!selected; })).
+          start().
+            style({width: '100%'}).
+            start().add('Property: ', this.SELECTED_NAME, this.DELETE_PROPERTY, this.COPY_PROPERTY).end().
+            start(this.VALUE).
+              addClass(this.myClass('sheet')).
+              show(this.slot(function(selected) { return !! selected; })).
+            end().
           end();
+    },
+
+    function dblclick() {
+      console.log('**** dblclick');
     },
 
     function addProperty(value, opt_name, opt_i, opt_parent) {
@@ -605,6 +651,17 @@ foam.CLASS({
         });
         if ( opt_parent ) p.parent = opt_parent;
         value.setPrivate_('lpp_', p);
+        this.properties.put(p);
+        this.selected = p;
+      }
+    },
+
+    async function renameProperty(oldName, newName) {
+      console.log('***** rename', oldName, newName);
+      var p = await this.properties.find(oldName);
+      if ( p ) {
+        p.name = newName;
+        await this.properties.remove(p);
         this.properties.put(p);
         this.selected = p;
       }
@@ -759,6 +816,31 @@ foam.CLASS({
     function onMemento() {
       if ( this.feedback_ ) return;
       this.onMemento_();
+    },
+
+    function createCopyName(original) {
+      return original + '_copy';
+    }
+  ],
+
+  actions: [
+    {
+      name: 'copyProperty',
+      label: 'Copy',
+      code: async function deleteRow(X) {
+        var copy = await this.properties.put(this.selected.clone().copyFrom({name: this.createCopyName(this.selected.name)}));
+        this.selected = copy;
+        this.updateMemento();
+      }
+    },
+    {
+      name: 'deleteProperty',
+      label: 'Delete',
+      code: function deleteRow(X) {
+        this.properties.remove(this.selected);
+        this.updateMemento();
+      }
     }
   ]
+
 });

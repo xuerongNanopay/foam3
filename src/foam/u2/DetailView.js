@@ -304,6 +304,12 @@ foam.CLASS({
       });
     },
 
+    function renderTitle(self) {
+      this.callIf(self.title, function() {
+        this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add(self.title$).end().end();
+      });
+    },
+
     function renderDetailView() {
       // The next two lines are so that FObjectView uses this kind of DetailView
       // for nested objects.
@@ -329,9 +335,7 @@ foam.CLASS({
           enableClass(self.myClass('collapsePropertyViews'), self.expandPropertyViews$, true).
           attrs({'cellpadding': 2}).
           addClass(self.myClass()).
-          callIf(self.title, function() {
-            this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add(self.title$);
-          }).
+          call(self.renderTitle, [self]).
           forEach(properties, function(p) {
             var config = self.config && self.config[p.name];
             var expr   = foam.mlang.Expressions.create();

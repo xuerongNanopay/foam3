@@ -8,9 +8,10 @@
 foam.CLASS({
   package: 'foam.nanos.notification',
   name: 'NotificationSetting',
-  label: 'In-App Notification Setting',
+  label: 'In-App Notifications',
 
   implements: [
+    'foam.mlang.Expressions',
     'foam.nanos.auth.Authorizable',
     'foam.nanos.auth.ServiceProviderAware'
   ],
@@ -35,8 +36,10 @@ foam.CLASS({
   tableColumns: [
     'id',
     'enabled',
+    'name',
     'type',
-    'spid'
+    'spid',
+    'owner'
   ],
 
   messages: [
@@ -61,7 +64,9 @@ foam.CLASS({
   properties: [
     {
       class: 'String',
-      name: 'id'
+      name: 'id',
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RW'
     },
     {
       class: 'Boolean',
@@ -72,10 +77,12 @@ foam.CLASS({
       class: 'String',
       name: 'type',
       documentation: 'Notification settings are identified by their class, this property exposes that in UI.',
-      visibility: 'RO',
-      transient: true,
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RO',
+      storageTransient: true,
+      clusterTransient: true,
       getter: function() {
-        return this.cls_.nane;
+        return this.cls_.name;
       },
       javaGetter: `
         return getClass().getSimpleName();

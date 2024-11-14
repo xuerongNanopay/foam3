@@ -376,14 +376,7 @@ foam.CLASS({
     },
     {
       name: 'route',
-      memorable: true,
-      postSet: function(_, n) {
-        // only pushmenu on route change after the fetchsubject process has been initiated
-        // as the init process will also check the route and pushmenu if required
-        if ( this.initSubject && n ) {
-          this.pushMenu_(null, n);
-        }
-      }
+      memorable: true
     },
     'currentMenu',
     'lastMenuLaunched',
@@ -438,7 +431,7 @@ foam.CLASS({
 
     async function initMenu() {
       if ( this.route ) {
-        this.pushMenu_(null, this.route)
+        this.pushMenu(this.route)
       } else  {
         this.pushDefaultMenu();
       }
@@ -719,7 +712,8 @@ foam.CLASS({
       if ( stringMenu && ! menu.includes('/') )
         menu = realMenu;
       this.menuListener(menu);
-      return menu?.launch?.(this.__subContext__);
+      await menu?.launch?.(this.__subContext__);
+      return true;
     },
 
     async function findDefaultMenu(dao) {
@@ -750,8 +744,8 @@ foam.CLASS({
         if ( defaultMenu.authenticate ) {
           this.routeTo(defaultMenu.id);
         } else {
-          await this.pushMenu_('', defaultMenu.id ?? '');
-          this.memento_.str = '';
+          let ret = await this.pushMenu(defaultMenu.id ?? '');
+          ret && (this.memento_.str = '');
         }
         return defaultMenu;
       }
@@ -995,6 +989,17 @@ foam.CLASS({
           const style = this.styles[eid];
           text = foam.CSS.replaceTokens(style.text, style.cls, this.__subContext__, this.THEME_OVERRIDE_REGEXP);
           this.replaceStyleTag(text, eid);
+        }
+      }
+    },
+    {
+      name: 'routeUpdated',
+      on: ['this.propertyChange.route'],
+      code: function() {
+        // only pushmenu on route change after the fetchsubject process has been initiated
+        // as the init process will also check the route and pushmenu if required
+        if (this.initSubject) {
+          this.route ? this.pushMenu_(null, this.route) : this.pushDefaultMenu();
         }
       }
     },

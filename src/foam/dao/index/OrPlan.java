@@ -8,11 +8,10 @@ import foam.dao.AbstractDAO;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
-
+import java.util.List;
 import static foam.dao.AbstractDAO.decorateDedupSink_;
 import static foam.dao.AbstractDAO.decorateSink;
 
-import java.util.List;
 
 public class OrPlan implements SelectPlan {
   protected Predicate        predicate_;

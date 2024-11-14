@@ -4,7 +4,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-// To run, include ?u3=true in URL
+// U3 is now the default, to use U2 instead:
+// either include ?u3=true in URL or include "setFlags: { u3: true }" in your POM.
+
+// You can determine if your code is running in U3 with:
+// foam.u2.Element.U3, which will eval to true if you are.
 
 /*
 TODO:
@@ -26,7 +30,7 @@ PORTING U2 to U3:
   - innerHTML and outerHTML have been removed
   - replace ^ in CSS (which has meaning in CSS) with <<
   - ILLEGAL_CLOSE_TAGS and OPTIONAL_CLOSE_TAGS have been removed
-  - this.addClass() is the same as this.addClass()
+  - this.addClass(this.myClass()) is the same as this.addClass()
   - automatic ID generation has been removed
   - replace use of slots that return elements with functions that add them
   - remove daoSlot() method
@@ -1215,7 +1219,7 @@ foam.CLASS({
       }
       if ( foam.core.DynamicFunction.isInstance(c) ) {
         this.addChild_(foam.u2.FunctionNode.create({fn: c, parentNode: this}, this), this);
-        return
+        return;
       }
       if ( foam.Function.isInstance(c) ) {
         this.addChild_((this.__subContext__.data || this).dynamic(c), parentNode);

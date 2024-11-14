@@ -104,7 +104,7 @@ public class MDAO
 
   public MDAO(ClassInfo of) {
     setOf(of);
-    index_ = new AltIndex(new TreeIndex((PropertyInfo) this.of_.getAxiomByName("id")));
+    index_ = new AltIndex(new TreeIndex((Indexer) this.of_.getAxiomByName("id")));
   }
 
   public void addIndex(Index index) {
@@ -114,7 +114,7 @@ public class MDAO
   }
 
   /** Add an Index which is for a unique value. Use addIndex() if the index is not unique. **/
-  public void addUniqueIndex(PropertyInfo... props) {
+  public void addUniqueIndex(Indexer... props) {
     Index idx = ValueIndex.instance();
     for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx);
     addIndex(idx);
@@ -123,8 +123,8 @@ public class MDAO
   /** Add an Index which is for a non-unique value. The 'id' property is
    * appended to property list to make it unique.
    **/
-  public void addIndex(PropertyInfo... props) {
-    Index idx = new TreeIndex((PropertyInfo) this.of_.getAxiomByName("id"));
+  public void addIndex(Indexer... props) {
+    Index idx = new TreeIndex((Indexer) this.of_.getAxiomByName("id"));
     for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx);
     addIndex(idx);
   }
@@ -191,16 +191,16 @@ public class MDAO
 
     if ( o == null ) return null;
 
-    // TODO: PM unindexed plans
-    return objOut(
-      getOf().isInstance(o)
-        ? (FObject) index_.planFind(state, getPrimaryKey().get(o)).find(state, getPrimaryKey().get(o))
-        : (FObject) index_.planFind(state, o).find(state, o)
-    );
+    // Convert full FObjects to just the primary key
+    if ( getOf().isInstance(o) ) {
+      o = getPrimaryKey().get(o);
+    }
+
+    return objOut((FObject) index_.find(state, o));
+//    return objOut((FObject) index_.planFind(state, o).find(state, o));
   }
 
   public Sink select_(X x, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    Logger     logger = (Logger) x.get("logger");
     SelectPlan plan;
     Predicate  simplePredicate = null;
     PM         pm = null;
@@ -229,6 +229,7 @@ public class MDAO
     if ( state != null && simplePredicate != null && simplePredicate != MLang.TRUE && plan.cost() > 10 && plan.cost() >= index_.size(state) ) {
       pm = new PM(this.getClass(), "MDAO:UnindexedSelect:" + getOf().getId());
       if ( ! unindexed_.contains(getOf().getId()) ) {
+        Logger logger = (Logger) x.get("logger");
         if ( ! predicate.equals(simplePredicate) && logger != null ) {
           logger.warning(String.format("The original predicate was %s but it was simplified to %s.", predicate.toString(), simplePredicate.toString()));
         }
@@ -281,9 +282,9 @@ public class MDAO
          addIndex((Index) indexCmd.getIndex());
       } else {
         if ( indexCmd.getUnique() ) {
-          addUniqueIndex(indexCmd.getProps());
+          addUniqueIndex(indexCmd.getIndexers());
         } else {
-          addIndex(indexCmd.getProps());
+          addIndex(indexCmd.getIndexers());
         }
       }
       return true;

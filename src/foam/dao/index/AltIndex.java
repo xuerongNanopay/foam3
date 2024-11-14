@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class AltIndex
   extends AbstractIndex
 {
-
   public final static int GOOD_ENOUGH_PLAN_COST = 10;
 
   protected ArrayList<Index> delegates_ = new ArrayList();
@@ -39,7 +38,13 @@ public class AltIndex
     final Object[] sa = toObjectArray(state);
     Sink sink = new AbstractSink() {
       public void put(Object obj, foam.core.Detachable sub) {
-        sa[sa.length-1] = i.put(sa[sa.length-1], (FObject) obj);
+        try {
+          sa[sa.length-1] = i.put(sa[sa.length-1], (FObject) obj);
+        } catch (ClassCastException e) {
+          // Expected for Indices of subclasses
+        } catch (NullPointerException e) {
+          // Expected for Dot() Indexes when FObject is null
+        }
       }
     };
 
@@ -106,26 +111,10 @@ public class AltIndex
     return s;
   }
 
+  public FObject find(Object state, Object key) {
+    if ( state == null ) return null;
 
-  public FindPlan planFind(Object state, Object key) {
-    if ( state == null ) return NotFoundPlan.instance();
-
-    Object[] s         = (Object[]) state;
-    FindPlan bestPlan  = NoPlan.instance();
-    Object   bestState = null;
-
-    for ( int i = 0 ; i < delegates_.size() && i < s.length ; i++ ) {
-      FindPlan plan = delegates_.get(i).planFind(s[i], key);
-
-      // only return the smallest cost plan
-      if ( plan.cost() < bestPlan.cost() ) {
-        bestPlan  = plan;
-        bestState = s[i];
-        if ( bestPlan.cost() <= GOOD_ENOUGH_PLAN_COST ) break;
-      }
-    }
-
-    return new AltFindPlan(bestState, bestPlan);
+    return delegates_.get(0).find(((Object[]) state)[0], key);
   }
 
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {

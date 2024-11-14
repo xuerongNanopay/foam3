@@ -250,7 +250,7 @@ foam.CLASS({
 
         return validationPredicates.length == 0 ? '' : (required ? 'super.validateObj(x, obj);' : '') + `
 var sps    = new foam.lib.parse.StringPStream();
-var parser = new foam.parse.FScriptParser(this);
+var parser = foam.parse.FScriptParser.create(this);
 var px     = new foam.lib.parse.ParserContextImpl();` +
         validationPredicates
           .map((vp) => {
@@ -318,12 +318,21 @@ if ( ! ((foam.mlang.predicate.Predicate) parser.parse(sps,px).value()).f(obj) ) 
         }
       }
 
-      return foam.java.PropertyInfo.create({
+      var info = foam.java.PropertyInfo.create({
         includeInID: isID,
         sourceCls:   cls,
         extends:     this.javaInfoType,
         property:    this
       });
+
+      info.method({
+        name: 'toString',
+        visibility: 'public',
+        type: 'String',
+        body: 'return "' + cls.id + '.' + this.name + '";'
+      });
+
+      return info;
     },
 
     function generateSetter_() {

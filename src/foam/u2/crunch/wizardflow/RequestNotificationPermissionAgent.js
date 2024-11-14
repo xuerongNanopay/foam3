@@ -19,6 +19,10 @@ foam.CLASS({
     'logAnalyticEvent?'
   ],
 
+  messages: [
+    { name: 'NOTIFICATION_PROMPT_TITLE', message: 'Register for Notifications!' }
+  ],
+
   exports: ['logAnalytics'],
 
   requires: [
@@ -120,7 +124,10 @@ foam.CLASS({
   properties: [
     {
       class: 'String',
-      name: 'title'
+      name: 'title',
+      factory: function() {
+        return this.NOTIFICATION_PROMPT_TITLE;
+      }
     },
     {
       class: 'String',

@@ -99,7 +99,7 @@ foam.CLASS({
   ],
 
   properties: [
-    [ 'anchorRadius', 6 ],
+    [ 'anchorRadius', 8 ],
     [ 'alpha', 0 ],
     [ 'border', null ],
     'selectedSub',

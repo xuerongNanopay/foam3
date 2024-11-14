@@ -106,6 +106,7 @@ to run the unit tests.
 - [DAO Examples](doc/guides/DaoExamples.md)
 - [Easy DAO](doc/guides/EasyDao.md)
 - [Enums](doc/guides/Enum.md)
+- [Project Object Models (POMs)](doc/guides/POM.md)
 - [Porting](doc/guides/Porting.md)
 - [Services](doc/guides/Services.md)
 
@@ -126,6 +127,9 @@ to run the unit tests.
 To run NANOS, the FOAM Java Application Server, run:
 `./tools/build.js -Jdemo`
 then connect to http://localhost:8080
+
+## Example FOAM Project
+An [Example FOAM Project](https://github.com/adamvy/example-foam-project) which shows how to consume/use FOAM from an external repository.
 
 ## Design Patterns
 The following course is not directly about FOAM, but covers material essential for fully understanding FOAM's design:

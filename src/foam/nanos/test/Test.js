@@ -82,6 +82,12 @@ foam.CLASS({
       tableWidth: 85
     },
     {
+      class: 'Boolean',
+      name: 'onlyReportFailed',
+      documentation: 'when true, only output results for failures.  When a suite has hundreds of tests, the max output is reached before, potentially, displaying all the failed tests.',
+      value: false
+    },
+    {
       class: 'String',
       name: 'eventDaoKey',
       value: 'testEventDAO'
@@ -97,12 +103,7 @@ foam.CLASS({
       code: function(x) {
         return eval('(async () => {' + this.code + '})()');
       },
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        }
-      ],
+      args: 'Context x',
       javaCode: '/* NOOP */'
     },
     {
@@ -120,10 +121,12 @@ foam.CLASS({
       javaCode: `
         if ( exp ) {
           setPassed(getPassed()+1);
+          if ( ! getOnlyReportFailed() )
+            print("SUCCESS: " + message);
         } else {
           setFailed(getFailed()+1);
+          print("FAILURE: " + message);
         }
-        print((exp ? "SUCCESS: " : "FAILURE: ") + message);
       `
     },
     {

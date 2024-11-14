@@ -8,6 +8,7 @@
   var scripts = '';
   var FILES = [];
   var foam = globalThis.foam = Object.assign({
+    setFlags: {}, // set of flags set in URL args or in POMs, used to ensure only first one is used
     defaultStage: 0,
     stages: {},
     FILES: FILES,
@@ -51,7 +52,9 @@
       // set flags by url parameters
       var urlParams = new URLSearchParams(window.location.search);
       for ( var pair of urlParams.entries() ) {
-        globalThis.foam.flags[pair[0]] = (pair[1] == 'true');
+        globalThis.foam.flags[pair[0]]    = (pair[1] == 'true');
+        // Prevents from being overritten in POM's, URL takes precedence
+        globalThis.foam.setFlags[pair[0]] = true;
       }
 
       var src  = document.currentScript && document.currentScript.src;
@@ -214,6 +217,21 @@
       if ( pom.defaultStage != undefined ) {
         foam.defaultStage = pom.defaultStage;
       }
+
+      if ( pom.setFlags ) {
+        for ( var key in pom.setFlags ) {
+          if ( foam.setFlags[key] ) {
+            console.log('Not overriding flag:', key);
+          } else {
+            console.log('Setting flag:', key,'=', pom.setFlags[key]);
+            foam.flags[key]    = pom.setFlags[key];
+            // Indicate that this flag has been set so it can't be reset in
+            // a future POM.
+            foam.setFlags[key] = true;
+          }
+        }
+      }
+
       if ( pom.stages ) {
         for ( var stage in pom.stages ) {
           pom.stages[stage].forEach(f => {

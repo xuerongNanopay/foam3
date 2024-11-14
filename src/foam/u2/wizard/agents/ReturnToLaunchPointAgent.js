@@ -30,9 +30,9 @@ foam.CLASS({
         return;
       if ( this.isIframe() ) return;
       if ( this.currentMenu.id === this.ctrl.route ) {
-        if ( window.history.length > 1 )
+        if ( window.history.length > 1 ) {
           window.history.back();
-        else 
+        } else 
           this.pushDefaultMenu('');
  
       }
