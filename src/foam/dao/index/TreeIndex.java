@@ -27,11 +27,15 @@ public class TreeIndex
   protected boolean  isPrimary_;
 
   public TreeIndex(Indexer indexer) {
-    this(indexer, ValueIndex.instance(), true);
+    this(indexer, ValueIndex.instance(), false);
+  }
+
+  public TreeIndex(Indexer indexer, boolean isPrimary) {
+    this(indexer, ValueIndex.instance(), isPrimary);
   }
 
   public TreeIndex(Indexer indexer, Index tail) {
-    this(indexer, tail, true);
+    this(indexer, tail, false);
   }
 
   public TreeIndex(Indexer indexer, Index tail, boolean isPrimary) {
