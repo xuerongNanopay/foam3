@@ -201,12 +201,22 @@ public class TreeIndex
     }
 
     TreeNode tn = (TreeNode) state;
-
+/*
+if ( tn.isSingular() ) {
+  System.err.println("*************************************** SUBSCAN");
+  System.err.println("*** PREDICATE " + predicate);
+  System.err.println("*** TAIL " + tail_);
+}
+*/
     // if ( tn.isSingular() ) System.err.println("***** SUBSCAN " + tn.size + " " + tn.key);
+
+    if ( tn.isSingular() && tail_ == ValueIndex.instance() ) {
+      return new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_);
+    }
 
     // If the resulting tree contains only one node, then create a sub-plan
     // on the sub-tree, allowing for use of multi-part indices.
-    return ( tn.isSingular() && false ) ?
+    return tn.isSingular() ?
       tail_.planSelect(tn.value, sink, skip, limit, order, predicate).restate(tn.value) :
       new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_) ;
   }
