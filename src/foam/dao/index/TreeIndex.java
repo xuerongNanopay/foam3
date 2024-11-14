@@ -206,7 +206,7 @@ public class TreeIndex
 
     // If the resulting tree contains only one node, then create a sub-plan
     // on the sub-tree, allowing for use of multi-part indices.
-    return tn.isSingular() ?
+    return ( tn.isSingular() && false ) ?
       tail_.planSelect(tn.value, sink, skip, limit, order, predicate).restate(tn.value) :
       new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_) ;
   }
