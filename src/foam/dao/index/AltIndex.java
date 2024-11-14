@@ -134,7 +134,7 @@ public class AltIndex
       }
     }
 
-    return new AltSelectPlan(bestState, bestPlan);
+    return bestPlan.restate(bestState);
   }
 
   public long size(Object state) {

@@ -216,7 +216,7 @@ public class MDAO
       // When we have groupBy, order, skip, limit such requirement, we can't do it separately so I replace a array sink to temporarily holde the whole data
       // Then after the plan wa slelect we change it to the origin sink
       int length = ((Or) simplePredicate).getArgs().length;
-      List<Plan> planList = new ArrayList<>();
+      List<SelectPlan> planList = new ArrayList<>();
       for ( int i = 0 ; i < length ; i++ ) {
         Predicate arg = ((Or) simplePredicate).getArgs()[i];
         planList.add(index_.planSelect(state, dependSink, 0, AbstractDAO.MAX_SAFE_INTEGER, null, arg));

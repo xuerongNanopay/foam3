@@ -16,7 +16,7 @@ public class ValueIndex
 
   protected static ValueIndex instance_ = new ValueIndex();
 
-  protected Plan plan = ValuePlan.instance();
+  protected SelectPlan plan = ValuePlan.instance();
 
 
   public static ValueIndex instance() {

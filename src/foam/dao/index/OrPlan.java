@@ -39,6 +39,8 @@ public class OrPlan implements SelectPlan {
     sink.eof();
   }
 
+  public SelectPlan restate(Object state) { return new RestatedPlan(state, this); }
+
   @Override
   public String toString() {
     var sb = new StringBuilder();
