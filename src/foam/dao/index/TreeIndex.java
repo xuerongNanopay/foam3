@@ -169,7 +169,6 @@ public class TreeIndex
   @Override
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     if ( state == null || predicate instanceof False ) return NotFoundPlan.instance();
-
     Object   originalState  = state;
     Object[] statePredicate = simplifyPredicate(state, predicate);
     state     = statePredicate[0];
@@ -188,8 +187,8 @@ public class TreeIndex
 
       // We return a groupByPlan only if no order, no limit, no skip, no predicate
       if ( sink instanceof GroupBy
-          && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
-          && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
+        && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
+        && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
       {
         return new GroupByPlan(state, sink, predicate, indexer_, tail_);
       }
@@ -201,24 +200,13 @@ public class TreeIndex
     }
 
     TreeNode tn = (TreeNode) state;
-/*
-if ( tn.isSingular() ) {
-  System.err.println("*************************************** SUBSCAN");
-  System.err.println("*** PREDICATE " + predicate);
-  System.err.println("*** TAIL " + tail_);
-}
-*/
     // if ( tn.isSingular() ) System.err.println("***** SUBSCAN " + tn.size + " " + tn.key);
-
-    if ( tn.isSingular() && tail_ == ValueIndex.instance() ) {
-      return new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_);
-    }
 
     // If the resulting tree contains only one node, then create a sub-plan
     // on the sub-tree, allowing for use of multi-part indices.
     return tn.isSingular() ?
       tail_.planSelect(tn.value, sink, skip, limit, order, predicate).restate(tn.value) :
-      new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_) ;
+      new ScanPlan(state, skip, limit, order, predicate, indexer_, tail_) ;
   }
 
   public long size(Object state) {

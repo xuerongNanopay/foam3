@@ -58,4 +58,5 @@ public class ValueIndex
     sink.put(state, null);
   }
 
+  public String toString() { return "ValueIndex()"; }
 }
