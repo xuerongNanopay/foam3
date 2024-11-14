@@ -128,18 +128,32 @@ p({
 
 p({
   "class":"foam.nanos.boot.NSpec",
-  "name":"credentialsDAO",
+  "name":"credentialDAO",
   "serve":true,
   "serviceScript":`
     return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.nanos.auth.Credential.getOwnClassInfo())
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("credentials")
-      .setOf(foam.nanos.auth.Credential.getOwnClassInfo())
-      .build();
+      .build()
+      .addPropertyIndex(new foam.core.Indexer[] {foam.nanos.auth.Credential.TYPE})
+      .addPropertyIndex(new foam.core.Indexer[] {foam.nanos.auth.Credential.SERVICE_NAME});
     `,
   "client":"{\"of\":\"foam.nanos.auth.Credential\"}"
 })
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"credentialsDAO",
+  "serve":false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.nanos.auth.Credential.getOwnClassInfo())
+      .setInnerDAO(x.get("credentialDAO"))
+      .build();
+  `
+})
+
 p({
   "class":"foam.nanos.boot.NSpec",
   "name":"localGroupDAO",
