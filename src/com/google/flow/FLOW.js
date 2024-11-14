@@ -162,6 +162,7 @@ foam.CLASS({
     'com.google.flow.DetailPropertyView',
     'com.google.flow.Ellipse',
     'com.google.flow.FLOW',
+    'com.google.flow.CircleHalo',
     'com.google.flow.Halo',
     'com.google.flow.LineHalo',
     'com.google.flow.Property',
@@ -562,6 +563,9 @@ foam.CLASS({
       // TODO: A better design for custom Halos which only creates when needed.
       var halo = this.Halo.create();
       halo.selected$.linkFrom(this.selected$);
+
+      var circleHalo = this.CircleHalo.create();
+      circleHalo.selected$.linkFrom(this.selected$);
 
       var lineHalo = this.LineHalo.create();
       lineHalo.selected$.linkFrom(this.selected$);
