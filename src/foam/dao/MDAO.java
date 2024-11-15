@@ -116,7 +116,7 @@ public class MDAO
   /** Add an Index which is for a unique value. Use addIndex() if the index is not unique. **/
   public void addUniqueIndex(Indexer... props) {
     Index idx = ValueIndex.instance();
-    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx, i == 0);
+    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx, i != 0);
     addIndex(idx);
   }
 
@@ -124,8 +124,8 @@ public class MDAO
    * appended to property list to make it unique.
    **/
   public void addIndex(Indexer... props) {
-    Index idx = new TreeIndex((Indexer) this.of_.getAxiomByName("id"));
-    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx, i == 0);
+    Index idx = new TreeIndex((Indexer) this.of_.getAxiomByName("id"), true);
+    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx, i != 0);
     addIndex(idx);
   }
 
