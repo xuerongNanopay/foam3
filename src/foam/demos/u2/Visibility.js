@@ -245,12 +245,19 @@ foam.CLASS({
           }
         }
       }
+    },
+    {
+      class: 'Enum',
+      name: 'cm',
+      of: 'foam.u2.ControllerMode',
+      factory: function() { return foam.u2.ControllerMode.VIEW; }
     }
   ],
 
   methods: [
     function render() {
       this.SUPER();
+      var self = this;
       this
         .start('h1').add('Property Visibility Demo').end()
         .start('p')
@@ -359,22 +366,30 @@ foam.CLASS({
         .add(this.slot(function(permission) {
           return this.E()
             .start(this.Grid)
-              .start(this.GUnit, { columns: 4 })
+              .start(this.GUnit, { columns: 3 })
                 .startContext({ controllerMode: this.ControllerMode.CREATE })
                   .start('h2').add('Create').end()
                   .tag(this.DetailView, { data: this.VisibilityTest.create() })
                 .endContext()
               .end()
-              .start(this.GUnit, { columns: 4 })
+              .start(this.GUnit, { columns: 3 })
                 .startContext({ controllerMode: this.ControllerMode.VIEW })
                   .start('h2').add('View').end()
                   .tag(this.DetailView, { data: this.VisibilityTest.create() })
                 .endContext()
               .end()
-              .start(this.GUnit, { columns: 4 })
+              .start(this.GUnit, { columns: 3 })
                 .startContext({ controllerMode: this.ControllerMode.EDIT })
                   .start('h2').add('Edit').end()
                   .tag(this.DetailView, { data: this.VisibilityTest.create() })
+                .endContext()
+              .end()
+              .start(this.GUnit, { columns: 3 })
+                .startContext({ data: self })
+                .start('h2').add('Mode: ', self.CM).end()
+                  .startContext({ controllerMode: self.cm$ })
+                    .tag(this.DetailView, { data: this.VisibilityTest.create() })
+                  .endContext()
                 .endContext()
               .end()
             .end();
