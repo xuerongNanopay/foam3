@@ -293,14 +293,14 @@ foam.CLASS({
       this.add(
         this.haloBorder,
         this.Anchor.create({x$: this.x2$, y: -26, callback: function(v, vs, _, __, x, y, sx, sy) {
-          v.originX    = v.width/2;
-          v.originY    = v.height/2;
-          halo.originX = halo.width/2;
-          halo.originY = halo.height/2;
+          v.originX    = 0;
+          v.originY    = 0;
+          halo.originX = 0;
+          halo.originY = 0;
 
           function toA(x, y) {
-            var dx = x-vs.x-halo.originX
-            var dy = y-v.y-halo.originY;
+            var dx = x-vs.x; // -halo.originX
+            var dy = y-v.y; //-halo.originY;
             return Math.atan2(dy, dx);
           }
 
@@ -309,6 +309,7 @@ foam.CLASS({
 
           v.rotation = vs.rotation + startA - a;
         }}),
+
         this.Anchor.create({x$: this.x1$, y$: this.y1$, callback: function(v, vs, dx, dy) {
           var sign = Math.sign(-dx-dy);
           v.radius = vs.radius + sign*Math.sqrt(dx*dx + dy*dy)/Math.sqrt(2);
@@ -324,7 +325,24 @@ foam.CLASS({
         this.Anchor.create({x$: this.x3$, y$: this.y3$, callback: function(v, vs, dx, dy) {
           var sign = Math.sign(dx+dy);
           v.radius = vs.radius + sign*Math.sqrt(dx*dx + dy*dy)/Math.sqrt(2);
-        }}));
+        }}),
+
+        /*
+        this.Anchor.create({x$: this.x2$, y$: this.y1$, callback: function(v, vs, dx, dy) {
+          v.y = vs.y + dy;
+        }}),
+        this.Anchor.create({x$: this.x1$, y$: this.y2$, callback: function(v, vs, dx, dy) {
+          v.x  = vs.x + dx;
+        }}),
+        this.Anchor.create({x$: this.x3$, y$: this.y2$, callback: function(v, vs, dx, dy) {
+          v.x  = vs.x + dx;
+        }}),
+        this.Anchor.create({x$: this.x2$, y$: this.y3$, callback: function(v, vs, dx, dy) {
+          v.y = vs.y + dy;
+        }})
+        */
+      );
+
     },
 
     function resizeOnViewChange(v) {
