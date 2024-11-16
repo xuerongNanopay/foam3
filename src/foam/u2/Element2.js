@@ -151,7 +151,7 @@ foam.CLASS({
         var update_ = val => {
           var n;
 
-          if ( foam.core.Slot.isInstance(val) ) { debugger; }
+          if ( foam.core.Slot.isInstance(val) ) { console.warn('Unexpected Slot in update.'); }
 
           if ( val === undefined || val === null ) {
             n = foam.u2.Text.create({}, this);
