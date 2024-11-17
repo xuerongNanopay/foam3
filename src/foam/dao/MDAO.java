@@ -217,8 +217,8 @@ public class MDAO
       int length = ((Or) simplePredicate).getArgs().length;
       List<SelectPlan> planList = new ArrayList<>();
       for ( int i = 0 ; i < length ; i++ ) {
-        Predicate arg = ((Or) simplePredicate).getArgs()[i];
-        planList.add(index_.planSelect(state, NullSink.instance(), 0, AbstractDAO.MAX_SAFE_INTEGER, null, arg));
+        Predicate p = ((Or) simplePredicate).getArgs()[i];
+        planList.add(index_.planSelect(state, NullSink.instance(), 0, AbstractDAO.MAX_SAFE_INTEGER, null, p));
       }
       plan = new OrPlan(simplePredicate, planList);
     } else {
