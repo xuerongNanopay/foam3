@@ -592,6 +592,7 @@ foam.CLASS({
   ],
 
   methods: [
+    // A template method which is called when a CView is first painted
     function initCView() {
       this.invalidate_ && this.propertyChange.sub(this.invalidate_);
     },
