@@ -421,7 +421,7 @@ foam.CLASS({
     function init() {
       this.add(this.circle);
       this.circle.add(this.text);
-      this.collisionSet_ = {};
+      this.collisionSet_     = {};
       this.lastCollisionSet_ = {};
     },
 
@@ -486,7 +486,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function init() {
+    function initCView() {
       this.SUPER();
       this.onDetach(this.timer.time$.sub(this.tick));
       this.propertyChange.sub(this.tick);
@@ -587,7 +587,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function init() {
+    function initCView() {
       this.SUPER();
       this.onDetach(this.physics.onTick.sub(this.tick));
       this.propertyChange.sub(this.tick);
