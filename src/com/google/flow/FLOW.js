@@ -254,7 +254,7 @@ foam.CLASS({
       name: 'scope',
       factory: function() {
         var self = this;
-        return {
+        var scope = {
           repeat: function(n, fn) {
             for ( var i = 1 ; i <= n ; i++ ) fn.call(this, i);
             return this;
@@ -329,6 +329,8 @@ foam.CLASS({
             }).then(function() { if ( ! first ) log('\nflow> '); });
           }
         };
+        scope.scope = scope;
+        return scope;
       },
       documentation: 'Scope to run reactive formulas in.'
     },
@@ -733,6 +735,7 @@ foam.CLASS({
       if ( this.CView.isInstance(o) ) {
         if ( ! p.parent || p.parent === 'canvas1' ) {
           this.canvas.remove(o);
+          o.detach();
 
           if ( this.Physical.isInstance(o) ) {
             this.physics.remove(o);
