@@ -150,6 +150,7 @@ foam.CLASS({
     'foam.u2.ControllerMode',
     'foam.u2.DetailView',
     // 'foam.u2.detail.VerticalDetailView as DetailView',
+    // 'foam.u2.detail.TabbedDetailView as DetailView',
     'foam.u2.layout.DisplayWidth',
     'foam.u2.layout.Grid',
     'foam.u2.layout.GUnit'
