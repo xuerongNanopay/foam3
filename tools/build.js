@@ -258,7 +258,6 @@ Implementation-Vendor: ${PROJECT.name}
   return m;
 };
 
-
 function pom() {
   var pom    = {};
   var addPom = fn => {
@@ -350,10 +349,12 @@ task('Deploy journal files from JOURNAL_OUT to JOURNAL_HOME.', [], function depl
   copyDir(JOURNAL_OUT, JOURNAL_HOME);
 });
 
+
 task('Deploy documents, journals.', [ 'deployDocuments','deployJournals'], function deploy() {
   if ( ! RUN_JAR && ! TEST && ! BENCHMARK ) {
     deployJournals();
     deployDocuments();
+    envVars();
   }
 });
 
@@ -486,9 +487,12 @@ task('Package files into a TAR archive', [], function buildTar() {
   // Notice that the argument to the second -C is relative to the directory from the first -C, since -C
   // switches the current directory.
   ensureDir(BUILD_DIR + '/package');
-  execSync(`tar -a -cf ${BUILD_DIR}/package/${PROJECT.name}-deploy-${VERSION}.tar.gz -C ./deploy bin etc -C ../ -C${BUILD_DIR} lib`);
+  execSync(`tar -a -cf ${BUILD_DIR}/package/${PROJECT.name}-deploy-${VERSION}.tar.gz -C ./foam3/tools/deploy bin etc -C ../../../ -C${BUILD_DIR} lib`);
 });
 
+task('Generate deploy details bash script.', [], function envVars() {
+  execSync(`node foam3/tools/pmake.js -makers=EnvVar -pom=${pom()}`, { stdio: 'inherit' });
+});
 
 task('Delete runtime journals.', [], function deleteRuntimeJournals() {
   info('Runtime journals deleted.');
@@ -501,10 +505,11 @@ task('Delete runtime logs.', [], function deleteRuntimeLogs() {
   emptyDir(LOG_HOME);
 });
 
-
 task('Copy required files to APP_HOME deployment directory.', [], function deployToHome() {
   copyDir('./foam3/tools/deploy/bin', join(APP_HOME, 'bin'));
+  copyDir('./foam3/tools/deploy/etc', join(APP_HOME, 'etc'));
   copyDir(BUILD_DIR + '/lib', join(APP_HOME, 'lib'));
+  envVars();
 });
 
 
@@ -516,14 +521,13 @@ task('Start NANOS application server.', [ 'setenv' ], function startNanos() {
 
     if ( RUN_USER ) OPT_ARGS += ` -U${RUN_USER}`;
     if ( WEB_PORT ) OPT_ARGS += ` -W${WEB_PORT}`;
-    exec(`${APP_HOME}/bin/run.sh -Z${DAEMONIZE ? 1 : 0} -D${DEBUG ? 1 : 0} -S${DEBUG_SUSPEND ? 'y' : 'n'} -P${DEBUG_PORT} -n${PROJECT.name} -N${APP_HOME} -C${CLUSTER} -H${HOST_NAME} -j${PROFILER ? 1 : 0} -J${PROFILER_PORT} -F${FS} -V${TIMESTAMP_VERSION} ${OPT_ARGS}`);
+    exec(`${APP_HOME}/bin/run.sh -Z${DAEMONIZE ? 1 : 0} -D${DEBUG ? 1 : 0} -S${DEBUG_SUSPEND ? 'y' : 'n'} -E${DEBUG_PORT} -A${PROJECT.name} -S${PROJECT.name} -C${CLUSTER} -H${HOST_NAME} -J${PROFILER ? 1 : 0} -P${PROFILER_PORT} -F${FS} ${OPT_ARGS}`);
   } else {
     MESSAGE = `Starting NANOS ${INSTANCE}`;
 
     // process.chdir(PROJECT_HOME);
 
     if ( HOST_NAME ) {
-      info('HOST_NAME=${HOST_NAME}');
       JAVA_OPTS += ` -Dhostname=${HOST_NAME} ${JAVA_OPTS}`;
     }
 
@@ -594,13 +598,9 @@ task('Extract project git hash.', [], function getProjectGitHash() {
   var out = 'Unversioned';
 
   try {
-    out = execSync('git describe --exact-match HEAD');
+    out = execSync('git rev-parse --short HEAD');
   } catch (x) {
-    try {
-      out = execSync('git rev-parse --short HEAD');
-    } catch (_) {
-      warning('Cannot determine project revision, no commit yet');
-    }
+    warning('Cannot determine project revision, no commit yet');
   }
 
   PROJECT_REVISION = out.toString().trim();
@@ -611,7 +611,6 @@ task('Extract FOAM git hash.', [], function getFOAMGitHash() {
   FOAM_REVISION = execSync('git -C foam3 rev-parse --short HEAD').toString().trim();
 });
 
-
 task('Show version information.', [ 'getProjectGitHash', 'getFOAMGitHash'], function versions() {
   getProjectGitHash();
   getFOAMGitHash();
@@ -619,6 +618,11 @@ task('Show version information.', [ 'getProjectGitHash', 'getFOAMGitHash'], func
   console.log(`Application Version: ${VERSION}`);
   console.log(`${PROJECT.name} revision:    ${PROJECT_REVISION}`);
   console.log(`FOAM revision:       ${FOAM_REVISION}`);
+});
+
+task('Show application information.', [], function appName() {
+  console.log(`Application Name: ${PROJECT.name}`);
+  console.log(`Application VendorId: ${PROJECT.vendorId}`);
 });
 
 
@@ -667,7 +671,7 @@ buildEnv({
   LOG_HOME:          () => `${APP_HOME}/logs`,
 
   JAR_LIB_DIR:       () => ( PACKAGE ? `${PROJECT_HOME}/${BUILD_DIR}` : `${APP_HOME}` ) + `/lib/`,
-  JAR_OUT:           () => `${JAR_LIB_DIR}/${PROJECT.name}-${TIMESTAMP_VERSION}.jar`,
+  JAR_OUT:           () => `${JAR_LIB_DIR}/${PROJECT.name}-${VERSION}.jar`,
 
   // Project resources path
   PROJECT_HOME:      PWD,
@@ -802,7 +806,9 @@ const ARGS = {
   u: [ 'Run from jar. Intented for Production deployments. Connect to https://localhost:8443/',
     () => {
       RUN_JAR = true;
-      JOURNAL_CONFIG = comma(JOURNAL_CONFIG, 'u');
+      JOURNAL_CONFIG = comma(JOURNAL_CONFIG, '../foam3/deployment/u');
+      if ( fs.existsSync('deployment/u') )
+        JOURNAL_CONFIG = comma(JOURNAL_CONFIG, 'u');
     } ],
   U: [ 'User to run as',
     args => RUN_USER = args ],
