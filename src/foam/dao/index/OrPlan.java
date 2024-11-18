@@ -32,7 +32,7 @@ public class OrPlan implements SelectPlan {
     if ( planList_ == null || planList_.size() == 0 )
       return;
     sink = decorateSink(null, sink, skip, limit, order, null);
-    sink = decorateDedupSink_(sink);
+    sink = decorateDedupSink_(sink); // Comes second so that duplicates aren't counted for skip and limit
     for ( SelectPlan plan : planList_ ) {
       plan.select(state, sink, 0, AbstractDAO.MAX_SAFE_INTEGER, null, null);
     }
