@@ -1,0 +1,38 @@
+Features
+[] Add load/save/dir DAOList as object
+[] Make "Console" into an object?
+[] Make "language" features into object or add to shell?
+[] rename properties
+[] Add Actions to DetailView
+[] Add Methods to DetailView
+[] Add Button Thing (extends Label?)
+[] A Layout tool which works like physics to keep your diagrams pretty
+help();
+save to DAO
+Jump to Sheet
+Specify Notes for Beep
+Musical Instrument
+Console / Terminal
+Timeline / Sequence / Animation
+Borders? (unnamed parents?)
+MP3 / Audio
+Document
+Create Models from Canvases
+Add created Models to Canvas
+
+Input:
+Keyboard Input
+Slider
+2D Slider
+Dial
+Mixer Panel
+
+Bugs:
+[Y] Better Proxy depth
+[Y] Working Circle Halo
+[Y] Deleting Spring doesn't delete spring action
+  - caused by cloneing of Spring calling int() which attaches to PhysicsEngine
+  - switch to use initCView instead()[] Improve Halo Rotation, show originX/Y
+[Y] Fix load/save
+[Y] Can't drag shapes
+[] Fix Calculator CSS
