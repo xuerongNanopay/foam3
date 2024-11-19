@@ -735,10 +735,15 @@ foam.CLASS({
       if ( this.CView.isInstance(o) ) {
         if ( ! p.parent || p.parent === 'canvas1' ) {
           this.canvas.remove(o);
-          o.detach();
 
           if ( this.Physical.isInstance(o) ) {
             this.physics.remove(o);
+          }
+
+          // TODO: This is poor design but the above doesn't work because
+          // Spring and Strut aren't physical
+          if ( com.google.flow.Spring.isInstance(o) || com.google.flow.Strut.isInstance(o) ) {
+            o.detach();
           }
         } else {
           this.properties.find(p.parent).then(function(p2) {
