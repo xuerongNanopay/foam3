@@ -592,6 +592,12 @@ foam.CLASS({
             end().
 //            tag('br').
             start(foam.u2.Tabs).
+            /*
+              start(foam.u2.Tab, {label: 'FLOWs'}).
+                style({display: 'flex'}).
+                add('ADD CONTENT').
+              end().
+            */
               start(foam.u2.Tab, {label: 'canvas1'}).
                 style({display: 'flex'}).
                 start('div').
