@@ -487,6 +487,7 @@ foam.CLASS({
     },
 
     function resetProperty(name) {
+      /** Like clearProperty(), but also causes the value to be reset to its default value or be generated from its factory or expresssion. **/
       this.clearProperty(name);
       this[name];
     },
