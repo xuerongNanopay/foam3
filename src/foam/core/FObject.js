@@ -486,6 +486,11 @@ foam.CLASS({
       }
     },
 
+    function resetProperty(name) {
+      this.clearProperty(name);
+      this[name];
+    },
+
     function setPrivate_(name, value) {
       /**
        * Private support is used to store per-object values that are not
