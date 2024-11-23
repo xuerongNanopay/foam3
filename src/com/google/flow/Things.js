@@ -753,6 +753,7 @@ foam.CLASS({
           if ( i == 0 || ! com.google.flow.Halo.isInstance(c) )
             c.paint(x);
         }
+      }
     }
   ]
 });
