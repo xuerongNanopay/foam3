@@ -719,6 +719,14 @@ foam.CLASS({
   ],
 
   properties: [
+    {
+      class: 'foam.graphics.Radians',
+      name: 'angleOfReflection'
+    },
+    {
+      class: 'Boolean',
+      name: 'showMirror'
+    },
     [ 'width',  50 ],
     [ 'height', 50 ]
   ],
@@ -726,6 +734,7 @@ foam.CLASS({
   methods: [
     function paintChildren(x) {
       this.SUPER(x);
+      x.rotate(this.angleOfReflection);
       x.scale(-1, 1);
 //       this.SUPER(x);
       // Don't paint relfected halos
