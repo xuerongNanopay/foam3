@@ -708,6 +708,37 @@ foam.CLASS({
   ]
 });
 
+
+foam.CLASS({
+  package: 'com.google.flow',
+  name: 'Mirror',
+  extends: 'foam.graphics.CView',
+
+  imports: [
+    'scope'
+  ],
+
+  properties: [
+    [ 'width',  50 ],
+    [ 'height', 50 ]
+  ],
+
+  methods: [
+    function paintChildren(x) {
+      this.SUPER(x);
+      x.scale(-1, 1);
+//       this.SUPER(x);
+      // Don't paint relfected halos
+      for ( var j = 0 ; j < this.children.length ; j++ ) {
+        var c = this.children[j];
+        if ( ! com.google.flow.Halo.isInstance(c) )
+          c.paint(x);
+      }
+    }
+  ]
+});
+
+
 foam.CLASS({
   package: 'com.google.flow',
   name: 'RadialMirror',
