@@ -1,6 +1,7 @@
 * = Needed for MVP
 
 Features
+* [] Move to own github repo
 * [] Top-Level FLOW DAO & Controller with NANOS Integration
   [] Make "Console" into an object?
   [] Make "language" features into object or add to shell?
@@ -17,6 +18,10 @@ Features
 * [] Ability to hide/show Halos
   [] Image
   [] Ability to 'link' values
+  [] touch support
+  [] mobile sizing
+  [] hook up delete keyboard button to delete objects
+  [] escape resets tool to "Select"
   help();
   Jump to Sheet
   Specify Musical Notes for Beep
@@ -30,6 +35,8 @@ Features
   Create Models from Canvases
   Add created Models to Canvas
   Port foam1 Eyes and Dragon to be FLOW Things
+  Pencil
+  Laser Pointer
 
 Input:
   Keyboard Input
@@ -46,14 +53,23 @@ Bugs:
   [] Fix Calculator CSS
   [] Units not set for MultiView
 
+  bug repro steps:
+
+  1. create a circle
+  2. copy it with the "copy" button
+  3. move the copy
+  4. try to select the original circle
+
 FLOW Property Types like Distance, Angle, Colour, etc.
 Sliders for width and height
 
-Rename: Revolution + Reflection
-
+MotionBlur
 Gauge
 https://github.com/foam-framework/foam/blob/master/js/foam/demos/graphics/EyesDemo.js
 
 https://github.com/foam-framework/foam/blob/master/js/foam/demos/graphics/Dragon.js
 
 https://github.com/foam-framework/foam/blob/2966cde661ccadbb8b1548fede78f6d67cc53ed5/js/foam/demos/SolarSystem.js#L20
+
+
+https://www.instructables.com/Quick-and-Dirty-Dynamic-DNS-Using-GoDaddy/
