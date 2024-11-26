@@ -461,6 +461,7 @@ foam.CLASS({
 
         var p;
 
+        // TODO: these shouldn't be hard-coded here
         p = this.Property.create({name: 'canvas1', value: this.canvas});
         this.physics.setPrivate_('lpp_', p);
         dao.put(p);
