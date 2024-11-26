@@ -711,7 +711,7 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'com.google.flow',
-  name: 'Mirror',
+  name: 'Reflector',
   extends: 'foam.graphics.CView',
 
   imports: [
@@ -750,7 +750,7 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'com.google.flow',
-  name: 'RadialMirror',
+  name: 'Revolver',
   extends: 'foam.graphics.CView',
 
   imports: [
