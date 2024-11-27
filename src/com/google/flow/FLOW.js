@@ -870,6 +870,13 @@ foam.CLASS({
         this.properties.remove(this.selected);
         this.updateMemento();
       }
+    },
+    {
+      name: 'chooseSelectMode',
+      keyboardShortcuts: [ 'esc' ],
+      code: function() {
+        this.currentTool = com.google.flow.Select.model_;
+      }
     }
   ]
 

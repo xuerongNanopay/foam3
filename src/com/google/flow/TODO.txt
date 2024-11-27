@@ -15,7 +15,6 @@ Features
   [] Add Sections to Tools: ie. Shapes, Physics, Architecture, Containers, Sound, etc.
   [] Sliding StackView
   [] Individual Property View
-* [] escape resets tool to "Select"
   [] Image
   [] Ability to 'link' values
   [] touch support
