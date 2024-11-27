@@ -16,7 +16,6 @@ Features
   [] Sliding StackView
   [] Individual Property View
 * [] escape resets tool to "Select"
-* [] Ability to hide/show Halos (only show when mouse over canvas?)
   [] Image
   [] Ability to 'link' values
   [] touch support

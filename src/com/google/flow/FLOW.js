@@ -187,6 +187,7 @@ foam.CLASS({
     'physics',
     'properties',
     'scope',
+    'showHalos',
     'timer',
     'updateMemento'
   ],
@@ -255,6 +256,7 @@ foam.CLASS({
       factory: function() {
         var self = this;
         var scope = {
+          this: self,
           repeat: function(n, fn) {
             for ( var i = 1 ; i <= n ; i++ ) fn.call(this, i);
             return this;
@@ -552,6 +554,12 @@ foam.CLASS({
       class: 'Int',
       name: 'depth_',
       hidden: true
+    },
+    {
+      class: 'Boolean',
+      name: 'showHalos',
+      value: true,
+      postSet: function() { this.canvas.invalidate(); }
     }
   ],
 
@@ -612,6 +620,8 @@ foam.CLASS({
                   on('mouseup',     this.onMouseUp).
                   on('mousemove',   this.onMouseMove).
                   on('contextmenu', this.onRightClick).
+                  on('mouseenter',  () => self.showHalos = true).
+                  on('mouseleave',  () => self.showHalos = false).
                 end().
               end().
               start(foam.u2.Tab, {label: 'sheet1'}).

@@ -31,6 +31,8 @@ foam.CLASS({
 
   requires: [ 'com.google.flow.HaloBorder' ],
 
+  imports: [ 'showHalos' ],
+
   exports: [
     'view',
     'anchorRadius'
@@ -227,6 +229,7 @@ foam.CLASS({
     },
 
     function paintChildren(x) {
+      if ( ! this.showHalos ) return;
       var alpha = x.globalAlpha;
       x.globalAlpha = 1.0
       this.SUPER(x);
