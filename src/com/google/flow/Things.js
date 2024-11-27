@@ -286,7 +286,10 @@ foam.CLASS({
     {
       class: 'Float',
       name: 'lineWidth',
-      view: { class: 'foam.u2.RangeView', minValue: 0, maxValue: 5, step: 1, onKey: true },
+      view: { class: 'foam.u2.MultiView', views: [
+        { class: 'foam.u2.FloatView', precision: 1, onKey: true, units: 'pixels' },
+        { class: 'foam.u2.RangeView', minValue: 0, maxValue: 10, step: 1, onKey: true }
+      ] },
       value: 1
     },
     { name: 'width',  value: 0, hidden: true },
