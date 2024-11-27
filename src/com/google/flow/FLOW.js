@@ -866,6 +866,7 @@ foam.CLASS({
     {
       name: 'deleteProperty',
       label: 'Delete',
+      keyboardShortcuts: [ 'del', 'backspace' ],
       code: function deleteRow(X) {
         this.properties.remove(this.selected);
         this.updateMemento();

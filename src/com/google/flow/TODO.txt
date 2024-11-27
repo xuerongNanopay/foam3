@@ -20,7 +20,6 @@ Features
   [] Ability to 'link' values
   [] touch support
   [] mobile sizing
-  [] hook up delete keyboard button to delete objects
   help();
   Jump to Sheet
   Make custom Halos creatable in FLOW
