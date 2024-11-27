@@ -65,7 +65,7 @@ foam.CLASS({
     {
       name: 'value',
       cloneProperty: function(o, m) {
-        m[this.name ] = o.cls_.create({
+        m[this.name] = o.cls_.create({
           arcWidth:    o.arcWidth,
           border:      o.border,
           code:        o.code,
@@ -858,8 +858,8 @@ foam.CLASS({
       name: 'copyProperty',
       label: 'Copy',
       code: async function deleteRow(X) {
-        var copy = await this.properties.put(this.selected.clone().copyFrom({name: this.createCopyName(this.selected.name)}));
-        this.selected = copy;
+        var copy = this.selected.clone();
+        this.addProperty(copy.value, this.createCopyName(this.selected.name));
         this.updateMemento();
       }
     },

@@ -52,13 +52,6 @@ Bugs:
   [] Fix Calculator CSS
   [] Units not set for MultiView
 
-  bug repro steps:
-
-  1. create a circle
-  2. copy it with the "copy" button
-  3. move the copy
-  4. try to select the original circle
-
 FLOW Property Types like Distance, Angle, Colour, etc.
 Sliders for width and height
 
