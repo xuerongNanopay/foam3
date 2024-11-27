@@ -451,12 +451,14 @@ foam.CLASS({
     {
       name: 'NAMED_CODES',
       value: {
-        '13': 'enter',
-        '37': 'left',
-        '38': 'up',
-        '39': 'right',
-        '40': 'down',
-        '27': 'esc'
+        '8':   'backspace'
+        '13':  'enter',
+        '27':  'esc',
+        '37':  'left',
+        '38':  'up',
+        '39':  'right',
+        '40':  'down',
+        '127': 'del'
       }
     }
   ],
