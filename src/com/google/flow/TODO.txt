@@ -4,6 +4,7 @@ Features
 * [] Move to own github repo
 * [] Top-Level FLOW DAO & Controller with NANOS Integration
 * [] Triangle and/or Polygon Shape
+  [] Image
   [] Make "Console" into an object?
   [] Make "language" features into object or add to shell?
   [] Add Sections to DetailView
@@ -16,11 +17,12 @@ Features
   [] Add Sections to Tools: ie. Shapes, Physics, Architecture, Containers, Sound, etc.
   [] Sliding StackView
   [] Individual Property View
-  [] Image
   [] Ability to 'link' values
   [] touch support
   [] mobile sizing
+  [] Add soft-select / hover for Properties TreeView
   help();
+  anchor points + lines
   Jump to Sheet
   Make custom Halos creatable in FLOW
   Specify Musical Notes for Beep

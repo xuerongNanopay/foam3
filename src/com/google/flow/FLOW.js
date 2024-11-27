@@ -642,6 +642,8 @@ foam.CLASS({
           start('div').
             addClass(this.myClass('properties')).
             start(this.PROPERTIES, {selection$: this.selected$}).end().
+            on('mouseenter',  () => self.showHalos = true).
+            on('mouseleave',  () => self.showHalos = false).
           end().
           start().
             style({width: '100%'}).
@@ -657,7 +659,7 @@ foam.CLASS({
       console.log('**** dblclick');
     },
 
-    function addProperty(value, opt_name, opt_i, opt_parent) {
+    async function addProperty(value, opt_name, opt_i, opt_parent) {
       var self = this;
       if ( ! opt_name ) {
         var i = opt_i || 1;
@@ -675,7 +677,7 @@ foam.CLASS({
         });
         if ( opt_parent ) p.parent = opt_parent;
         value.setPrivate_('lpp_', p);
-        this.properties.put(p);
+        p = await this.properties.put(p);
         this.selected = p;
       }
     },
@@ -857,9 +859,9 @@ foam.CLASS({
     {
       name: 'copyProperty',
       label: 'Copy',
-      code: async function deleteRow(X) {
+      code: function(X) {
         var copy = this.selected.clone();
-        this.addProperty(copy.value, this.createCopyName(this.selected.name));
+        this.addProperty(copy.value, this.createCopyName(this.selected.name), null, copy.parent);
         this.updateMemento();
       }
     },
@@ -867,7 +869,7 @@ foam.CLASS({
       name: 'deleteProperty',
       label: 'Delete',
       keyboardShortcuts: [ 'del', 'backspace' ],
-      code: function deleteRow(X) {
+      code: function(X) {
         this.properties.remove(this.selected);
         this.updateMemento();
       }
