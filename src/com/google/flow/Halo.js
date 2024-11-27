@@ -290,6 +290,8 @@ foam.CLASS({
     function addAnchors() {
       var halo = this;
 
+      function calcR(x, y) { return Math.sqrt(x*x + y*y)/Math.sqrt(2); }
+
       this.add(
         this.haloBorder,
         this.Anchor.create({x$: this.x2$, y: -26, callback: function(v, vs, _, __, x, y, sx, sy) {
@@ -311,20 +313,16 @@ foam.CLASS({
         }}),
 
         this.Anchor.create({x$: this.x1$, y$: this.y1$, callback: function(v, vs, dx, dy) {
-          var sign = Math.sign(-dx-dy);
-          v.radius = vs.radius + sign*Math.sqrt(dx*dx + dy*dy)/Math.sqrt(2);
+          v.radius = calcR(dx-vs.radius, dy-vs.radius);
         }}),
         this.Anchor.create({x$: this.x3$, y$: this.y1$, callback: function(v, vs, dx, dy) {
-          var sign = Math.sign(dx-dy);
-          v.radius = vs.radius + sign*Math.sqrt(dx*dx + dy*dy)/Math.sqrt(2);
+          v.radius = calcR(dx+vs.radius, dy-vs.radius);
         }}),
         this.Anchor.create({x$: this.x1$, y$: this.y3$, callback: function(v, vs, dx, dy) {
-          var sign = Math.sign(-dx+dy);
-          v.radius = vs.radius + sign*Math.sqrt(dx*dx + dy*dy)/Math.sqrt(2);
+          v.radius = calcR(dx-vs.radius, dy+vs.radius);
         }}),
         this.Anchor.create({x$: this.x3$, y$: this.y3$, callback: function(v, vs, dx, dy) {
-          var sign = Math.sign(dx+dy);
-          v.radius = vs.radius + sign*Math.sqrt(dx*dx + dy*dy)/Math.sqrt(2);
+          v.radius = calcR(dx+vs.radius, dy+vs.radius);
         }}),
 
         /*

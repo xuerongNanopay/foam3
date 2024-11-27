@@ -15,15 +15,16 @@ Features
   [] Add Sections to Tools: ie. Shapes, Physics, Architecture, Containers, Sound, etc.
   [] Sliding StackView
   [] Individual Property View
-* [] Ability to hide/show Halos
+* [] escape resets tool to "Select"
+* [] Ability to hide/show Halos (only show when mouse over canvas?)
   [] Image
   [] Ability to 'link' values
   [] touch support
   [] mobile sizing
   [] hook up delete keyboard button to delete objects
-  [] escape resets tool to "Select"
   help();
   Jump to Sheet
+  Make custom Halos creatable in FLOW
   Specify Musical Notes for Beep
   Musical Instrument
   Console / Terminal
