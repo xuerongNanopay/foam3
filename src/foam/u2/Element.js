@@ -690,7 +690,7 @@ foam.CLASS({
     {
       name: 'NAMED_CODES',
       value: {
-        '8':   'backspace'
+        '8':   'backspace',
         '13':  'enter',
         '27':  'esc',
         '37':  'left',
