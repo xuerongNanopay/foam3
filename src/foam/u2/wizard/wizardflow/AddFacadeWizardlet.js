@@ -123,6 +123,7 @@ foam.CLASS({
       facadeWizardlet.dynamicActions.push(altAction);
 
       // Add a create loader in order to init the wizardlet data
+      // TODO: Add loaders that can load data from the wizardlets directly
       facadeWizardlet.wao.loader = {
         class: 'foam.u2.wizard.data.CreateLoader',
         spec: { class: facadeClass.id }
