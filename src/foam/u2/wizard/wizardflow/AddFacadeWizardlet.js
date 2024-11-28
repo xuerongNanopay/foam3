@@ -127,26 +127,6 @@ foam.CLASS({
         class: 'foam.u2.wizard.data.CreateLoader',
         spec: { class: facadeClass.id }
       }
-
-      // We might be able to slot this data rather than adding these
-      // LoaderInjectorSavers....maybe more efficient...investigate
-      // Set up loaders 
-      // Check if this is a splitWAO
-      // facadeWizardlet.wao.saver = {
-      //   class: 'foam.u2.wizard.data.EasySaver',
-      //   savers: this.capabilityIds.map(element => {
-      //     return {
-      //       class: 'foam.u2.wizard.data.LoaderInjectorSaver',
-      //       wizardletId: element,
-      //       loader: {
-      //         class: 'foam.u2.wizard.data.PrerequisiteLoader',
-      //         cloneValue: false,
-      //         prerequisiteCapabilityId: this.wizardletId,
-      //         loadFromPath: this.createPropertyName(element)
-      //       }
-      //     }
-      //   })
-      // }
     }
   ]
 });
