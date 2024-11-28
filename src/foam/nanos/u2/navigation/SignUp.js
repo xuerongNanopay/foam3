@@ -26,6 +26,7 @@ foam.CLASS({
     'loginSuccess',
     'loginView?',
     'notify',
+    'oidcProviderDAO',
     'pushMenu',
     'routeTo',
     'stack',

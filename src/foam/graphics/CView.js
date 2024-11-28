@@ -22,6 +22,7 @@ foam.CLASS({
     { class: 'Simple', name: 'i' },
     {
       name: 'inverse_',
+      transient: true,
       factory: function() { return this.cls_.create(); },
       // Exclude from compareTo()
       compare: function() { return 0; }
@@ -549,6 +550,7 @@ foam.CLASS({
     },
     {
       name: 'transform',
+      transient: true,
       hidden: 'true',
       expression: function getTransform(x, originX, y, originY, rotation, skewX, skewY, scaleX, scaleY) {
         var t = this.transform_.reset();
@@ -592,6 +594,7 @@ foam.CLASS({
   ],
 
   methods: [
+    // A template method which is called when a CView is first painted
     function initCView() {
       this.invalidate_ && this.propertyChange.sub(this.invalidate_);
     },

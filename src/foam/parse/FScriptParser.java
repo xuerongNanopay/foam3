@@ -50,8 +50,6 @@ public class FScriptParser {
     FScriptParser p = (FScriptParser) map__.get(cls.getId());
 
     if ( p == null ) {
-      ((foam.nanos.om.OMLogger) foam.core.XLocator.get().get("OMLogger")).log("FScriptParser.cache");
-      ((foam.nanos.logger.Logger) foam.core.XLocator.get().get("logger")).warning("FScriptParser,cache");
       p = new FScriptParser(cls);
       map__.put(cls.getId(), p);
     }
@@ -64,9 +62,22 @@ public class FScriptParser {
          expressions.size() == 0 ) {
       return FScriptParser.create(classInfo);
     }
-    ((foam.nanos.om.OMLogger) foam.core.XLocator.get().get("OMLogger")).log("FScriptParser.new");
-    ((foam.nanos.logger.Logger) foam.core.XLocator.get().get("logger")).warning("FScriptParser,new");
-    return new FScriptParser(classInfo, expressions);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(classInfo.getId());
+    for ( Object exp : expressions ) {
+      sb.append(exp.toString());
+    }
+    String key = sb.toString();
+
+    FScriptParser p = (FScriptParser) map__.get(key);
+
+    if ( p == null ) {
+      p = new FScriptParser(classInfo, expressions);
+      map__.put(key, p);
+    }
+
+    return p;
   }
 
   protected ClassInfo classInfo_;
