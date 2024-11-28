@@ -47,7 +47,6 @@ Input:
   Mixer Panel
 
 Bugs:
-* [] DetailView shouldn't show deleted objects
 * [] TreeView shouldn't lose open folder state on refresh
 * [] Nested objects don't show open-close icon
 * [] Only open/close in TreeView if you click the open/close icon (is closed even useful)

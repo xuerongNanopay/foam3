@@ -449,7 +449,7 @@ foam.CLASS({
             // We can't use the data.DELETE_ROW action directly for some reason
             var X = this.__subSubContext__;
 
-            this.start('span').start('span').on('click', () => data.deleteRow(X)).add(' X ').end().add(/*data.DELETE_ROW,*/ ' ', data.name).end();
+            this.start('span').start('span').on('click', (e) => { data.deleteRow(X); e.stopPropagation(); } ).add(' X ').end().add(/*data.DELETE_ROW,*/ ' ', data.name).end();
           }
         };
       },
@@ -746,11 +746,11 @@ foam.CLASS({
     },
 
     function onPropertyRemove(_, __, ___, p) {
+      if ( p === this.selected ) this.selected = null;
+
       var o = p.value;
 
       delete this.scope[p.name];
-
-      if ( p === this.selected ) this.selected = null;
 
       if ( this.CView.isInstance(o) ) {
         if ( ! p.parent || p.parent === 'canvas1' ) {
@@ -882,5 +882,4 @@ foam.CLASS({
       }
     }
   ]
-
 });
