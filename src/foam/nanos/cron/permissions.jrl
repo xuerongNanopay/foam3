@@ -8,5 +8,5 @@ p({
 p({
   "class":"foam.nanos.auth.Permission",
   "id":"foam.nanos.cron.Schedule.run",
-  "description":permission to make available RUN action on a schedulable""
+  "description":"permission to make available RUN action on a schedulable"
 })
