@@ -27,11 +27,15 @@ public class TreeIndex
   protected boolean  isPrimary_;
 
   public TreeIndex(Indexer indexer) {
-    this(indexer, ValueIndex.instance(), true);
+    this(indexer, ValueIndex.instance(), false);
+  }
+
+  public TreeIndex(Indexer indexer, boolean isPrimary) {
+    this(indexer, ValueIndex.instance(), isPrimary);
   }
 
   public TreeIndex(Indexer indexer, Index tail) {
-    this(indexer, tail, true);
+    this(indexer, tail, false);
   }
 
   public TreeIndex(Indexer indexer, Index tail, boolean isPrimary) {
@@ -136,8 +140,10 @@ public class TreeIndex
     try {
       return indexer_.f(value);
     } catch (ClassCastException e) {
+// System.err.println("*** ClassCastException " + this);
       // Can happen when the Indexer is a PropertyInfo for a sub-class
     } catch (NullPointerException e) {
+// System.err.println("*** NullPointerException " + this);
       // Can happen when the Indexer is Dot(x, y) when x is nullf
     }
 
@@ -167,7 +173,6 @@ public class TreeIndex
   @Override
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     if ( state == null || predicate instanceof False ) return NotFoundPlan.instance();
-
     Object   originalState  = state;
     Object[] statePredicate = simplifyPredicate(state, predicate);
     state     = statePredicate[0];
@@ -186,14 +191,26 @@ public class TreeIndex
 
       // We return a groupByPlan only if no order, no limit, no skip, no predicate
       if ( sink instanceof GroupBy
-          && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
-          && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
+        && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
+        && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
       {
         return new GroupByPlan(state, sink, predicate, indexer_, tail_);
       }
     }
 
-    return new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_);
+    if ( state == null ) {
+      // System.err.println("***** NOT FOUND IN TREE " + predicate + " " + indexer_);
+      return NotFoundPlan.instance();
+    }
+
+    TreeNode tn = (TreeNode) state;
+    // if ( tn.isSingular() ) System.err.println("***** SUBSCAN " + tn.size + " " + tn.key);
+
+    // If the resulting tree contains only one node, then create a sub-plan
+    // on the sub-tree, allowing for use of multi-part indices.
+    return tn.isSingular() ?
+      tail_.planSelect(tn.value, sink, skip, limit, order, predicate).restate(tn.value) :
+      new ScanPlan(state, skip, limit, order, predicate, indexer_, tail_) ;
   }
 
   public long size(Object state) {

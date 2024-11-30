@@ -65,7 +65,7 @@ foam.CLASS({
     {
       name: 'value',
       cloneProperty: function(o, m) {
-        m[this.name ] = o.cls_.create({
+        m[this.name] = o.cls_.create({
           arcWidth:    o.arcWidth,
           border:      o.border,
           code:        o.code,
@@ -162,6 +162,7 @@ foam.CLASS({
     'com.google.flow.DetailPropertyView',
     'com.google.flow.Ellipse',
     'com.google.flow.FLOW',
+    'com.google.flow.CircleHalo',
     'com.google.flow.Halo',
     'com.google.flow.LineHalo',
     'com.google.flow.Property',
@@ -186,6 +187,7 @@ foam.CLASS({
     'physics',
     'properties',
     'scope',
+    'showHalos',
     'timer',
     'updateMemento'
   ],
@@ -253,7 +255,8 @@ foam.CLASS({
       name: 'scope',
       factory: function() {
         var self = this;
-        return {
+        var scope = {
+          this: self,
           repeat: function(n, fn) {
             for ( var i = 1 ; i <= n ; i++ ) fn.call(this, i);
             return this;
@@ -328,6 +331,8 @@ foam.CLASS({
             }).then(function() { if ( ! first ) log('\nflow> '); });
           }
         };
+        scope.scope = scope;
+        return scope;
       },
       documentation: 'Scope to run reactive formulas in.'
     },
@@ -387,7 +392,8 @@ foam.CLASS({
         dao.put(com.google.flow.Cursor.model_);
         dao.put(com.google.flow.Script.model_);
         dao.put(com.google.flow.Proxy.model_);
-        dao.put(com.google.flow.KScope.model_);
+        dao.put(com.google.flow.Reflector.model_);
+        dao.put(com.google.flow.Revolver.model_);
         dao.put(foam.input.Gamepad.model_);
         dao.put(foam.core.Model.model_);
         // dao.put(com.google.dxf.ui.DXFDiagram.model_);
@@ -443,7 +449,7 @@ foam.CLASS({
             // We can't use the data.DELETE_ROW action directly for some reason
             var X = this.__subSubContext__;
 
-            this.start('span').start('span').on('click', () => data.deleteRow(X)).add(' X ').end().add(/*data.DELETE_ROW,*/ ' ', data.name).end();
+            this.start('span').start('span').on('click', (e) => { data.deleteRow(X); e.stopPropagation(); } ).add(' X ').end().add(/*data.DELETE_ROW,*/ ' ', data.name).end();
           }
         };
       },
@@ -457,6 +463,7 @@ foam.CLASS({
 
         var p;
 
+        // TODO: these shouldn't be hard-coded here
         p = this.Property.create({name: 'canvas1', value: this.canvas});
         this.physics.setPrivate_('lpp_', p);
         dao.put(p);
@@ -547,6 +554,12 @@ foam.CLASS({
       class: 'Int',
       name: 'depth_',
       hidden: true
+    },
+    {
+      class: 'Boolean',
+      name: 'showHalos',
+      value: true,
+      postSet: function() { this.canvas.invalidate(); }
     }
   ],
 
@@ -562,6 +575,9 @@ foam.CLASS({
       // TODO: A better design for custom Halos which only creates when needed.
       var halo = this.Halo.create();
       halo.selected$.linkFrom(this.selected$);
+
+      var circleHalo = this.CircleHalo.create();
+      circleHalo.selected$.linkFrom(this.selected$);
 
       var lineHalo = this.LineHalo.create();
       lineHalo.selected$.linkFrom(this.selected$);
@@ -586,6 +602,12 @@ foam.CLASS({
             end().
 //            tag('br').
             start(foam.u2.Tabs).
+            /*
+              start(foam.u2.Tab, {label: 'FLOWs'}).
+                style({display: 'flex'}).
+                add('ADD CONTENT').
+              end().
+            */
               start(foam.u2.Tab, {label: 'canvas1'}).
                 style({display: 'flex'}).
                 start('div').
@@ -598,6 +620,8 @@ foam.CLASS({
                   on('mouseup',     this.onMouseUp).
                   on('mousemove',   this.onMouseMove).
                   on('contextmenu', this.onRightClick).
+                  on('mouseenter',  () => self.showHalos = true).
+                  on('mouseleave',  () => self.showHalos = false).
                 end().
               end().
               start(foam.u2.Tab, {label: 'sheet1'}).
@@ -618,6 +642,8 @@ foam.CLASS({
           start('div').
             addClass(this.myClass('properties')).
             start(this.PROPERTIES, {selection$: this.selected$}).end().
+            on('mouseenter',  () => self.showHalos = true).
+            on('mouseleave',  () => self.showHalos = false).
           end().
           start().
             style({width: '100%'}).
@@ -633,7 +659,7 @@ foam.CLASS({
       console.log('**** dblclick');
     },
 
-    function addProperty(value, opt_name, opt_i, opt_parent) {
+    async function addProperty(value, opt_name, opt_i, opt_parent) {
       var self = this;
       if ( ! opt_name ) {
         var i = opt_i || 1;
@@ -651,7 +677,7 @@ foam.CLASS({
         });
         if ( opt_parent ) p.parent = opt_parent;
         value.setPrivate_('lpp_', p);
-        this.properties.put(p);
+        p = await this.properties.put(p);
         this.selected = p;
       }
     },
@@ -720,11 +746,11 @@ foam.CLASS({
     },
 
     function onPropertyRemove(_, __, ___, p) {
+      if ( p === this.selected ) this.selected = null;
+
       var o = p.value;
 
       delete this.scope[p.name];
-
-      if ( p === this.selected ) this.selected = null;
 
       if ( this.CView.isInstance(o) ) {
         if ( ! p.parent || p.parent === 'canvas1' ) {
@@ -732,6 +758,12 @@ foam.CLASS({
 
           if ( this.Physical.isInstance(o) ) {
             this.physics.remove(o);
+          }
+
+          // TODO: This is poor design but the above doesn't work because
+          // Spring and Strut aren't physical
+          if ( com.google.flow.Spring.isInstance(o) || com.google.flow.Strut.isInstance(o) ) {
+            o.detach();
           }
         } else {
           this.properties.find(p.parent).then(function(p2) {
@@ -827,20 +859,27 @@ foam.CLASS({
     {
       name: 'copyProperty',
       label: 'Copy',
-      code: async function deleteRow(X) {
-        var copy = await this.properties.put(this.selected.clone().copyFrom({name: this.createCopyName(this.selected.name)}));
-        this.selected = copy;
+      code: function(X) {
+        var copy = this.selected.clone();
+        this.addProperty(copy.value, this.createCopyName(this.selected.name), null, copy.parent);
         this.updateMemento();
       }
     },
     {
       name: 'deleteProperty',
       label: 'Delete',
-      code: function deleteRow(X) {
+      keyboardShortcuts: [ 'del', 'backspace' ],
+      code: function(X) {
         this.properties.remove(this.selected);
         this.updateMemento();
       }
+    },
+    {
+      name: 'chooseSelectMode',
+      keyboardShortcuts: [ 'esc' ],
+      code: function() {
+        this.currentTool = com.google.flow.Select.model_;
+      }
     }
   ]
-
 });

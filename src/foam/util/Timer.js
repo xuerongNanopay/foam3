@@ -148,7 +148,7 @@ return a! + (1 + s) * (b!-a!)/2;
        var s = r - Math.floor(r);
        if ( arguments.length === 1 ) return s;
        if ( arguments.length === 2 ) return s * a;
-       return a + (1 + s) * (b-a)/2;
+       return a + s * (b-a);
      }
    }
   ],

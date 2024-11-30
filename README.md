@@ -29,19 +29,6 @@ While FOAM is written in JavaScript, it can be used to generate code
 for any language or platform, including Android Java and iOS Swift.
 
 # Development
-<!--
-## Building Java
-
-cd src; ./gen.sh; cd ../build; cp ../tools/pom.xml .; mvn compile; mvn package
-
-Or you may build and run using
-
-make run
-
-And to clean the project, you may use
-
-make clean
-
 ## Installing Dependencies
 
 FOAM has no runtime dependencies, but uses a number of third party tools for
@@ -50,21 +37,51 @@ tools by doing the following.
 
 * Install nodejs.
 
-* Run 'npm install' in the root of the FOAM repository, where
+* Run `npm install` in the root of the FOAM repository, where
   package.json is found.
 
+## Building Java
+
+**NOTE: default configuration is setup for Java 21** 
+
+If using a version less than 21, change the `java: 21` property in the root pom.js.
+
+If deploying with **-u** or remotely, update the garbage collection configuration in `tools/deploy/etc/shrc.local`. 
+
+### Build and run Java webserver
+
+`./build.sh [options]`
+
+* visit: http://localhost:8080/src/foam/nanos/controller/index.html
+
+#### common options:
+
+* **-h** - help - show all options
+* **-c** - clean
+* **-d** - debug mode allowing connection by a remote debugger
+* **-j** - delete runtime journals
+* **-Jpom1,pom2,...,pomN** - where pomN,... are found relative to the deployment folder. 
+* **-u** - build and deploy from a single Java jar file
+
+#### If building with option **-u**, then 
+
+* visit: https://localhost:8443
+
+<!--
 ## Running Application Controller
 
 The FOAM Application Controller allows you to access components of your foam
 app by using the browser & displaying it as a GUI.
 To access, run the following in the parent directory of foam3:
-
-* Build java (see above)
-
-* Run foam3/./tools/nanos.sh
-
-* Visit http://localhost:8080/src/foam/nanos/controller/index.html
 -->
+
+## Remote deployment
+
+To build and deploy to a remote linux instance
+
+1. build: `./build.sh -uck[Jpom...]`
+1. deploy: `foam3/tools/bin/install.sh hostname`
+1. visit: https://hostname:8443
 
 ## Style Guide
 
@@ -72,10 +89,10 @@ All code should follow the [style guide.](doc/guides/StyleGuide.md)
 
 ## Testing
 To run all Java tests from the command-line, run:
-`./tools/build.js -t`
+`./build.sh -ct`
 
 To run individual tests from the command-line, run:
-`./tools/build.js -TtestName1,testName2,...testNameN`
+`./build.sh -cTtestName1,testName2,...testNameN`
 
 <!--
 * _npm test_ runs standard unit tests.
@@ -125,7 +142,7 @@ to run the unit tests.
 
 ## NANOS
 To run NANOS, the FOAM Java Application Server, run:
-`./tools/build.js -Jdemo`
+`./build.sh -Jdemo`
 then connect to http://localhost:8080
 
 ## Example FOAM Project

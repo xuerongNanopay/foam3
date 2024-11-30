@@ -125,6 +125,7 @@ public class AltIndex
     Object     bestState = null;
 
     for ( int i = 0 ; i < delegates_.size() && i < s.length ; i++ ) {
+      try {
       SelectPlan plan = delegates_.get(i).planSelect(s[i], sink, skip, limit, order, predicate);
 
       if ( plan.cost() < bestPlan.cost() ) {
@@ -132,9 +133,14 @@ public class AltIndex
         bestState = s[i];
         if ( bestPlan.cost() <= GOOD_ENOUGH_PLAN_COST ) break;
       }
+    } catch (Throwable t) {
+      System.err.println("********* ERROR PLANNING SELECT " + i + " " + delegates_.get(i));
+
+      t.printStackTrace();
+    }
     }
 
-    return new AltSelectPlan(bestState, bestPlan);
+    return bestPlan.restate(bestState);
   }
 
   public long size(Object state) {

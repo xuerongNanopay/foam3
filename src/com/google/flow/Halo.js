@@ -31,6 +31,8 @@ foam.CLASS({
 
   requires: [ 'com.google.flow.HaloBorder' ],
 
+  imports: [ 'showHalos' ],
+
   exports: [
     'view',
     'anchorRadius'
@@ -72,6 +74,7 @@ foam.CLASS({
           this.viewStart = {
             x: this.view.x,
             y: this.view.y,
+            radius: this.view.radius,
             width: this.view.width,
             height: this.view.height,
             endX: this.view.endX,
@@ -127,8 +130,7 @@ foam.CLASS({
 
         if (
             n && n.value &&
-            // Avoid selecting non CViews
-            foam.graphics.CView.isInstance(n.value) &&
+            this.viewPredicate(n.value) &&
             // Avoid selecting top-level 'canvas' objects
             n.value.parent &&
             // Avoid selecting zero-size objects like Cursor
@@ -161,6 +163,14 @@ foam.CLASS({
     function init() {
       this.SUPER();
 
+      this.addAnchors();
+    },
+
+    function viewPredicate(v) {
+      return foam.graphics.CView.isInstance(v) && ! foam.graphics.Circle.isInstance(v);
+    },
+
+    function addAnchors() {
       var halo = this;
 
       this.add(
@@ -219,10 +229,21 @@ foam.CLASS({
     },
 
     function paintChildren(x) {
+      if ( ! this.showHalos ) return;
       var alpha = x.globalAlpha;
       x.globalAlpha = 1.0
       this.SUPER(x);
       x.globalAlpha = alpha;
+    },
+
+    function resizeOnViewChange(v) {
+      var r = this.anchorRadius;
+
+      this.x = this.y = -2*r-4;
+      this.width      = v.scaleX * v.width  + 2 * ( r * 2 + 4 );
+      this.height     = v.scaleY * v.height + 2 * ( r * 2 + 4 );
+      this.originX    = v.originX+2*r+4
+      this.originY    = v.originY+2*r+4;
     }
   ],
 
@@ -235,19 +256,7 @@ foam.CLASS({
 
         var r = this.anchorRadius;
 
-        if ( v.radius ) {
-          this.height  = this.width = (v.radius + v.arcWidth + 3 + r*2) * 2;
-          this.x       = - v.radius - v.arcWidth - r*2 - 3;
-          this.y       = - v.radius - v.arcWidth - r*2 - 3;
-          this.originX = v.x-this.x;
-          this.originY = v.y-this.y;
-        } else {
-          this.x = this.y = -2*r-4;
-          this.width      = v.scaleX * v.width  + 2 * ( r * 2 + 4 );
-          this.height     = v.scaleY * v.height + 2 * ( r * 2 + 4 );
-          this.originX    = v.originX+2*r+4
-          this.originY    = v.originY+2*r+4;
-        }
+        this.resizeOnViewChange(v);
 
         this.haloBorder.x      = r;
         this.haloBorder.y      = r;
@@ -270,6 +279,85 @@ foam.CLASS({
       if ( ! this.view ) return;
       this.view.x = this.startX + evt.offsetX - this.mouseStartX;
       this.view.y = this.startY + evt.offsetY - this.mouseStartY;
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'com.google.flow',
+  name: 'CircleHalo',
+  extends: 'com.google.flow.Halo',
+
+  methods: [
+    function addAnchors() {
+      var halo = this;
+
+      function calcR(x, y) { return Math.sqrt(x*x + y*y)/Math.sqrt(2); }
+
+      this.add(
+        this.haloBorder,
+        this.Anchor.create({x$: this.x2$, y: -26, callback: function(v, vs, _, __, x, y, sx, sy) {
+          v.originX    = 0;
+          v.originY    = 0;
+          halo.originX = 0;
+          halo.originY = 0;
+
+          function toA(x, y) {
+            var dx = x-vs.x; // -halo.originX
+            var dy = y-v.y; //-halo.originY;
+            return Math.atan2(dy, dx);
+          }
+
+          var startA = toA(sx, sy);
+          var a = toA(x, y);
+
+          v.rotation = vs.rotation + startA - a;
+        }}),
+
+        this.Anchor.create({x$: this.x1$, y$: this.y1$, callback: function(v, vs, dx, dy) {
+          v.radius = calcR(dx-vs.radius, dy-vs.radius);
+        }}),
+        this.Anchor.create({x$: this.x3$, y$: this.y1$, callback: function(v, vs, dx, dy) {
+          v.radius = calcR(dx+vs.radius, dy-vs.radius);
+        }}),
+        this.Anchor.create({x$: this.x1$, y$: this.y3$, callback: function(v, vs, dx, dy) {
+          v.radius = calcR(dx-vs.radius, dy+vs.radius);
+        }}),
+        this.Anchor.create({x$: this.x3$, y$: this.y3$, callback: function(v, vs, dx, dy) {
+          v.radius = calcR(dx+vs.radius, dy+vs.radius);
+        }}),
+
+        /*
+        this.Anchor.create({x$: this.x2$, y$: this.y1$, callback: function(v, vs, dx, dy) {
+          v.y = vs.y + dy;
+        }}),
+        this.Anchor.create({x$: this.x1$, y$: this.y2$, callback: function(v, vs, dx, dy) {
+          v.x  = vs.x + dx;
+        }}),
+        this.Anchor.create({x$: this.x3$, y$: this.y2$, callback: function(v, vs, dx, dy) {
+          v.x  = vs.x + dx;
+        }}),
+        this.Anchor.create({x$: this.x2$, y$: this.y3$, callback: function(v, vs, dx, dy) {
+          v.y = vs.y + dy;
+        }})
+        */
+      );
+
+    },
+
+    function resizeOnViewChange(v) {
+      var r = this.anchorRadius;
+
+      this.height  = this.width = (v.radius + v.arcWidth + 3 + r*2) * 2;
+      this.x       = - v.radius - v.arcWidth - r*2 - 3;
+      this.y       = - v.radius - v.arcWidth - r*2 - 3;
+      this.originX = v.x-this.x;
+      this.originY = v.y-this.y;
+    },
+
+    function viewPredicate(v) {
+      return foam.graphics.Circle.isInstance(v);
     }
   ]
 });
