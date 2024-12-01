@@ -25,8 +25,7 @@ foam.CLASS({
   properties: [
     {
       class: 'Boolean',
-      name: 'gravity',
-      value: false
+      name: 'gravity'
     },
     {
       class: 'Float',
