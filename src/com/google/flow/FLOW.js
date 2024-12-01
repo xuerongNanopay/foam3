@@ -868,7 +868,8 @@ foam.CLASS({
     {
       name: 'deleteProperty',
       label: 'Delete',
-      keyboardShortcuts: [ 'del', 'backspace' ],
+      // TODO: prevents backspacing in text fields
+      // keyboardShortcuts: [ 'del', 'backspace' ],
       code: function(X) {
         this.properties.remove(this.selected);
         this.updateMemento();
@@ -879,6 +880,21 @@ foam.CLASS({
       keyboardShortcuts: [ 'esc' ],
       code: function() {
         this.currentTool = com.google.flow.Select.model_;
+      }
+    },
+    // ???: Should these two actions be moved to the TreeView?
+    {
+      name: 'prevProperty',
+      keyboardShortcuts: [ 'up' ],
+      code: function() {
+        console.log('prev');
+      }
+    },
+    {
+      name: 'nextProperty',
+      keyboardShortcuts: [ 'down' ],
+      code: function() {
+        console.log('next');
       }
     }
   ]
