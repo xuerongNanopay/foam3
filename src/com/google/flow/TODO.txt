@@ -52,6 +52,7 @@ Bugs:
 * [] Only open/close in TreeView if you click the open/close icon (is closed even useful)
   [] Fix Calculator CSS
   [] Units not set for MultiView
+  [] Physics y and vy never converge to zero when gravity is on
 
 FLOW Property Types like Distance, Angle, Colour, etc.
 Sliders for width and height
