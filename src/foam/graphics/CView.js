@@ -1569,7 +1569,6 @@ foam.CLASS({
           self.width  = this.naturalWidth;
           self.height = this.naturalHeight;
           self.image_ = this;
-          console.log('ImageLoaded:', self.cls_.id, self.$UID, self.width, self.height);
           self.invalidate();
         };
         image.src = n;
@@ -1584,7 +1583,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function init() {
+    function initCView() {
       this.SUPER();
       this.src = this.src;
     },
