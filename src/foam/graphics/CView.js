@@ -395,7 +395,7 @@ foam.CLASS({
     [ 'units', 'radians' ],
     [ 'view', {
         class: 'foam.u2.view.DualView',
-        viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true, units: 'radians' },
+        viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
         viewb: { class: 'foam.u2.RangeView', step: 0.00001, minValue: -Math.PI, maxValue: Math.PI, onKey: true }
       }
     ]
@@ -1539,6 +1539,59 @@ foam.CLASS({
           this.align === 'center' ? this.width/2 :
           this.width,
         this.height/2+10);
+
+      if ( this.border ) {
+        c.strokeStyle = this.border;
+        c.strokeRect(0, 0, this.width-1, this.height-1);
+      }
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.graphics',
+  name:  'Image',
+  extends: 'foam.graphics.CView',
+
+  documentation: 'A CView which draws an image.',
+
+  properties: [
+    {
+//      class: 'URL',
+      class: 'String',
+      name:  'src',
+      postSet: function(o, n) {
+        console.log('Image:', n);
+        var self = this;
+        var image = new Image(n);
+        image.onload = function() {
+          self.width  = this.naturalWidth;
+          self.height = this.naturalHeight;
+          self.image_ = this;
+          console.log('ImageLoaded:', self.cls_.id, self.$UID, self.width, self.height);
+          self.invalidate();
+        };
+        image.src = n;
+      },
+      displayWidth: 80
+    },
+    {
+      name: 'image_',
+      hidden: true,
+      transient: true
+    }
+  ],
+
+  methods: [
+    function init() {
+      this.SUPER();
+      this.src = this.src;
+    },
+    function paintSelf(c) {
+      if ( this.image_ ) {
+        c.drawImage(this.image_, 0, 0, this.width, this.height);
+      }
 
       if ( this.border ) {
         c.strokeStyle = this.border;

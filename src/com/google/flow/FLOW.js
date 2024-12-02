@@ -376,6 +376,7 @@ foam.CLASS({
         dao.put(com.google.flow.Circle.model_);
         dao.put(com.google.flow.Ellipse.model_);
         dao.put(com.google.flow.Text.model_);
+        dao.put(com.google.flow.Image.model_);
         dao.put(com.google.flow.Clock.model_);
         dao.put(com.google.flow.Mushroom.model_);
         dao.put(com.google.flow.Turtle.model_);
