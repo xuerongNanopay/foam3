@@ -203,10 +203,10 @@ foam.CLASS({
             body: `return ((${fullName}) o).${this.propName}IsSet_;`
           }
         ];
-        var primitiveType = ['boolean', 'long', 'byte', 'double','float','short','int'];
+        var primitiveType = [ 'boolean', 'long', 'byte', 'double', 'float', 'short', 'int' ];
 
         if ( this.propType == 'java.util.Date' ||
-             ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.propType == 'String') ){
+             ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.propType == 'String' ) ){
           m.push({
             name: 'cast',
             type: this.propType,
@@ -218,7 +218,7 @@ foam.CLASS({
 
         if ( this.propType == 'java.util.Date' ||
              this.propType == 'String' ||
-             ! ( primitiveType.includes(this.propType)|| this.propType == 'Object' || this.extends == 'foam.core.AbstractFObjectPropertyInfo' || this.extends == 'foam.core.AbstractFObjectArrayPropertyInfo') ){
+             ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.extends == 'foam.core.AbstractFObjectPropertyInfo' || this.extends == 'foam.core.AbstractFObjectArrayPropertyInfo') ){
           m.push({
             name: 'getSQLType',
             visibility: 'public',
@@ -227,10 +227,7 @@ foam.CLASS({
           });
         }
 
-        if ( this.propType == 'java.util.Date' ||
-             this.propType == 'String' ||
-             this.propType == 'Object' ||
-             ! ( primitiveType.includes(this.propType) ) ){
+        if ( ! primitiveType.includes(this.propType) ) {
           m.push({
             name: 'get',
             visibility: 'public',
@@ -243,11 +240,11 @@ foam.CLASS({
             name: 'jsonParser',
             type: 'foam.lib.parse.Parser',
             visibility: 'public',
-            body: 'return ' + ( this.jsonParser ? this.jsonParser : null ) + ';'
+            body: 'return ' + ( this.jsonParser || null ) + ';'
           });
         }
 
-        if ( ! ( primitiveType.includes(this.propType) || this.propType  == 'java.util.Date' || this.propType == 'String' || this.propType == 'Object' ) ) {
+        if ( ! ( primitiveType.includes(this.propType) || this.propType == 'java.util.Date' || this.propType == 'String' || this.propType == 'Object' ) ) {
             //TODO add support for special type.
 //              || this.propType == 'java.util.Map' || this.propType == 'java.util.List'
             //TODO add support for subtype.
@@ -271,13 +268,13 @@ foam.CLASS({
             name: 'queryParser',
             type: 'foam.lib.parse.Parser',
             visibility: 'public',
-            body: 'return ' + ( this.queryParser ? this.queryParser : null ) + ';'
+            body: 'return ' + ( this.queryParser || null ) + ';'
           });
           m.push({
             name: 'csvParser',
             type: 'foam.lib.parse.Parser',
             visibility: 'public',
-            body: 'return ' + ( this.csvParser ? this.csvParser : null ) + ';'
+            body: 'return ' + ( this.csvParser || null ) + ';'
           });
         }
 
