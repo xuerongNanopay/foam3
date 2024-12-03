@@ -203,10 +203,10 @@ foam.CLASS({
             body: `return ((${fullName}) o).${this.propName}IsSet_;`
           }
         ];
+
         var primitiveType = [ 'boolean', 'long', 'byte', 'double', 'float', 'short', 'int' ];
 
-        if ( this.propType == 'java.util.Date' ||
-             ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.propType == 'String' ) ){
+        if ( ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.propType == 'String' ) ) {
           m.push({
             name: 'cast',
             type: this.propType,
