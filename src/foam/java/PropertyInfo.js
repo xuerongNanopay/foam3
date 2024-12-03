@@ -216,9 +216,7 @@ foam.CLASS({
           });
         }
 
-        if ( this.propType == 'java.util.Date' ||
-             this.propType == 'String' ||
-             ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.extends == 'foam.core.AbstractFObjectPropertyInfo' || this.extends == 'foam.core.AbstractFObjectArrayPropertyInfo') ){
+        if ( ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.extends == 'foam.core.AbstractFObjectPropertyInfo' || this.extends == 'foam.core.AbstractFObjectArrayPropertyInfo' ) ) {
           m.push({
             name: 'getSQLType',
             visibility: 'public',
