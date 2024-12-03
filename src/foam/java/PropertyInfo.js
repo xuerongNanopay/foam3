@@ -256,24 +256,25 @@ foam.CLASS({
             body: `return ${this.propClassName}.class;`
           });
 
-//          m.push({
-//            name: 'jsonParser',
-//            type: 'foam.lib.parse.Parser',
-//            visibility: 'public',
-//            body: 'return ' + ( this.jsonParser ? this.jsonParser : null ) + ';'
-//          });
           m.push({
             name: 'queryParser',
             type: 'foam.lib.parse.Parser',
             visibility: 'public',
             body: 'return ' + ( this.queryParser || null ) + ';'
           });
-          m.push({
-            name: 'csvParser',
-            type: 'foam.lib.parse.Parser',
-            visibility: 'public',
-            body: 'return ' + ( this.csvParser || null ) + ';'
-          });
+        }
+
+        // TODO: the csvParser / jsonParser hierarchy should be cleaned up with defaults moved to AbstractPropertyInfo classes
+        // to avoid generating a lot of redundant code and making the generating code difficult to understand and update.
+        if ( ! ( primitiveType.includes(this.propType) || this.propType == 'String' || this.propType == 'Object' ) ) {
+          if ( this.csvParser || this.propType != 'java.util.Date' ) {
+            m.push({
+              name: 'csvParser',
+              type: 'foam.lib.parse.Parser',
+              visibility: 'public',
+              body: 'return ' + ( this.csvParser || null ) + ';'
+            });
+          }
         }
 
         if ( this.compare !== '' ) {
