@@ -240,7 +240,7 @@ foam.CLASS({
       transient: true,
       factory: function() {
         var name = this.name;
-        return function f(o) { return o != null ? o[name] : null; }
+        return function f(o) { return o ? o[name] : null; }
       }
     },
 
