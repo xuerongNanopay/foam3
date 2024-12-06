@@ -143,7 +143,7 @@ foam.CLASS({
         select(new Sink() {
           public void put(Object obj, Detachable sub) {
             Schedulable schedulable = (Schedulable) ((FObject) obj).fclone();
-            Date from = (Date) schedulable.getProperty("lastRun");
+            Date from = schedulable.getLastRun();
             if ( from == null ) from = new Date();
             schedulable.setScheduledTime(
               ((SimpleIntervalSchedule) schedulable.getSchedule()).
