@@ -247,7 +247,7 @@ foam.CLASS({
             self.doesThisIncludeSearch = self.query.get() ? self.data.label.toLowerCase().includes(self.query.get().toLowerCase()) : true;
 
             if ( self.query.get() && !self.doesThisIncludeSearch && self.data.keywords ) {
-              for ( var i = 0; i < self.data.keywords.length; i++ ) {
+              for ( var i = 0 ; i < self.data.keywords.length ; i++ ) {
                 if ( self.data.keywords[i].toLowerCase().includes(self.query.get().toLowerCase()) ) {
                   self.doesThisIncludeSearch = true;
                   break;
@@ -280,9 +280,6 @@ foam.CLASS({
         }).
         start().
           addClass(self.myClass('heading')).
-          style({
-            'padding-left': (((self.level - 1) * 16 ) + 'px')
-          }).
           startContext({ data: self }).
             start(self.ON_CLICK_FUNCTIONS, {
               buttonStyle: 'UNSTYLED',
@@ -292,6 +289,9 @@ foam.CLASS({
               themeIcon: self.level === 1 ? self.data.themeIcon : '',
               icon: self.level === 1 ? self.data.icon : ''
             }).
+              style({
+                'padding-left': (((self.level - 1) * 16 ) + 'px')
+              }).
               enableClass('selected', this.selected_$).
               // make not be a button so that other buttons can be nested
               addClass(this.myClass('button')).
