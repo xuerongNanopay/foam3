@@ -19,6 +19,7 @@ foam.CLASS({
   ],
 
   imports: [
+    'collapsed',
     'dblclick?',
     'draggable',
     'onObjDrop',
@@ -154,7 +155,14 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'expanded',
-      value: false
+      postSet: function(o, n) {
+        if ( n ) {
+          delete this.collapsed[this.data.id];
+        } else if ( this.hasChildren ) {
+          this.collapsed[this.data.id] = true;
+        }
+        console.log('collapsed:', this.collapsed);
+      }
     },
     {
       class: 'Function',
@@ -196,10 +204,7 @@ foam.CLASS({
       class: 'Boolean',
       name: 'selected_',
       expression: function(selection, data$id) {
-        if ( selection && foam.util.equals(selection.id, this.data.id) ) {
-          return true;
-        }
-        return false;
+        return selection && foam.util.equals(selection.id, this.data.id);
       }
     }
   ],
@@ -208,9 +213,10 @@ foam.CLASS({
     function render() {
       this.SUPER();
       var self = this;
-      var controlledSearchSlot = foam.core.SimpleSlot.create();
+      var controlledSearchSlot;
 
       if ( this.query ) {
+        controlledSearchSlot = foam.core.SimpleSlot.create();
         this.query.sub(function() {
           self.updateThisRoot = true;
           self.showThisRootOnSearch = false;
@@ -300,7 +306,7 @@ foam.CLASS({
                 data:             obj,
                 formatter:        self.formatter,
                 relationship:     self.relationship,
-                expanded:         true, //self.startExpanded,
+                expanded:         ! self.collapsed[obj.id],
                 showRootOnSearch: self.showThisRootOnSearch$,
                 query:            controlledSearchSlot,
                 onClickAddOn:     self.onClickAddOn,
@@ -402,11 +408,12 @@ foam.CLASS({
   ],
 
   exports: [
+    'collapsed',
     'draggable',
     'onObjDrop',
+    'rowConfig',
     'selection',
-    'startExpanded',
-    'rowConfig'
+    'startExpanded'
   ],
 
   css: `
@@ -455,7 +462,12 @@ foam.CLASS({
       name: 'draggable',
       documentation: 'Enable to allow drag&drop editing.'
     },
-    [ 'defaultRoot', '' ]
+    [ 'defaultRoot', '' ],
+    {
+      // Set of collapsed TreeRows
+      name: 'collapsed',
+      factory: function() { return {}; }
+    }
   ],
 
   methods: [
