@@ -13,10 +13,10 @@ import java.util.Date;
 import java.util.TimeZone;
 import foam.lib.json.*;
 
-public class CSVYYMMDDParser
+public class YYMMDDParser
   extends ProxyParser
 {
-  private final static Parser instance__ = new CSVYYMMDDParser();
+  private final static Parser instance__ = new YYMMDDParser();
 
   public static Parser instance() { return instance__; }
 
@@ -34,7 +34,7 @@ public class CSVYYMMDDParser
     }
   };
 
-  public CSVYYMMDDParser() {
+  public YYMMDDParser() {
     super(new Alt(
       NullParser.instance(),
       new Seq(
