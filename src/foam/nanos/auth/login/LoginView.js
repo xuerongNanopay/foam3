@@ -24,14 +24,15 @@ foam.CLASS({
     'foam.nanos.app.AppBadgeView',
     'foam.nanos.auth.login.SignIn',
     'foam.nanos.auth.login.SignUp',
-    'foam.u2.stack.StackBlock'
+    'foam.u2.stack.StackBlock',
+    'foam.u2.crunch.WizardRunner',
+    'foam.u2.wizard.WizardType'
   ],
 
   css: `
-  ^ .foam-u2-ActionView {
+  ^ .full-width-button {
     width: 100%;
   }
-
 
   .foam-u2-dialog-ApplicationPopup ^content-form {
     width: 100%;
@@ -44,9 +45,13 @@ foam.CLASS({
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
     align-self: center;
-    padding: 2rem;
+    padding: 1rem;
+  }
+
+  ^content-form > form {
+    margin-block-end: 0;
   }
 
   /* ON ALL FOOTER TEXT */
@@ -58,6 +63,9 @@ foam.CLASS({
   }
   ^ .align-end {
     text-align: end;
+  }
+  ^ .align-end button{
+    padding: 0;
   }
 
   ^disclaimer {
@@ -78,9 +86,11 @@ foam.CLASS({
     font-size: 0.8rem;
     width: 100%;
   }
-
-  ^center-footer > ^signupLink {
-    margin-bottom: 2rem;
+  
+  ^buttonHolder {
+    display: flex;
+    flex-direction: column;
+    gap: 2.4rem
   }
   `,
 
@@ -168,28 +178,26 @@ foam.CLASS({
       this
         .addClass(self.myClass())
         // Title txt and Data
-        .callIf(self.showTitle, function() { this.start().addClass('h300').add(self.data.TITLE).end(); })
+        .callIf(self.showTitle && self.data.TITLE, function() { this.start().addClass('h300').add(self.data.TITLE).end(); })
         .addClass(self.myClass('content-form'))
         .start('form')
           .setID('login')
           .startContext({ data: this }).tag(this.DATA).endContext()
-        // signin signup action
-          .start()
-            .add(this.slot(function(showAction, mode_) {
-              return self.E().callIf(showAction, function() {
-                this
-                  .startContext({ data: self })
-                    .start().addClass('align-end').callIf(mode_ == self.SIGN_IN && showAction, function() { this.start(self.RESET_PASSWORD)
-                      .attr('type', 'button').end(); }).end()
-                    .callIfElse(
-                      mode_ == self.SIGN_IN,
-                      function() { this.start(self.SIGN_IN_ACTION).attrs({ type: 'submit', form: 'login' }).end(); },
-                      function() { this.start(self.SIGN_UP_ACTION).attrs({ type: 'submit', form: 'login' }).end(); }
-                    )
-                  .endContext();
-              });
-            }))
-          .end()
+
+          .add(this.slot(function(showAction, mode_) {
+            return self.E().addClass(self.myClass('buttonHolder')).callIf(showAction, function() {
+              this
+                .startContext({ data: self })
+                  .start().addClass('align-end').callIf(mode_ == self.SIGN_IN && showAction, function() { this.start(self.RESET_PASSWORD)
+                    .attr('type', 'button').end(); }).end()
+                  .callIfElse(
+                    mode_ == self.SIGN_IN,
+                    function() { this.start(self.SIGN_IN_ACTION).addClass('full-width-button').attrs({ type: 'submit', form: 'login' }).end(); },
+                    function() { this.start(self.SIGN_UP_ACTION).addClass('full-width-button').attrs({ type: 'submit', form: 'login' }).end(); }
+                  )
+                .endContext();
+            });
+          }))
         .end()
         .start().style({ display: 'contents' })
           .callIf(self.oidcProviderDAO, function() {
@@ -208,10 +216,9 @@ foam.CLASS({
               });
           })
         .end()
-        .add(
-          this.slot(function(showAction, data$disclaimer, appConfig, mode_) {
+        .add(this.slot(function(showAction, appConfig, mode_) {
             self.configData();
-            var disclaimer = self.E().style({ display: 'contents' }).callIf(data$disclaimer && appConfig, function() {
+            var disclaimer = self.E().style({ display: 'contents' }).callIf(mode_ == 1 && appConfig, function() {
               this.start()
                 .addClass(self.myClass('disclaimer'))
                 .add(self.DISCLAIMER_TEXT)
@@ -235,42 +242,41 @@ foam.CLASS({
               .end();
             });
 
-            return self.E().style({ display: 'contents' }).callIfElse(showAction, 
-              function() {
-                this
-                  .start()
-                    .startContext({ data: self })
-                    .addClass(self.myClass('center-footer'))
-                    // first footer
+            return self.E().style({ display: 'contents' })
+              .callIf(showAction,
+                function() {
+                  this
                     .start()
-                      .addClass(self.myClass('signupLink'))
-                      .start('span')
-                        .addClass('text-with-pad')
-                        .callIfElse(
-                          self.mode_ == self.SIGN_IN,
-                          function() { this.add(self.SWITCH_TO_SIGN_UP_TXT); },
-                          function() { this.add(self.SWITCH_TO_SIGN_IN_TXT); }
-                        )
+                      .startContext({ data: self })
+                      .addClass(self.myClass('center-footer'))
+                      // first footer
+                      .start()
+                        .addClass(self.myClass('signupLink'))
+                        .start('span')
+                          .addClass('text-with-pad')
+                          .callIfElse(
+                            self.mode_ == self.SIGN_IN,
+                            function() { this.add(self.SWITCH_TO_SIGN_UP_TXT); },
+                            function() { this.add(self.SWITCH_TO_SIGN_IN_TXT); }
+                          )
+                        .end()
+                        .start('span')
+                          .callIfElse(
+                            self.mode_ == self.SIGN_IN,
+                            function() { this.add(self.SWITCH_TO_SIGN_UP); },
+                            function() { this.add(self.SWITCH_TO_SIGN_IN); }
+                          )
+                        .end()
                       .end()
-                      .start('span')
-                        .callIfElse(
-                          self.mode_ == self.SIGN_IN,
-                          function() { this.add(self.SWITCH_TO_SIGN_UP); },
-                          function() { this.add(self.SWITCH_TO_SIGN_IN); }
-                        )
-                      .end()
-                    .end()
-                    .endContext()
-                  .end();
-              },
-              function() {
-                this.start().add(disclaimer).end();
-              }
-            ).callIf(showAction, function () {
-              this.tag(self.AppBadgeView, {isReferral: self.data.referralToken || self.params['utm_id']});
-            });
-          })
-        );
+                      .endContext()
+                    .end();
+                }
+              )
+              .add(disclaimer)
+              .callIf(showAction, function () {
+                this.tag(self.AppBadgeView, {isReferral: self.data.referralToken || self.params['utm_id']});
+              });
+        }));
     }
   ],
 
@@ -302,7 +308,7 @@ foam.CLASS({
       label: 'Sign in',
       buttonStyle: 'TEXT',
       code: function(X) {
-        X.data.mode_ = 0;
+        X.routeTo('sign-in');
       }
     },
     {
@@ -310,7 +316,7 @@ foam.CLASS({
       label: 'Create an account',
       buttonStyle: 'TEXT',
       code: function(X) {
-        X.data.mode_ = 1;
+        X.routeTo('sign-up');
       }
     },
     {
@@ -318,12 +324,12 @@ foam.CLASS({
       label: 'Forgot password?',
       buttonStyle: 'LINK',
       code: function(X) {
-        X.stack.push(this.StackBlock.create({
-          view: {
-            class: 'foam.nanos.auth.ChangePasswordView',
-            modelOf: 'foam.nanos.auth.RetrievePassword'
-          }
-        }));
+        const wizardRunner = this.WizardRunner.create({
+          wizardType: this.WizardType.TRANSIENT,
+          source: 'foam.nanos.auth.email.ResetPassword',
+          options: {inline: false, returnCompletionPromise: true}
+        }, X)
+        wizardRunner.launch();
       }
     }
   ]
