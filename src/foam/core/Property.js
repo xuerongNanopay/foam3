@@ -676,7 +676,7 @@ foam.CLASS({
     },
 
     /** Returns a developer-readable description of this Property. **/
-    function toString() { return this.name; },
+    function toString() { return (this.forClass_ ? this.forClass_ + '.' : '') + this.name; },
 
     /** Flyweight getter for this Property. **/
     function get(o) { return o[this.name]; },
