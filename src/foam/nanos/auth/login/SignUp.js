@@ -31,6 +31,29 @@ foam.CLASS({
 
   properties: [
     {
+      class: 'EMail',
+      name: 'email',
+      placeholder: 'example@example.com',
+      view: function(_, X) {
+        return {
+          class: 'foam.u2.view.UserPropertyAvailabilityView',
+          icon: 'images/checkmark-small-green.svg',
+          isAvailable$: X.data.emailAvailable$,
+          type: 'email',
+          inputValidation: /\S+@\S+\.\S+/,
+          displayMode: X.data.disableEmail_ ? foam.u2.DisplayMode.DISABLED : foam.u2.DisplayMode.RW
+        };
+      },
+      required: true,
+      validationPredicates: [
+        {
+          args: ['emailAvailable', 'email'],
+          query: 'emailAvailable!="unavailable"',
+          errorMessage: 'EMAIL_AVAILABILITY_ERR'
+        }
+      ]
+    },
+    {
       class: 'String',
       name: 'username',
       placeholder: 'example123',
@@ -57,29 +80,6 @@ foam.CLASS({
       ]
     },
     {
-      class: 'EMail',
-      name: 'email',
-      placeholder: 'example@example.com',
-      view: function(_, X) {
-        return {
-          class: 'foam.u2.view.UserPropertyAvailabilityView',
-          icon: 'images/checkmark-small-green.svg',
-          isAvailable$: X.data.emailAvailable$,
-          type: 'email',
-          inputValidation: /\S+@\S+\.\S+/,
-          displayMode: X.data.disableEmail_ ? foam.u2.DisplayMode.DISABLED : foam.u2.DisplayMode.RW
-        };
-      },
-      required: true,
-      validationPredicates: [
-        {
-          args: ['emailAvailable', 'email'],
-          query: 'emailAvailable!="unavailable"',
-          errorMessage: 'EMAIL_AVAILABILITY_ERR'
-        }
-      ]
-    },
-    {
       class: 'Password',
       name: 'desiredPassword',
       label: 'Password',
@@ -93,7 +93,7 @@ foam.CLASS({
       validationPredicates: [
         {
           args: ['desiredPassword'],
-          query: 'desiredPassword exists && desiredPassword.len>10',
+          query: 'desiredPassword exists && desiredPassword.len>=10',
           errorMessage: 'PASSWORD_ERR'
         },
         {
