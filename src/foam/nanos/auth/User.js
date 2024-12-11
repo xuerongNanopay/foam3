@@ -52,7 +52,6 @@ foam.CLASS({
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
-    'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
     'java.util.regex.Pattern'
   ],
