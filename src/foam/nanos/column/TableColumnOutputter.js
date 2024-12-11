@@ -150,8 +150,7 @@ foam.CLASS({
         var propNames = [];
         for ( var i = 0 ; i < props.length ; i++ ) {
           var p = props[i];
-          if ( p.hidden ||
-               p.visibility && p.visibility.name == 'HIDDEN' )
+          if ( p.hidden )
             continue;
           propNames.push(p.name);
         }
