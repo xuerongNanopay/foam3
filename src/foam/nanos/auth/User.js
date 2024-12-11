@@ -1049,14 +1049,15 @@ foam.CLASS({
         if ( ! getLoginEnabled() ) {
           throw new AccessDeniedException();
         }
-        var user = ((Subject) x.get("subject")).getUser();
-        Loggers.logger(x, this).debug("********", getGroup(), x, user);
+
         try {
-          if ( ((Group) findGroup(x)).getEmailRequired() && ! getEmailVerified() ) {
+          Group group = (Group) ((DAO) foam.core.XLocator.get().get("groupDAO")).find(getGroup());
+          if ( group != null &&
+               group.getEmailRequired() && ! getEmailVerified() ) {
             throw new UnverifiedEmailException();
           }
         } catch (Throwable e) {
-          e.printStackTrace();
+          foam.nanos.logger.StdoutLogger.instance().error(e);
         }
       `
     }
