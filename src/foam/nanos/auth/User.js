@@ -1057,6 +1057,7 @@ foam.CLASS({
           }
         } catch (Throwable e) {
           foam.nanos.logger.StdoutLogger.instance().error(e);
+          throw e;
         }
       `
     }
