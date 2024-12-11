@@ -41,6 +41,7 @@ foam.CLASS({
     'foam.dao.ArraySink',
     'static foam.mlang.MLang.AND',
     'static foam.mlang.MLang.EQ',
+    'foam.nanos.auth.Group',
     'foam.nanos.auth.LifecycleAware',
     'foam.nanos.auth.LifecycleState',
     'foam.nanos.notification.NotificationSetting',
@@ -51,6 +52,8 @@ foam.CLASS({
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
+    'foam.nanos.logger.Logger',
+    'foam.nanos.logger.Loggers',
     'java.util.regex.Pattern'
   ],
 
@@ -1046,10 +1049,15 @@ foam.CLASS({
         if ( ! getLoginEnabled() ) {
           throw new AccessDeniedException();
         }
-        // This is an application requirement, not foam's.
-        //   if ( ! getEmailVerified() ) {
-        //     throw new UnverifiedEmailException();
-        //   }
+        var user = ((Subject) x.get("subject")).getUser();
+        Loggers.logger(x, this).debug("********", getGroup(), x, user);
+        try {
+          if ( ((Group) findGroup(x)).getEmailRequired() && ! getEmailVerified() ) {
+            throw new UnverifiedEmailException();
+          }
+        } catch (Throwable e) {
+          e.printStackTrace();
+        }
       `
     }
   ],
