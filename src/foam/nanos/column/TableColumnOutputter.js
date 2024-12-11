@@ -149,7 +149,11 @@ foam.CLASS({
         var props = cls.getAxiomsByClass(foam.core.Property);
         var propNames = [];
         for ( var i = 0 ; i < props.length ; i++ ) {
-          propNames.push(props[i].name);
+          var p = props[i];
+          if ( p.hidden ||
+               p.visibility && p.visibility.name == 'HIDDEN' )
+            continue;
+          propNames.push(p.name);
         }
         return propNames;
       }
