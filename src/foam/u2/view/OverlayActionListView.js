@@ -85,6 +85,7 @@ foam.CLASS({
       documentation: 'fallback dropdown icon that can be specified for non-nanos apps',
       value: '/images/dropdown-icon.svg'
     },
+    'availabilities_',
     // Used for keyboard navigation
     'firstEl_', 'lastEl_',
     [ 'isMouseClick_', true ]
@@ -114,7 +115,7 @@ foam.CLASS({
     }
 
     ^disabled {
-      color: $grey00;
+      color: $grey600;
     }
 
     ^button-container button:hover:not(:disabled) {
@@ -234,6 +235,8 @@ foam.CLASS({
         this.obj = await this.dao.inX(this.__context__).find(this.obj.id);
       }
 
+      self.availabilities_$.follow(self.createAvailabilitySlotArray()) 
+
       this.onDetach(() => { this.overlay_ && this.overlay_.remove(); });
 
       // sub to actions from view
@@ -244,24 +247,16 @@ foam.CLASS({
       self.obj?.data?.sub('action', function() {
         self.overlay_.close();
       });
-
-      // a list where element at i stores whether ith action in data is enabled or not
-      const enabled = await Promise.all(this.data.map(action => {
-        if ( ! foam.core.Action.isInstance(action) && ! foam.u2.ActionReference.isInstance(action) ) return true;
-        return this.isEnabled.call(this, action);
-      }));
-      // a list where element at i stores whether ith action in data is available or not
-      const availabilities = await Promise.all(this.data.map(action => {
-        if ( ! foam.core.Action.isInstance(action) && ! foam.u2.ActionReference.isInstance(action) ) return true;
-        return this.isAvailable.call(this, action);
-      }));
-
-      var el = this.E().startContext({ data: self.obj, dropdown: self.overlay_ });
-      if ( ! availabilities.some(a => a) )
-        el.addClass('p', self.myClass('disabled')).add(this.NO_AVAILABLE);
-      else {
-        el.forEach(self.data, function(action, index) {
-          // if ( availabilities[index] ) {
+      view$ = this.slot(function(availabilities_) {
+        var el = this.E().startContext({ data: self.obj, dropdown: self.overlay_ });
+        if ( availabilities_ === false ) {
+          el.addClass('p', self.myClass('disabled')).add(this.NO_AVAILABLE);
+          spinner.remove();
+        } else if ( availabilities_ === null ) {
+          // this may happen when availability slots are pending promise checks
+          return '';
+        } else {
+          el.forEach(self.data, function(action, index) {
             this
               .start()
                 .addClass(self.myClass('button-container'))
@@ -271,18 +266,15 @@ foam.CLASS({
                   this.tag(action, { buttonStyle: 'UNSTYLED' })
                 })
                 .attrs({ tabindex: -1 })
-                .callIf(! enabled[index], function() {
-                  this
-                    // .addClass(self.myClass('disabled'))
-                    .attrs({ disabled: true })
-                })
+                .attrs({ disabled: self.isEnabled(action) })
               .end();
-          // }
-        })
-      }
-      el.endContext();
-      spinner.remove();
-      this.overlay_.add(el);
+          })
+          spinner.remove();
+        }
+        el.endContext();
+        return el;
+      });
+      this.overlay_.add(view$);
       this.overlay_.open(x, y);
 
       // Moves focus to the modal when it is open and keeps it in the modal till it is closed
@@ -301,26 +293,12 @@ foam.CLASS({
       let slot;
       if (  foam.u2.ActionReference.isInstance(action) ) {
         slot = action.action.createIsEnabled$(this.__context__, action.data)
-      }
-      else {
+      } else if ( foam.core.Action.isInstance(action) ) {
         slot = action.createIsEnabled$(this.__context__, this.obj);
+      } else {
+        slot = foam.core.ConstantSlot.create({ value: true }, this)
       }
-      if ( slot.get() ) return true;
-      return slot.promise || false;
-    },
-
-    async function isAvailable(action) {
-      /*
-       * checks if action is available
-       */
-      if (  foam.u2.ActionReference.isInstance(action) ) {
-        slot = action.action.createIsAvailable$(this.__context__, action.data)
-      }
-      else {
-        slot = action.createIsAvailable$(this.__context__, this.obj);
-      }
-      if ( slot.get() ) return true;
-      return slot.promise || false;
+      return slot ;
     }
   ],
 
@@ -330,19 +308,25 @@ foam.CLASS({
       isMerged: true,
       on: ['this.propertyChange.data'],
       code: function() {
+        let arr$ = this.createAvailabilitySlotArray();
+        this.disabled_$.follow(arr$.not());
+      }
+    },
+    {
+      name: 'createAvailabilitySlotArray', 
+      documentation: 'Returns an array slot that returns true when any of the actions in data are available',
+      code: function() {
         let availSlots = this.data.map(action => {
           if (  foam.u2.ActionReference.isInstance(action) && action.data ) return action.action.createIsAvailable$(this.__context__, action.data)
           if ( ! foam.core.Action.isInstance(action) ) return foam.core.ConstantSlot.create({ value: true }, this);
           return action.createIsAvailable$(this.__context__, this.obj)
-        })
-        this.disabled_$.follow(foam.core.ArraySlot.create({
+        });
+        return foam.core.ArraySlot.create({
           slots: availSlots
-        }, this)
-          .map(async arr => {
-            arr = await Promise.all(arr);
-            return ! arr.reduce((l, r) => l || r, false);
-          })
-        );
+        }, this).map(async arr => {
+          arr = await Promise.all(arr);
+          return arr.reduce((l, r) => l || r, false);
+        })
       }
     },
     function click(evt) {

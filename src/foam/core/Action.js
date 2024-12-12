@@ -232,7 +232,6 @@ If empty then no permissions are required.`
           slot
         ],
         code: async function(a, b) {
-          await self[pName];
           return a && b;
         }
       });
