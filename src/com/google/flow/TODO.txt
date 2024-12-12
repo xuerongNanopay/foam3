@@ -4,7 +4,6 @@ Features
 * [] Move to own github repo
 * [] Top-Level FLOW DAO & Controller with NANOS Integration
 * [] Triangle and/or Polygon Shape
-  [] Image
   [] Make "Console" into an object?
   [] Make "language" features into object or add to shell?
   [] Add Sections to DetailView
@@ -21,6 +20,8 @@ Features
   [] touch support
   [] mobile sizing
   [] Add soft-select / hover for Properties TreeView
+  [] Delete key to delete object
+  [] Add Properties: Int, Float, String
   help();
   anchor points + lines
   Jump to Sheet
@@ -47,11 +48,7 @@ Input:
   Mixer Panel
 
 Bugs:
-* [] TreeView shouldn't lose open folder state on refresh
-* [] Nested objects don't show open-close icon
-* [] Only open/close in TreeView if you click the open/close icon (is closed even useful)
   [] Fix Calculator CSS
-  [] Units not set for MultiView
 
 FLOW Property Types like Distance, Angle, Colour, etc.
 Sliders for width and height

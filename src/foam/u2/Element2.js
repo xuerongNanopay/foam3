@@ -663,8 +663,7 @@ foam.CLASS({
         // parent will remove from DOM and detach
         this.parentNode.removeChild(this);
       } else {
-        this.element_.remove();
-        this.detach();
+        this.SUPER();
       }
     },
 

@@ -30,7 +30,9 @@ foam.CLASS({
     'ctrl',
     'emailVerificationService',
     'loginSuccess',
-    'pushMenu'
+    'notify',
+    'pushMenu',
+    'wizardController?'
   ],
 
   messages: [
@@ -161,6 +163,9 @@ foam.CLASS({
           this.report('^verify-success', ['email-verification']);
           this.assert(verified, 'verified should be true when no exception was thrown')
           this.codeVerified = verified;
+          if ( this.wizardController ) {
+            this.wizardController.goNext();
+          }
         } catch (error) {
           this.report('^verify-failure', error);
           if ( error?.data?.exception && this.VerificationCodeException.isInstance(error.data.exception) ) {
@@ -198,17 +203,10 @@ foam.CLASS({
             this.loginSuccess = true;
           }
 
-          this.ctrl.add(this.NotificationMessage.create({
-            message: this.SUCCESS_MSG,
-            type: this.LogLevel.INFO
-          }));
+          this.notify(this.SUCCESS_MSG,'', this.LogLevel.INFO);
           this.emailVerificationService.pub('emailVerified');
         } else {
-          this.ctrl.add(this.NotificationMessage.create({
-            message: this.ERROR_MSG,
-            type: this.LogLevel.ERROR,
-            err: err?.data
-          }));
+          this.notify(err?.data || this.ERROR_MSG,'', this.LogLevel.ERROR);
           throw err;
         }
       }

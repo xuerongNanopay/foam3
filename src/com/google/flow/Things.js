@@ -38,6 +38,20 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'com.google.flow',
+  name: 'Image',
+  extends: 'foam.graphics.Image',
+  implements: [ 'foam.physics.Physical' ],
+  properties: [
+    [ 'src', '/images/foam_red.png' ],
+    [ 'gravity', 1 ],
+    [ 'width',   150 ],
+    [ 'height',  50 ]
+  ]
+});
+
+
+foam.CLASS({
+  package: 'com.google.flow',
   name: 'Circle',
   extends: 'foam.graphics.Circle',
   implements: [ 'foam.physics.Physical' ],
@@ -56,7 +70,6 @@ foam.CLASS({
   extends: 'foam.graphics.Ellipse',
   implements: [ 'foam.physics.Physical' ],
   properties: [
-    [ 'border',   1 ],
     [ 'gravity',  1 ],
     [ 'radiusX',  25 ],
     [ 'radiusY',  25 ],
