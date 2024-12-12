@@ -209,7 +209,6 @@ If empty then no permissions are required.`
       // Decorates an isEnabled/isAvailable slot with a permission
       // check if appropriate.
       var permissions = this[permissionsName + 'Permissions'];
-      let self = this;
 
       // If no auth service, or no permissions to check then nothing to do.
       if ( ! x.auth || ! permissions.length )
@@ -231,7 +230,7 @@ If empty then no permissions are required.`
           this[pName],
           slot
         ],
-        code: async function(a, b) {
+        code: function(a, b) {
           return a && b;
         }
       });
