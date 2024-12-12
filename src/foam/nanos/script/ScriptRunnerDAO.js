@@ -67,8 +67,9 @@ foam.CLASS({
                 script.setStatus(ScriptStatus.ERROR);
                 logger.error("agency", script.getId(), t);
               } finally {
-                getDelegate().put_(x, script);
-//                ((DAO) x.get(script.getDaoKey())).put_(x, script);
+                // re-put to the top of the dao stack rather than delegate
+                // to allow rules to run pre and post execution
+                ((DAO) x.get(script.getDaoKey())).put_(x, script);
               }
             }
           }, "Run script: " + script.getId());
