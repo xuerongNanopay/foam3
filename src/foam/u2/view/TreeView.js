@@ -290,7 +290,7 @@ foam.CLASS({
               icon: self.level === 1 ? self.data.icon : ''
             }).
               style({
-                'padding-left': (((self.level - 1) * 16 ) + 'px')
+                'padding-left': (((self.level - 0.5) * 16 ) + 'px')
               }).
               enableClass('selected', this.selected_$).
               // make not be a button so that other buttons can be nested

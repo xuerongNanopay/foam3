@@ -37,6 +37,10 @@ foam.CLASS({
     }
   ],
 
+  messages: [
+    {name: 'NO_AVAILABLE', message: 'No Available Actions'}
+  ],
+
   properties: [
     {
       class: 'FObjectArray',
@@ -70,6 +74,13 @@ foam.CLASS({
       value: true
     },
     {
+      class: 'Boolean',
+      name: 'lazy',
+      documentation: `When set to true, the view will always show it's icon regardless of availability of underlying actions.
+      By default the visibility of the view is linked to the availability of it's underlying actions. If the view has a non Action or ActionReference as
+      in it's data, this property has no effect and the view will always show`,
+    },
+    {
       name: 'dropdownIcon',
       documentation: 'fallback dropdown icon that can be specified for non-nanos apps',
       value: '/images/dropdown-icon.svg'
@@ -100,6 +111,10 @@ foam.CLASS({
 
     ^button-container button > img{
       height: 100%;
+    }
+
+    ^disabled {
+      color: $grey00;
     }
 
     ^button-container button:hover:not(:disabled) {
@@ -201,7 +216,8 @@ foam.CLASS({
         }));
       }
 
-      this.linkActionAvailabilitySlots();
+      if ( ! this.lazy )
+        this.linkActionAvailabilitySlots();
     },
 
     async function initializeOverlay(x, y) {
@@ -231,17 +247,20 @@ foam.CLASS({
 
       // a list where element at i stores whether ith action in data is enabled or not
       const enabled = await Promise.all(this.data.map(action => {
-        if ( ! foam.core.Action.isInstance(action) || ! foam.u2.ActionReference.isInstance(action) ) return true;
-        return this.isEnabled.bind(this);
+        if ( ! foam.core.Action.isInstance(action) && ! foam.u2.ActionReference.isInstance(action) ) return true;
+        return this.isEnabled.call(this, action);
       }));
       // a list where element at i stores whether ith action in data is available or not
       const availabilities = await Promise.all(this.data.map(action => {
-        if ( ! foam.core.Action.isInstance(action) || ! foam.u2.ActionReference.isInstance(action) ) return true;
-        return this.isAvailable.bind(this);
+        if ( ! foam.core.Action.isInstance(action) && ! foam.u2.ActionReference.isInstance(action) ) return true;
+        return this.isAvailable.call(this, action);
       }));
 
-      var el = this.E().startContext({ data: self.obj, dropdown: self.overlay_ })
-        .forEach(self.data, function(action, index) {
+      var el = this.E().startContext({ data: self.obj, dropdown: self.overlay_ });
+      if ( ! availabilities.some(a => a) )
+        el.addClass('p', self.myClass('disabled')).add(this.NO_AVAILABLE);
+      else {
+        el.forEach(self.data, function(action, index) {
           // if ( availabilities[index] ) {
             this
               .start()
@@ -260,7 +279,8 @@ foam.CLASS({
               .end();
           // }
         })
-      .endContext();
+      }
+      el.endContext();
       spinner.remove();
       this.overlay_.add(el);
       this.overlay_.open(x, y);
@@ -286,7 +306,7 @@ foam.CLASS({
         slot = action.createIsEnabled$(this.__context__, this.obj);
       }
       if ( slot.get() ) return true;
-      return slot.args[1].promise || false;
+      return slot.promise || false;
     },
 
     async function isAvailable(action) {
@@ -312,7 +332,7 @@ foam.CLASS({
       code: function() {
         let availSlots = this.data.map(action => {
           if (  foam.u2.ActionReference.isInstance(action) && action.data ) return action.action.createIsAvailable$(this.__context__, action.data)
-          if ( ! foam.core.Action.isInstance(action) ) return foam.core.SimpleSlot.create({ value: true }, this);
+          if ( ! foam.core.Action.isInstance(action) ) return foam.core.ConstantSlot.create({ value: true }, this);
           return action.createIsAvailable$(this.__context__, this.obj)
         })
         this.disabled_$.follow(foam.core.ArraySlot.create({
