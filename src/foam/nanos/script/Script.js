@@ -300,7 +300,7 @@ foam.CLASS({
       value: 'scriptDAO',
       transient: true,
       visibility: 'HIDDEN',
-      documentation: 'Name of dao to store script itself. To set from inheritor just change property value'
+      documentation: 'Name of dao to store script itself. To set from inheritor just change property value. Used by client for polling.'
     },
     {
       class: 'String',
@@ -514,12 +514,10 @@ foam.CLASS({
         return true;
       },
       isAvailable: function(enabled, status) {
-        return enabled;
-        /*
+        return enabled
          &&
           ( status == this.ScriptStatus.UNSCHEDULED ||
             status == this.ScriptStatus.ERROR );
-            */
       },
       code: function() {
         var self = this;
