@@ -19,7 +19,8 @@ foam.CLASS({
     'subject',
     'wizardController',
     'wizardletId',
-    'wizardlets'
+    'wizardlets',
+    'onUserAgentAndGroupLoaded'
   ],
 
   requires: [
@@ -67,8 +68,7 @@ foam.CLASS({
           if ( analyticable ) data.report('^success', ['auth']);
 
           if ( ! wizardFlow ) {
-            await ctrl.checkGeneralCapability();
-            await ctrl.onUserAgentAndGroupLoaded();
+            await this.onUserAgentAndGroupLoaded();
           }
         } catch (err) {
           let e = err && err.data ? err.data.exception : err;
@@ -84,16 +84,22 @@ foam.CLASS({
                 data.username = '';
               }
             }
-            data.usernameRequired = true;
+            data.usernameRequired_ = true;
           }
           if ( this.UnverifiedEmailException.isInstance(e) ) {
-            var email = this.usernameRequired ? data.email : data.identifier;
-            this.wizardVerifyEmail(x, email, data.username, data.password);
+            var identifier = data.usernameRequired_ ? data.email : data.identifier;
+            // This is a quirk of the way emailVerificationService is implemented, when a username is not required, only one identifier should be sent
+            let ret = this.wizardVerifyEmail(x, identifier, data.usernameRequired_ ? data.username : null, data.password);
             var latch = foam.core.Latch.create();
-            this.onDetach(this.emailVerificationService.sub('emailVerified', () => latch.resolve()));
-            await latch;
+            this.onDetach(this.emailVerificationService.sub('emailVerified', () => latch.resolve(true)));
+            ret.then(status => {
+              if ( status == 'DISCARDED' || status == 'ERROR' )
+                latch.resolve(false);
+            });
+            let res = await latch;
             // retry signin
-            await this.signin(x, data, wizardFlow);
+            if ( res )
+              await this.signin(x, data, wizardFlow);
             return;
           }
           this.notify(err.data, this.SIGNIN_ERR, this.LogLevel.ERROR, true);
@@ -150,7 +156,7 @@ foam.CLASS({
         this.subject = await this.auth.getCurrentSubject(x);
         await this.ctrl.reloadClient();
         this.loginSuccess = true;
-        await this.ctrl.onUserAgentAndGroupLoaded();
+        await this.onUserAgentAndGroupLoaded();
       }
     },
     {
@@ -208,12 +214,13 @@ foam.CLASS({
       code: async function(x, email, username, password) {
         var ctx = this.__subContext__.createSubContext({ email: email, username: username })
         const wizardRunner = foam.u2.crunch.WizardRunner.create({
-          wizardType: foam.u2.wizard.WizardType.UCJ,
+          wizardType: foam.u2.wizard.WizardType.TRANSIENT,
           source: 'net.nanopay.auth.VerifyEmailByCode',
           options: { inline: false }
         }, ctx);
 
         await wizardRunner.launch();
+        return wizardRunner.controller.wizardController.status;
       }
     },
     {

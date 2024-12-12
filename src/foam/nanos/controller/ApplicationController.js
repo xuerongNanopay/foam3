@@ -103,6 +103,7 @@ foam.CLASS({
     'memento_ as topMemento_',
     'menuListener',
     'notify',
+    'onUserAgentAndGroupLoaded',
     'popupManager',
     'prefersMenuOpen',
     'pushDefaultMenu',
