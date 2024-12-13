@@ -7,7 +7,6 @@
 foam.CLASS({
   package: 'foam.u2.wizard.wizardlet',
   name: 'BaseWizardlet',
-  implements: ['foam.u2.wizard.DynamicActionWizardlet'],
 
   todo: [
     'rename wizardlet.loading to wizardlet.busy',
@@ -506,6 +505,9 @@ foam.CLASS({
     },
     function warn(...args) {
       console.warn(`[wizardlet:${this.id}]`, ...args, { wizardlet: this });
+    },
+    function willRender() {
+      // NO-OP
     }
   ],
 
