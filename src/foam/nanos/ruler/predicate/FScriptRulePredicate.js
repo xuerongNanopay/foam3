@@ -20,7 +20,7 @@ foam.CLASS({
     'java.util.Date'
   ],
 
-  implements: ['foam.core.Serializable'],
+  implements: [ 'foam.core.Serializable' ],
 
   properties: [
     {
@@ -28,20 +28,17 @@ foam.CLASS({
       name: 'query'
     }
   ],
+
   methods: [
     {
-      name: 'f',
+      name: 'ruleF',
       javaCode: `
-      if ( ! ( obj instanceof X ) ) return false;
-      var x = (X) obj;
       var fScriptExpr = new FScript();
       Subject subject = (Subject) x.get("subject");
       fScriptExpr.setQuery(getQuery());
-      FObject olObj = (FObject) x.get("OLD");
-      FObject newObj = (FObject) x.get("NEW");
       RulerData data = new RulerData();
-      data.setO(olObj);
-      data.setN(newObj);
+      data.setO(o);
+      data.setN(n);
       data.setUser(subject.getUser());
       data.setRealUser(subject.getRealUser());
       data.setSpid(subject.getUser().getSpid());
