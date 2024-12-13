@@ -9,7 +9,13 @@ foam.CLASS({
   name: 'OptionalFObjectView',
   extends: 'foam.u2.Controller',
 
-  documentation: 'View for editing FObjects we can be undefined.',
+  documentation: `
+    View for editing FObjects we can be undefined.
+    The regular FObjectView will create an new object of type 'of'
+    if given a null or undefined data value. This FObjectView
+    allows for the object to remain as undefined and it allows for
+    a previously defined value to become undefined.
+  `,
 
   properties: [
     {
@@ -18,7 +24,6 @@ foam.CLASS({
       postSet: function(o, n) {
         if ( ! o && n && ! this.data ) {
           this.data = this.oldData || this.of.create();
-          console.log('***** CREATING: ', this.of.id, this.data);
         } else if ( o && ! n ) {
           this.oldData = this.data;
           this.data = null;
@@ -28,10 +33,11 @@ foam.CLASS({
     {
       name: 'data',
       postSet: function(o, n) {
-        this.instance_.defined = !! n; 
+        this.instance_.defined = !! n;
       }
-//      view: function() { return { class: 'foam.u2.DetailView' } }
     },
+    // Last known data, so if moved to undefined and then back, old values
+    // aren't lost.
     'oldData',
     {
       name: 'of'
