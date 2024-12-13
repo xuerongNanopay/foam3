@@ -83,12 +83,7 @@ foam.CLASS({
     },
     {
       name: 'isCurrent',
-      class: 'Boolean',
-      postSet: function (_, n) {
-        if ( n && this.saveOnCurrent ) {
-          this.save();
-        }
-      }
+      class: 'Boolean'
     },
     {
       name: 'wao',
@@ -119,10 +114,15 @@ foam.CLASS({
     }
   ],
   methods: [
+    async function willRender() {
+      if ( this.saveOnCurrent ) {
+        await this.save();
+      }
+    },
     async function save(options) {
       let ret = await this.SUPER(options);
       if ( this.goNextOnGranted && this.status == 'GRANTED' ) {
-        this.__context__.wizardController.goNext();
+        this.__context__.wizardController?.goNext();
         // Make itself invisible when granted in this case so that back actions work as expected in the wizard
         this.isVisible = false;
       }
