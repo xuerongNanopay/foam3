@@ -42,13 +42,14 @@ foam.CLASS({
         ) {
           throw new AuthorizationException();
         }
-
-        DAO userDAO = ((DAO) getX().get("localUserDAO")).inX(x);
+        String spid = (String) x.get("spid");
+        DAO userDAO = ((DAO) getX().get("localUserDAO")).inX(getX());
         if ( "email".equals(targetProperty) ) {
-          if ( PreventDuplicateEmailAction.spidPreventDuplicateEmailPermission(getX(), String.valueOf(x.get("spid"))) ) {
+          if ( PreventDuplicateEmailAction.spidPreventDuplicateEmailPermission(getX(), spid) ) {
             return
               userDAO
                 .find(AND(
+                  EQ(User.SPID, spid),
                   EQ(User.EMAIL, value),
                   EQ(User.TYPE, "User"),
                   NEQ(User.LIFECYCLE_STATE, LifecycleState.DELETED)
@@ -59,6 +60,7 @@ foam.CLASS({
         return
           userDAO
             .find(AND(
+              EQ(User.SPID, spid),
               EQ(User.USER_NAME, value),
               EQ(User.TYPE, "User"),
               NEQ(User.LIFECYCLE_STATE, LifecycleState.DELETED)

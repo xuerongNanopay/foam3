@@ -30,7 +30,9 @@ and then
   ],
 
   messages: [
+    { name: 'USER_NAME_OR_EMAIL_REQUIRED', message: 'Username or Email required' },
     { name: 'EMAIL_REQUIRED', message: 'Email required' },
+    { name: 'USER_NAME_REQUIRED', message: 'Username required' },
     { name: 'DUPLICATE_USER', message: 'User with the same username already exists' }
   ],
 
@@ -46,8 +48,8 @@ and then
       name: 'put_',
       javaCode: `
         User user = (User) obj;
-        if ( user == null || SafetyUtil.isEmpty(user.getEmail()) ) {
-          throw new RuntimeException(EMAIL_REQUIRED);
+        if ( user == null ) {
+          throw new RuntimeException(USER_NAME_OR_EMAIL_REQUIRED);
         }
 
         String spid = null;
@@ -64,6 +66,15 @@ and then
         } else {
           Loggers.logger(x, this).error("Theme not found");
           throw new RuntimeException("Theme not found for user registration");
+        }
+        Group group = (Group) ((DAO) getX().get("groupDAO")).find_(getX(), user.getGroup());
+        if ( group.getEmailRequired() &&
+             SafetyUtil.isEmpty(user.getEmail()) ) {
+          throw new RuntimeException(EMAIL_REQUIRED);
+        }
+
+        if ( SafetyUtil.isEmpty(user.getUserName()) ) {
+          throw new RuntimeException(USER_NAME_REQUIRED);
         }
 
         List users = (List) ((ArraySink) getDelegate().inX(getX())
