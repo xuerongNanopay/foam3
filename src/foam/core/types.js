@@ -669,7 +669,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.core',
   name: 'InternalLink',
-  extends: 'String',
+  extends: 'URL',
   label: 'Link to nano service (eg. /service/serviceA) or menu (eg. #menu_1) in the app.',
   help: 'Do not inclulde domain name in the link as it will be resolved on the client.',
   properties: [ [ 'displayWidth', 80 ] ]
