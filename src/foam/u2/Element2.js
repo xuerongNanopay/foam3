@@ -1214,6 +1214,14 @@ foam.CLASS({
     function addChild_(c, parentNode) {
       if ( c === null || c === undefined ) return;
 
+      if ( parentNode.isDetached() ) {
+        console.warn('Attempt to add child to detached parent');
+        if ( c.element_ ) {
+          c.detach();
+        }
+        return;
+      }
+
       if ( foam.Array.isInstance(c) ) {
         for ( var i = 0 ; i < c.length ; i++ )
           this.addChild_(c[i], parentNode);
