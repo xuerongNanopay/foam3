@@ -41,6 +41,7 @@ foam.CLASS({
     'foam.dao.ArraySink',
     'static foam.mlang.MLang.AND',
     'static foam.mlang.MLang.EQ',
+    'foam.nanos.auth.Group',
     'foam.nanos.auth.LifecycleAware',
     'foam.nanos.auth.LifecycleState',
     'foam.nanos.notification.NotificationSetting',
@@ -51,6 +52,7 @@ foam.CLASS({
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
+    'foam.nanos.logger.Loggers',
     'java.util.regex.Pattern'
   ],
 
@@ -67,7 +69,8 @@ foam.CLASS({
     'lifecycleState',
     'userName',
     'group.id',
-    'email'
+    'email',
+    'lifecycleState'
   ],
 
   searchColumns: [
@@ -658,9 +661,9 @@ foam.CLASS({
       section: 'systemInformation',
       order: 40,
       gridColumns: 6,
-      value: foam.nanos.auth.LifecycleState.PENDING,
-      help: 'Recommend using state change actions',
-      writePermissionRequired: false
+      value: foam.nanos.auth.LifecycleState.ACTIVE,
+      writePermissionRequired: false,
+      help: 'Recommend using state change actions'
     },
     {
       class: 'Reference',
@@ -686,14 +689,15 @@ foam.CLASS({
       columnPermissionRequired: true
     },
     {
+      // deprecated; use lifecycleState instead
       class: 'Boolean',
       name: 'enabled',
       documentation: 'Determines whether the User is permitted certain actions.',
-      value: true,
-      includeInDigest: true,
-      section: 'systemInformation',
-      order: 90,
-      gridColumns: 6
+      hidden: true,
+      transient: true,
+      javaGetter: `
+        return getLifecycleState() == foam.nanos.auth.LifecycleState.ACTIVE;
+      `
     },
     {
       class: 'String',
@@ -1045,7 +1049,15 @@ foam.CLASS({
           throw new AccessDeniedException();
         }
 
-        if ( ! getEmailVerified() ) {
+        Group group = null;
+        try {
+          group = (Group) ((DAO) foam.core.XLocator.get().get("groupDAO")).find(getGroup());
+        } catch (Throwable e) {
+          foam.nanos.logger.StdoutLogger.instance().error(e);
+          throw new AuthenticationException("Group not found");
+        }
+        if ( group != null &&
+             group.getEmailRequired() && ! getEmailVerified() ) {
           throw new UnverifiedEmailException();
         }
       `
