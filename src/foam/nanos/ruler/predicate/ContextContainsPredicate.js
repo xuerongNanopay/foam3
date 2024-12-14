@@ -20,6 +20,7 @@ foam.CLASS({
       documentation: 'The Key that we want to check is contained in the context'
     }
   ],
+
   methods: [
     {
       name: 'f',
