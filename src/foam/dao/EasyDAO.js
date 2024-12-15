@@ -755,15 +755,6 @@ foam.CLASS({
       class: 'Boolean'
     },
     {
-      /* deprecated */
-      documentation: `More documentation in ServiceProviderAwareDAO.
-A map of class and PropertyInfos used by the ServiceProviderAwareDAO
-to traverse a hierarchy of models in search of a ServiceProviderAware
-model from which to test ServiceProvider ID (spid)`,
-      name: 'serviceProviderAwarePropertyInfos',
-      class: 'Map'
-    },
-    {
       name: 'lifecycleAware',
       class: 'Boolean',
       javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.auth.LifecycleAware.class.isAssignableFrom(getOf().getObjClass());'

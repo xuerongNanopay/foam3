@@ -8,17 +8,15 @@ foam.CLASS({
   package: 'foam.nanos.auth.login',
   name: 'SignIn',
 
-  messages: [
-    { name: 'USERNAME_REQUIRED', message: 'Username is required' }
-  ],
-
   properties: [
     {
       class: 'String',
       name: 'identifier',
       required: true,
       validationTextVisible: false,
-      label: 'Email or Username',
+      labelFormatter: function(data) {
+        this.add(data.emailRequired_ ? 'Email or Username' : 'Username');
+      },
       trim: true
     },
     {
@@ -43,6 +41,11 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'usernameRequired_',
+      hidden: true
+    },
+    {
+      class: 'Boolean',
+      name: 'emailRequired_',
       hidden: true
     }
   ]

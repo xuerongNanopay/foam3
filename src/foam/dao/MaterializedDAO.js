@@ -55,7 +55,7 @@ foam.CLASS({
     {
       documentation: 'When true, DAO will be initialized (loaded) immediately on startup of the system, rather than wait for first user request.',
       class: 'Boolean',
-      name: 'autoStart',
+      name: 'autoStart'
     },
     {
       class: 'Object',
@@ -175,32 +175,45 @@ foam.CLASS({
       javaType: 'void',
       synchronized: true,
       javaCode: `
-        if ( getInitializing() ||
-             getInitialized() ) return;
+        // Immediate return
+        if ( getInitialized() ) return;
 
-          Thread t = new Thread(this);
-          t.setName("MaterializedDAO Processor: " + getDelegate());
-          t.setDaemon(true);
-          t.start();
-
-          setInitialized(true);
-
-          if ( ! getAutoStart() ) {
-            addIndex();
-          }
-
-          String[] daoKeys = getObservedDAOs();
-          if ( daoKeys.length != 0 ) {
-            for ( String daoKey : daoKeys ) {
-              DAO dao = (DAO) getX().get(daoKey);
-              var self = this;
-              if ( dao != null ) dao.listen(new AbstractSink() {
-                public void put(Object obj, Detachable sub) {
-                  getAdapter().onObservedDAOUpdate(self, daoKey, obj);
-                }
-              }, foam.mlang.MLang.TRUE);
+        // Blocking return
+        if ( getInitializing() ) {
+          while ( getInitializing() ) {
+            try {
+              wait();
+            } catch (InterruptedException e) {
             }
           }
+          return;
+        }
+
+        setInitializing(true);
+
+        Thread t = new Thread(this);
+        t.setName("MaterializedDAO Processor: " + getDelegate());
+        t.setDaemon(true);
+        t.start();
+
+        if ( ! getAutoStart() ) addIndex();
+
+        setInitialized(true);
+        setInitializing(false);
+        notifyAll();
+
+        String[] daoKeys = getObservedDAOs();
+        if ( daoKeys.length != 0 ) {
+          for ( String daoKey : daoKeys ) {
+            DAO dao = (DAO) getX().get(daoKey);
+            var self = this;
+            if ( dao != null ) dao.listen(new AbstractSink() {
+              public void put(Object obj, Detachable sub) {
+                getAdapter().onObservedDAOUpdate(self, daoKey, obj);
+              }
+            }, foam.mlang.MLang.TRUE);
+          }
+        }
       `
     },
     {
@@ -308,11 +321,6 @@ foam.CLASS({
       name: 'start',
       javaCode: `
       if ( getAutoStart() ) {
-        synchronized ( this ) {
-          if ( getInitialized() || getInitializing() ) return;
-          setInitializing(true);
-        }
-
         Logger logger = Loggers.logger(getX(), this, getSourceDAO().getOf().getObjClass().getSimpleName(), "start");
 
         foam.core.XLocator.set(getX());
@@ -349,7 +357,6 @@ foam.CLASS({
         } catch (Throwable t) {
           logger.error(t);
         } finally {
-          setInitializing(false);
           maybeInit();
         }
       }

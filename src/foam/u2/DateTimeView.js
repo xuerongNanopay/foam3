@@ -50,10 +50,9 @@ foam.CLASS({
         if ( ! date ) {
           slot.set('');
         } else {
-          if ( ! date.toISOString )
+          if ( ! foam.Date.isInstance(date) )
             date = new Date(date);
-
-          slot.set(date.toISOString().substring(0,16));
+          slot.set(foam.Date.toInputCompatibleDateTimeString(date));
         }
       }
 

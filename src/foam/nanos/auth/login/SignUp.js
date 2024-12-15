@@ -33,30 +33,41 @@ foam.CLASS({
     {
       class: 'EMail',
       name: 'email',
-      placeholder: 'example@example.com',
+      placeholder: 'example123@example.com',
+      order: 1,
       view: function(_, X) {
         return {
           class: 'foam.u2.view.UserPropertyAvailabilityView',
           icon: 'images/checkmark-small-green.svg',
           isAvailable$: X.data.emailAvailable$,
           type: 'email',
-          inputValidation: /\S+@\S+\.\S+/,
-          displayMode: X.data.disableEmail_ ? foam.u2.DisplayMode.DISABLED : foam.u2.DisplayMode.RW
+          inputValidation: /\S+@\S+\.\S+/
         };
       },
-      required: true,
+      validateObj: function(disableEmail_, email, emailAvailable) {
+        if ( ! disableEmail_ ) {
+          if ( ! email ) return "Required";
+          if ( emailAvailable != true ) return this.EMAIL_AVAILABLE_ERR;
+        }
+      },
       validationPredicates: [
         {
           args: ['emailAvailable', 'email'],
           query: 'emailAvailable!="unavailable"',
           errorMessage: 'EMAIL_AVAILABILITY_ERR'
         }
-      ]
+      ],
+      visibility: function(disableEmail_) {
+        return disableEmail_ ?
+          foam.u2.DisplayMode.HIDDEN :
+          foam.u2.DisplayMode.RW;
+      }
     },
     {
       class: 'String',
       name: 'username',
       placeholder: 'example123',
+      order: 0,
       view: function(_, X) {
         return {
           class: 'foam.u2.view.UserPropertyAvailabilityView',
@@ -83,6 +94,7 @@ foam.CLASS({
       class: 'Password',
       name: 'desiredPassword',
       label: 'Password',
+      order: 2,
       view: function(_, X) {
         return {
           class: 'foam.u2.view.PasswordView',
