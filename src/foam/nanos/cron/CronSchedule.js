@@ -223,7 +223,9 @@ foam.CLASS({
     },
     {
       class: 'Array',
-      of: 'Int',
+      // TODO(adamvy): Should be of: 'Int', but when IntArray was added to types it broke this
+      // and I haven't figured out why yet.
+      of: 'Object',
       name: 'daysOfMonth',
       order: 6,
       javaPreSet: 'if ( val != null ) { Arrays.sort(val); }',
