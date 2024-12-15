@@ -571,9 +571,10 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.core',
-  name: 'IntArray',
+  name: 'IntegerArray',
   extends: 'Property',
 
+  // Not named IntArray because 'Array' is faceted so a class: 'Array', of 'Int' will be broken.
   documentation: 'An array of Int values.',
 
   label: 'List of integers',
