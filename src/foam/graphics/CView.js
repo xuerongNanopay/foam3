@@ -903,21 +903,23 @@ foam.CLASS({
     {
       class: 'Int',
       name: 'cornerRadius'
-    }
+    },
+    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' }
   ],
 
   methods: [
     function paintSelf(x) {
       x.beginPath();
-
       if ( this.cornerRadius ){
         this.roundRect(x, 0, 0, this.width, this.height, this.cornerRadius)
       } else {
         x.rect(0, 0, this.width, this.height);
       }
 
-
       if ( this.border && this.borderWidth ) {
+        console.log('******', this.lineDash);
+        if ( this.lineDash ) { x.setLineDash(this.lineDash);
+        }
         x.lineWidth = this.borderWidth;
         x.stroke();
       }
@@ -992,11 +994,11 @@ foam.CLASS({
       getter: function() { return this.y; },
       setter: function(v) { this.y = v; }
     },
-    { class: 'Float',  name: 'endX' },
-    { class: 'Float',  name: 'endY' },
-    { class: 'Float',  name: 'lineWidth', value: 1 },
-    { class: 'foam.core.Color', name: 'color',     value: '#000000' },
-    { name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
+    { class: 'Float',    name: 'endX' },
+    { class: 'Float',    name: 'endY' },
+    { class: 'Float',    name: 'lineWidth', value: 1 },
+    { class: 'Color',    name: 'color',     value: '#000000' },
+    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],
 
   methods: [
@@ -1058,12 +1060,14 @@ foam.CLASS({
     { class: 'Array', of: 'Float', name: 'xCoordinates' }, // 'of' not used
     { class: 'Array', of: 'Float', name: 'yCoordinates' }, // 'of' not used
     { class: 'foam.core.Color', name: 'color', value: '#000' },
-    { class: 'Float', name: 'lineWidth', value: 1 }
+    { class: 'Float', name: 'lineWidth', value: 1 },
+    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],
 
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.moveTo(this.xCoordinates[0], this.yCoordinates[0]);
       for ( var i = 1 ; i < this.xCoordinates.length ; i++ ) {
         x.lineTo(this.xCoordinates[i], this.yCoordinates[i]);
@@ -1106,6 +1110,7 @@ foam.CLASS({
       name: 'border',
       value: '#000000'
     },
+    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
     { name: 'x_',      hidden: true, transient: true, getter: function() { return this.x; } },
     { name: 'y_',      hidden: true, transient: true, getter: function() { return this.y; } },
     { name: 'top_',    hidden: true, transient: true, getter: function() { return this.y-this.radius-this.arcWidth; } },
@@ -1117,6 +1122,7 @@ foam.CLASS({
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.arc(0, 0, this.radius, this.start, this.end);
 
       if ( this.color ) x.fill();
@@ -1214,6 +1220,7 @@ foam.CLASS({
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.arc(0, 0, this.radius, this.start, this.end);
 
       if ( this.start != 0 || Math.abs(this.end-Math.PI*2)>0.01 ) {
@@ -1291,6 +1298,7 @@ foam.CLASS({
       getter: function() { return 2 * this.radiusY; },
       setter: function(h) { this.radiusY = h / 2; }
     },
+    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
     { name: 'x_',      hidden: true, transient: true, getter: function() { return this.x; } },
     { name: 'y_',      hidden: true, transient: true, getter: function() { return this.y; } },
     { name: 'top_',    hidden: true, transient: true, getter: function() { return this.y; } },
@@ -1302,6 +1310,7 @@ foam.CLASS({
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.ellipse(this.radiusX, this.radiusY, this.radiusX, this.radiusY, 0, this.start, this.end);
 
       if ( this.color ) x.fill();
