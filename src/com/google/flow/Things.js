@@ -671,7 +671,20 @@ foam.CLASS({
   properties: [
     {
       class: 'String',
-      name: 'delegate'
+      name: 'delegate',
+      postSet: function(o, n) {
+        if ( n ) {
+          var obj = this.scope[n];
+          if ( obj ) {
+            if ( obj.radius ) {
+              this.width = this.height = 2 * obj.radius;
+            } else {
+              this.width  = obj.width;
+              this.height = obj.height;
+            }
+          }
+        }
+      }
     },
     {
       class: 'Int',
@@ -697,6 +710,9 @@ foam.CLASS({
     function paintSelf(x) {
       if ( ! this.delegate ) return;
 
+//      this.scaleX = this.width / 50;
+//      this.scaleY = this.height / 50;
+
       if ( ! this.depth_ ) { this.depth_ = 0; this.count_ = 0; }
       if ( this.depth_ >= this.maxDepth ) return;
       if ( this.count_ >= this.maxCount ) return;
@@ -710,12 +726,12 @@ foam.CLASS({
         var obj = this.scope[this.delegate];
 
         if ( obj ) {
-          this.width  = obj.width  || (2 * obj.radius);
-          this.height = obj.height || (2 * obj.radius);
-
-          obj.paintSelf(x);
-          this.count_++;
-          obj.paintChildren(x);
+          x.save();
+            x.scale(this.width / obj.width, this.height / obj.height);
+            obj.paintSelf(x);
+            this.count_++;
+            obj.paintChildren(x);
+          x.restore();
         }
       } finally {
         this.depth_--;
