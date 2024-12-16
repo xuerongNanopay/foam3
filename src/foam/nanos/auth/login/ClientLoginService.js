@@ -17,10 +17,9 @@ foam.CLASS({
     'notify',
     'stack',
     'subject',
-    'wizardController',
-    'wizardletId',
-    'wizardlets',
-    'onUserAgentAndGroupLoaded'
+    'onUserAgentAndGroupLoaded',
+    'sessionID',
+    'window',
   ],
 
   requires: [
@@ -121,15 +120,16 @@ foam.CLASS({
           state: foam.json.Network.stringify(this.OIDCLoginState.create({
             sessionId: this.sessionID,
             oidcProvider: provider.id,
-            returnToApp: false
+            returnToApp: true
           }), this.OIDCLoginState),
         }
 
         let authURL = provider.authURL + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&')
+        this.window.location = authURL;
 
-        // If you want to run the login flow in the same window with a redirect
-        // set returnToApp: true in the above OICDLoginState and redirect the current
-        // page to the authURL
+        return;
+        // If you want to run the login flow in a separate window
+        // set returnToApp: false in the above OIDCLoginState open a window to authURL
 
         try {
           await new Promise((resolve, reject) => {
@@ -137,11 +137,11 @@ foam.CLASS({
               if (e.origin == location.origin && e.data && e.data.sessionID == this.sessionID) {
                 window.removeEventListener('message', listener);
                 if (e.data.msg == "success") {
+                  authwindow.close();
                   resolve();
                 } else {
                   reject(e.data.error)
                 }
-                authwindow.close();
               }
             };
 
