@@ -119,6 +119,7 @@ foam.CLASS({
           nonce: nonce,
           state: foam.json.Network.stringify(this.OIDCLoginState.create({
             sessionId: this.sessionID,
+            memento: this.ctrl.memento_.str,
             oidcProvider: provider.id,
             returnToApp: true
           }), this.OIDCLoginState),

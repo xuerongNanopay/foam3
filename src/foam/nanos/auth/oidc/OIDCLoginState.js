@@ -7,6 +7,10 @@ foam.CLASS({
             name: 'sessionId'
         },
         {
+            class: 'String',
+            name: 'memento'
+        },
+        {
             class: 'Reference',
             of: 'foam.nanos.auth.oidc.OIDCProvider',
             name: 'oidcProvider',
