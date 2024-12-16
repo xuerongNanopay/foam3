@@ -1,4 +1,40 @@
 ## Scratch Examples
+##  DynamciDynamic
+
+--
+foam.CLASS({
+  name: 'Example',
+  extends: 'foam.u2.Controller',
+
+  properties: [
+    { class: 'Int', name: 'count', onKey: true },
+    { class: 'Int', name: 'count2', onKey: true },
+  ],
+
+  methods: [
+    function render() {
+      var self = this;
+
+      this.add(this.COUNT.__);
+      this.add(this.COUNT2.__);
+      this.br();
+      this.add(this.count$, ' ', this.count2$);
+
+      this.start('ol').add(function(count) {
+        this.start('li').add('1: ' + count).end().add(self.dynamic(function(count2) {
+          this.start('b').add('2: ' + count2).end();
+        }));
+      });
+
+      this.start('ol').add(function(count) {
+        this.start('li').add('3: ' + count);
+      });
+    }
+  ]
+});
+
+tag(Example);
+
 ##  Scratch
 Insert temporary example here.
 --
@@ -40,3 +76,6 @@ foam.CLASS({
 
 globalThis.example = Example.create();
 tag(globalThis.example);
+
+##  Empty
+--
