@@ -99,6 +99,7 @@ foam.CLASS({
         return {
           class: 'foam.u2.view.PasswordView',
           isAvailable$: X.data.passwordAvailable$,
+          autocomplete: 'new-password',
           passwordIcon: true
         }
       },
