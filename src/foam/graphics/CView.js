@@ -904,7 +904,7 @@ foam.CLASS({
       class: 'Int',
       name: 'cornerRadius'
     },
-    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' }
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' }
   ],
 
   methods: [
@@ -998,7 +998,7 @@ foam.CLASS({
     { class: 'Float',    name: 'endY' },
     { class: 'Float',    name: 'lineWidth', value: 1 },
     { class: 'Color',    name: 'color',     value: '#000000' },
-    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],
 
   methods: [
@@ -1061,7 +1061,7 @@ foam.CLASS({
     { class: 'Array', of: 'Float', name: 'yCoordinates' }, // 'of' not used
     { class: 'foam.core.Color', name: 'color', value: '#000' },
     { class: 'Float', name: 'lineWidth', value: 1 },
-    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],
 
   methods: [
@@ -1110,7 +1110,7 @@ foam.CLASS({
       name: 'border',
       value: '#000000'
     },
-    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
     { name: 'x_',      hidden: true, transient: true, getter: function() { return this.x; } },
     { name: 'y_',      hidden: true, transient: true, getter: function() { return this.y; } },
     { name: 'top_',    hidden: true, transient: true, getter: function() { return this.y-this.radius-this.arcWidth; } },
@@ -1298,7 +1298,7 @@ foam.CLASS({
       getter: function() { return 2 * this.radiusY; },
       setter: function(h) { this.radiusY = h / 2; }
     },
-    { class: 'IntArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
     { name: 'x_',      hidden: true, transient: true, getter: function() { return this.x; } },
     { name: 'y_',      hidden: true, transient: true, getter: function() { return this.y; } },
     { name: 'top_',    hidden: true, transient: true, getter: function() { return this.y; } },

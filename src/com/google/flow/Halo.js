@@ -10,16 +10,15 @@ foam.CLASS({
   extends: 'foam.graphics.Box',
 
   properties: [
-    [ 'border', 'blue' ]
+    [ 'border', 'blue' ],
+    {
+      name: 'lineDash',
+      factory: function() { return [ 10, 10 ]; }
+    }
   ],
 
   methods: [
-    function hitTest(p) { return false; },
-
-    function paintSelf(x) {
-      x.setLineDash([4, 4]);
-      this.SUPER(x);
-    }
+    function hitTest(p) { return false; }
   ]
 });
 
