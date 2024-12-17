@@ -92,7 +92,7 @@ public class OIDCWebAgent implements WebAgent {
             login.login(session.getContext(), user);
 
             if (state.getReturnToApp()) {
-                resp.sendRedirect(req.getContextPath() + "/");
+                resp.sendRedirect(req.getContextPath() + "/#" + state.getMemento());
             } else {
                 resp.setStatus(HttpServletResponse.SC_OK);
                 resp.setContentType("text/html");
