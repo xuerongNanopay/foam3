@@ -274,8 +274,6 @@ foam.CLASS({
       name: 'process',
       args: 'Object[] cmd',
       javaCode: `
-         foam.core.XLocator.set(getX());
-
         FObject  value;
         if ( cmd[0] == PUT ) {
           value = (FObject) cmd[1];
