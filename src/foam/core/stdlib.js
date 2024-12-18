@@ -1001,6 +1001,9 @@ foam.LIB({
       let newValue = date.valueOf() - offsetInMillis;
       date = new Date(newValue)
       return date.toISOString().substring(0,16);
+    },
+    function toInputCompatibleDateString(date) {
+      return foam.Date.toInputCompatibleDateTimeString(date).substring(0, 10);
     }
   ]
 });

@@ -55,13 +55,13 @@ foam.CLASS({
       var slot    = this.attrSlot(); //null, this.onKey ? 'input' : null);
 
       function updateSlot() {
-        var date = self.data;
         if ( focused ) return;
+        var date = self.data;
         if ( foam.Number.isInstance(date) ) date = new Date(date);
         if ( ! date ) {
           slot.set('');
         } else {
-          slot.set(foam.Date.toInputCompatibleDateTimeString(date));
+          slot.set(foam.Date.toInputCompatibleDateString(date));
         }
       }
 
