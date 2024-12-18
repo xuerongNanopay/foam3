@@ -77,5 +77,21 @@ foam.CLASS({
 globalThis.example = Example.create();
 tag(globalThis.example);
 
+##  Date Bug?
+--
+foam.CLASS({
+  name: 'Example',
+
+  properties: [
+    { class: 'Date', name: 'date1', postSet: function(o,n) { this.date2 = n; } },
+    { class: 'Date', name: 'date2' },
+    { class: 'DateTime', name: 'datetime1' },
+    { class: 'DateTime', name: 'datetime2', postSet: function(o,n) { this.date2 = n; } },
+    { class: 'String', name: 'summary', width: 100, expression: function(date2, datetime2) { return date2 + " " + datetime2; } } 
+  ]
+});
+
+tag(Example);
+
 ##  Empty
 --
