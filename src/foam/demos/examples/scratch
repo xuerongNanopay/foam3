@@ -94,6 +94,11 @@ foam.CLASS({
 globalThis.e = Example.create();
 
 tag(globalThis.e);
+tag(Example);
+tag(Example);
+tag(Example);
+tag(Example);
+
 
 ##  Empty
 --
