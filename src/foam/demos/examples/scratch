@@ -1,4 +1,57 @@
 ## Scratch Examples
+##  Binding
+--
+
+foam.CLASS({
+  name: 'Data',
+
+  properties: [
+    {
+      class: 'String',
+      name: 'firstName'
+    },
+    {
+      class: 'String',
+      name: 'lastName'
+    },
+    {
+      class: 'Int',
+      name: 'age'
+    }
+  ],
+
+  actions: [
+    function incr() { this.age++; }
+  ]
+});
+
+foam.CLASS({
+  name: 'Example',
+  extends: 'foam.u2.View',
+
+  properties: [
+    {
+      class: 'FObjectProperty',
+      of: 'Data',
+      name: 'data',
+      factory: function() { return Data.create(); }
+    }
+  ],
+
+  methods: [
+    function render() {
+      this.SUPER();
+      this.add(this.data.FIRST_NAME.__, this.data.LAST_NAME.__, this.data.AGE.__, this.data.INCR, this.MUL);
+    }
+  ],
+
+  actions: [
+    function mul() { this.data.age *= 10; }
+  ]
+});
+
+tag(Example);
+
 ##  DynamciDynamic
 
 --
@@ -98,6 +151,7 @@ tag(Example);
 tag(Example);
 tag(Example);
 tag(Example);
+
 
 
 ##  Empty
