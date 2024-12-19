@@ -9,9 +9,9 @@ foam.CLASS({
   name: 'CapabilityJunctionTransitionToStatus',
   extends: 'foam.mlang.predicate.AbstractPredicate',
   implements: ['foam.core.Serializable'],
-  
+
   documentation: `Returns true if the capability of the ucj submitted is transitioning to status defined.`,
-  
+
   javaImports: [
     'foam.core.X',
     'foam.dao.DAO',
