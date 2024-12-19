@@ -270,19 +270,25 @@ foam.CLASS({
       documentation: 'Used to check whether a paint should be performed or not.'
     },
     {
+      class: 'Array',
+      name: 'data_'
+    },
+    {
       name: 'fn',
       factory: function() {
-        return this.dynamic(function(batch) {
-          this.dao.select(d => {
-            if ( this.isDetached() || this.batch !== batch ) return;
+        return this.dynamic(function(data_) {
+          data_.forEach(d => {
+            this.startContext({ data: d })
 
-            var e = this.code.call(this.startContext({data: d}), d);
+            var e = this.code.call(this.startContext({ data: d }), d);
             if ( e ) {
               // TODO: remove after port from U2 to U3
               console.log('Deprecated use of select({return E}). Just do self.start() instead in DAOSelectNode.', this.code);
               this.tag(e);
             }
-          });
+
+            this.endContext()
+          })
         });
       }
     }
@@ -301,9 +307,14 @@ foam.CLASS({
   listeners: [
     {
       name: 'update',
-      isMerged: true,
-      mergeDelay: 160,
-      code: function() { this.batch++; }
+      isFramed: true,
+      code: function() {
+        var batch = ++this.batch;
+        this.dao.select().then(data => {
+          if ( this.isDetached() || this.batch !== batch ) return;
+          this.data_ = data.array;
+        });
+      }
     }
   ]
 });
@@ -1354,7 +1365,7 @@ foam.CLASS({
      * @param {Boolean} update True if you'd like changes to each record to be put to
      * the DAO
      */
-    function select(dao, f, update, opt_comparator) {
+    function select(dao, f, update) {
       this.add(foam.u2.DAOSelectNode.create({
         dao:  dao,
         code: f
