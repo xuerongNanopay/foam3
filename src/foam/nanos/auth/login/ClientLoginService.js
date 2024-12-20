@@ -107,7 +107,7 @@ foam.CLASS({
     },
     {
       name: 'signInWithOIDC',
-      code: async function(provider) {
+      code: async function(provider, signUp = false, signUpUsername = '') {
         // TODO: Validate nonce
         var nonce = crypto.randomUUID();
 
@@ -119,10 +119,14 @@ foam.CLASS({
           nonce: nonce,
           state: foam.json.Network.stringify(this.OIDCLoginState.create({
             sessionId: this.sessionID,
-            memento: this.ctrl.memento_.str,
             oidcProvider: provider.id,
-            returnToApp: true
-          }), this.OIDCLoginState),
+            returnToApp: true,
+            returnToUrl: this.window.location.toString(),
+            signUp,
+            signUpUsername,
+          }), foam.nanos.auth.oidc.OIDCLoginState),
+          // TODO: opt_cls here should be this.OIDCLoginState but that causes the outputter to output the
+          // class name.
         }
 
         let authURL = provider.authURL + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&')
