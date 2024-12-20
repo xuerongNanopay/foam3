@@ -91,7 +91,14 @@ foam.CLASS({
   ]
 });
 
+/*
+  TODO:
 
+  Make into a Model/Class instead? Then it can be added to classes: instead of axioms:
+    Any way to auto-populate 'of'?
+  Better support for Java Singletons
+  Ability to remove Builder generation.
+*/
 foam.CLASS({
   package: 'foam.nanos.ruler',
   name: 'RulePredicateAxiom',
@@ -124,7 +131,7 @@ foam.CLASS({
 
     function buildJavaClass(cls) {
       var strictCheck = this.strict ?
-        'if ( n.getClass() != getOf().getObjClass() ) return false;' :
+        `if ( n.getClass() != ${this.of.id}.class ) return false;` :
         '' ;
 
       var javaCode = `
@@ -142,6 +149,7 @@ foam.CLASS({
         name: this.name,
         extends: 'foam.mlang.predicate.AbstractPredicate',
 //        implements: [ 'foam.nanos.ruler.RulePredicate' ],
+        javaImports: [ 'static foam.mlang.MLang.*' ],
         methods: [
           {
             name: 'ruleF',
