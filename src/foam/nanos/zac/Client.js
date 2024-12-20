@@ -128,8 +128,7 @@ foam.CLASS({
         showActions: false
       });
 
-      var cls = await this.ClientBuilder.create({authenticate: false}, this).promise;
-      this.client = cls.create(null, this);
+      this.client = await this.ClientBuilder.create({authenticate: false}, this).promise;
 
       if ( ! globalThis.client ) globalThis.client = this.client;
     },
