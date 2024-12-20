@@ -1,11 +1,16 @@
 Run with:
+```
 ./build.sh -jJdemo
+```
 
 Then visit the ZAC micro-controller at either:
+```
 http://localhost:8080/foam3/src/foam/nanos/zac/index.html
+```
 
 In deployment/demo/journals/services.jrl it has the following services (among others):
 
+```
 p({
   "class": "foam.nanos.boot.NSpec",
   "name": "helloWorld",
@@ -14,14 +19,13 @@ p({
   "serve": true,
   "client":"""{"class":"foamdev.demo.zac.HelloWorld"}"""
 })
+```
 
 Which causes the HelloWorld agent to be created which adds itself to the controller.
 
-If you add this record to a services.jrl file it will cause the ZAC index page
-to be the default and the it will also appear at
+If you add this record:
 
-http://localhost:8080/
-
+```
 p({
   "class":"foam.nanos.boot.NSpec",
   "name":"http",
@@ -30,3 +34,12 @@ p({
     "welcomeFiles":["foam3/src/foam/nanos/zac/index.html"]
   }
 })
+```
+
+to a services.jrl file it will cause the ZAC index page
+to be the default and the it will also appear at
+
+```
+http://localhost:8080/
+```
+
