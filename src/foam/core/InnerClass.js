@@ -75,6 +75,9 @@ foam.CLASS({
       // TODO: the inner-class name doesn't include the outer class name,
       // which is why we need to add it. But this also breaks CSS, so that
       // should be fixed and then remove the second parameter. KGR
+      // ???: In Java inner-classes are named: <outerClass>$<name> but in
+      // JS they're named <outerClass>.<name>. Will this cause problems
+      // serializing between JS and Java? KGR
       foam.register(cls[this.model.name], cls.id + '.' + this.model.name);
     },
 
