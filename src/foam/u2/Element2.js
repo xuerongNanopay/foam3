@@ -223,13 +223,18 @@ foam.CLASS({
       this.fn.self = this;
 
       // Before rendering, remove all children between dynamic and /dynamic
-      this.fn.pre  = () => {
+      this.fn.pre = () => {
         var endElement_ = this.endElement_;
+
+        for ( var i = 0 ; i < this.childNodes.length ; i++ ) {
+          this.childNodes[i].detach();
+        }
+        this.childNodes = [];
 
         function rm(n) {
           if ( ! n || n === endElement_ ) return;
           rm(n.nextSibling);
-          n.remove();
+          try { n.remove(); } catch (x) { debugger; }
         }
 
         rm(this.element_.nextSibling);
@@ -278,7 +283,7 @@ foam.CLASS({
       factory: function() {
         return this.dynamic(function(data_) {
           data_.forEach(d => {
-            this.startContext({ data: d })
+            this.startContext({ data: d });
 
             var e = this.code.call(this.startContext({ data: d }), d);
             if ( e ) {
