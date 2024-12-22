@@ -161,7 +161,6 @@ foam.CLASS({
         } else if ( this.hasChildren ) {
           this.collapsed[this.data.id] = true;
         }
-        console.log('collapsed:', this.collapsed);
       }
     },
     {
@@ -486,7 +485,7 @@ foam.CLASS({
             self.selection = obj;
             isFirstSet = true;
           }
-          return this.E().tag({
+          this.tag({
             class:        foam.u2.view.TreeViewRow,
             data:         obj,
             relationship: self.relationship,
