@@ -85,7 +85,8 @@ public class XMLSupport {
       Logger logger = (Logger) x.get("logger");
       logger.error("Error while reading file");
     } catch (Throwable t) {
-      // noop
+      Logger logger = (Logger) x.get("logger");
+      logger.error("XML parsing error", t);
     }
     return (FObject) clsInstance;
   }
