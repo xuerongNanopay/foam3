@@ -106,7 +106,7 @@ foam.INTERFACE({
       // Moves reader to characters state in order for value reading for various data types (date, boolean, short ...)
       int eventType = javax.xml.stream.XMLStreamConstants.END_ELEMENT;
       try {
-        eventType = reader.next();    
+        eventType = reader.next();
       } catch (javax.xml.stream.XMLStreamException ex) {
         foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");
         logger.error("Premature end of XML file");
