@@ -197,10 +197,7 @@ foam.CLASS({
   methods: [
     {
       name: 'createService',
-      args: [
-        { name: 'x',  type: 'Context' },
-        { name: 'ps', type: 'PrintStream' }
-      ],
+      args: 'Context x, PrintStream ps',
       javaType: 'java.lang.Object',
       javaCode: `
         if ( getService() != null ) return getService();
@@ -264,9 +261,7 @@ foam.CLASS({
     },
     {
       name: 'authorizeOnRead',
-      args: [
-        { name: 'x', type: 'Context' },
-      ],
+      args: 'Context x',
       type: 'Void',
       javaThrows: ['AuthorizationException'],
       javaCode: 'checkAuthorization(x);'
@@ -292,9 +287,7 @@ foam.CLASS({
     },
     {
       name: 'authorizeOnDelete',
-      args: [
-        { name: 'x', type: 'Context' }
-      ],
+      args: 'Context x',
       type: 'Void',
       javaThrows: ['AuthorizationException'],
       javaCode: `
