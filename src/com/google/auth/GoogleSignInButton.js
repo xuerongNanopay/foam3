@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2024 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 foam.CLASS({
   package: 'com.google.auth',
   name: 'GoogleSignInButton',
@@ -31,7 +37,7 @@ foam.CLASS({
   methods: [
     function render() {
       this
-        .addClass(this.myClass())
+        .addClass()
         .start('img')
         .addClass(this.myClass('icon'))
         .attrs({ src: '/images/google.svg' })
