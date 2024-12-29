@@ -11,6 +11,10 @@ foam.CLASS({
         },
         {
             class: 'String',
+            name: 'icon'
+        },
+        {
+            class: 'String',
             name: 'clientId',
             documentation: 'oauth client id of this provider'
         },
