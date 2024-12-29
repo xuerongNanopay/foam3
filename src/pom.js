@@ -1124,6 +1124,7 @@ foam.POM({
     { name: "foam/net/IPSupport",                                     flags: "js|java" },
     { name: "foam/box/AbstractSkeleton",                              flags: "js|java" },
     { name: "com/google/auth/TokenVerifier",                          flags: "js|java" },
+    { name: "com/google/auth/GoogleSignInButton",                     flags: "web" },
     { name: "foam/box/sf/SFBOX",                                      flags: "js|java" },
     { name: "foam/box/sf/SFSink",                                     flags: "js|java" },
     { name: "foam/box/sf/SFDAO",                                      flags: "js|java" },
