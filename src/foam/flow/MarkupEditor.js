@@ -39,7 +39,7 @@ table-layout: fixed;
 
       this.
         start('table').
-        style({width: '90%'}).
+        style({width: '80%'}).
         addClass(this.myClass()).
         start('tr').
         start('td').
