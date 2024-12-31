@@ -8,6 +8,16 @@ pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
     a + b
 }
 
+#[no_mangle]
+pub extern "C" fn Java_foam_poseidon_Poseidon_mulNumbers(
+    _env: *mut std::ffi::c_void,
+    _class: *mut std::ffi::c_void,
+    a: i32,
+    b: i32,
+) -> i32 {
+    a * b
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

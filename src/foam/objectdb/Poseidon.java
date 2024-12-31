@@ -12,9 +12,10 @@ public class Poseidon {
   }
   
   public static native int addNumbers(int a, int b);
+  public static native int mulNumbers(int a, int b);
 
   static public void say() {
-    System.out.println("This is Poseidon: " + addNumbers(1, 2));
+    System.out.println("This is Poseidon: " + mulNumbers(2, 2));
   }
 
   public static void main(String[] args) {
