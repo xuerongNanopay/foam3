@@ -6,7 +6,18 @@
 package foam.poseidon;
 
 public class Poseidon {
+  static {
+    // System.loadLibrary("libfoam_poseidon");
+    System.load("/Users/xuerong/workspace/foam3/src/foam/objectdb/foam_poseidon/target/release/libfoam_poseidon.dylib");
+  }
+  
+  public static native int addNumbers(int a, int b);
+
   static public void say() {
-    System.out.println("This is Poseidon");
+    System.out.println("This is Poseidon: " + addNumbers(1, 2));
+  }
+
+  public static void main(String[] args) {
+    say();
   }
 }

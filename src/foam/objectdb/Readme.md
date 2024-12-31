@@ -1,0 +1,1 @@
+cd ./src/foam/objectdb/foam_poseidon ; cargo build --release && cd - ; ./build.sh

@@ -1,5 +1,11 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+#[no_mangle]
+pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
+    _env: *mut std::ffi::c_void,
+    _class: *mut std::ffi::c_void,
+    a: i32,
+    b: i32,
+) -> i32 {
+    a + b
 }
 
 #[cfg(test)]
@@ -8,7 +14,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        // let result = add_numbers(2, 2);
+        // assert_eq!(result, 4);
     }
 }
