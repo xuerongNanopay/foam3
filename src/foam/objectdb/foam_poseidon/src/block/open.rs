@@ -4,13 +4,12 @@ use super::*;
 use crate::os::file::{self, AccessMode};
 use crate::util::hash_city;
 use std::collections::LinkedList;
-use std::sync::{Arc};
+use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 
 struct DBCtx {
-    blocks: LinkedList<Arc<Block>>,
-    block_lock: std::sync::Mutex<u32>,
+    blocks: Mutex<LinkedList<Arc<Block>>>,
     // file_system: 
 }
 
@@ -42,9 +41,9 @@ fn block_open<>(
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
-    let _guard = ctx.block_lock.lock().unwrap();
+    let mut blocks: std::sync::MutexGuard<'_, LinkedList<Arc<Block>>> = ctx.blocks.lock().unwrap();
     
-    for block in ctx.blocks.iter() {
+    for block in blocks.iter() {
         if block.name == filename && block.object_id == object_id {
             // block already exits
             block.ref_count.fetch_add(1, Ordering::SeqCst);
@@ -87,6 +86,6 @@ fn block_open<>(
 
     //TODO: open file.
 
-    ctx.blocks.push_back(Arc::new(new_block));
-    Ok(Arc::clone(ctx.blocks.back().unwrap()))
+    blocks.push_back(Arc::new(new_block));
+    Ok(Arc::clone(blocks.back().unwrap()))
 }
