@@ -16,6 +16,12 @@ struct Block {
 
     size: u64,       /* File size */
     os_cache: usize,
+
+    allocation_size: u32,
+    alloc_first: bool,
+    os_cache_max: usize,
+    os_cache_dirty_max: usize,
+    extend_len: usize,
 }
 
 enum BlockErr {
