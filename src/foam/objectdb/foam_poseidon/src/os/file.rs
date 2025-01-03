@@ -11,3 +11,26 @@ pub enum AccessMode {
     Random,
     Sequential
 }
+
+pub enum FileType {
+    Checkpoint,
+    Data,
+    Directory,
+    Log,
+    Regular,
+}
+
+struct FileSystem {
+
+}
+
+struct FileHandle {
+    name: String,   /* File Name */
+    name_hash: u64, /* Hash of File Name */
+    last_sync: u64, /* Time of Background fsync */
+
+    //TODO: internal queue.
+
+    ref_count: std::sync::atomic::AtomicU32,
+
+}

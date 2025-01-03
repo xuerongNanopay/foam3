@@ -4,12 +4,14 @@ use super::*;
 use crate::os::file::{self, AccessMode};
 use crate::util::hash_city;
 use std::collections::LinkedList;
-use std::sync::{Mutex, Arc};
+use std::sync::{Arc};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 
 struct DBCtx {
     blocks: LinkedList<Arc<Block>>,
     block_lock: std::sync::Mutex<u32>,
+    // file_system: 
 }
 
 struct BlockOpenCfg {
@@ -45,7 +47,7 @@ fn block_open<>(
     for block in ctx.blocks.iter() {
         if block.name == filename && block.object_id == object_id {
             // block already exits
-            *block.reference.lock().unwrap() += 1;
+            block.ref_count.fetch_add(1, Ordering::SeqCst);
             return Ok(Arc::clone(block));
         }
     }
@@ -54,7 +56,7 @@ fn block_open<>(
     let mut new_block = Block {
         name: filename.to_string(),
         object_id,
-        reference: Mutex::new(1),
+        ref_count: std::sync::atomic::AtomicU32::new(1),
         allocation_size: if allocation_size == 0 {
             default_cfg.allocation_size
         } else {
