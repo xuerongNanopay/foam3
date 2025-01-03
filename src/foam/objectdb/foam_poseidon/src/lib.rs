@@ -1,4 +1,5 @@
 mod btree;
+#[macro_use]
 mod misc;
 mod block;
 mod os;

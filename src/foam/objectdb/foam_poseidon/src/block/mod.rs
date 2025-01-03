@@ -22,6 +22,8 @@ struct Block {
     os_cache_max: usize,
     os_cache_dirty_max: usize,
     extend_len: usize,
+    
+    readonly: bool,
 }
 
 enum BlockErr {

@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use super::*;
-use crate::os::file;
+use crate::os::file::{self, AccessMode};
 use crate::util::hash_city;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
@@ -34,6 +34,7 @@ fn block_open<>(
     object_id: u32,
     allocation_size: u32,
     readonly: bool,
+    fixed: bool,
 ) -> Result<Arc<Block>, BlockErr> {
 
     let hash = hash_city::city_hash_64(filename, filename.len());
@@ -66,11 +67,23 @@ fn block_open<>(
         ..Default::default()
     };
 
-    //TODO: open file handler;
     let mut flag = 0u32;
 
+    match default_cfg.access_mode {
+        AccessMode::Random => flag = BIT_SET!(flag, file::FP_FS_OPEN_ACCESS_RAND),
+        AccessMode::Sequential => flag = BIT_SET!(flag, file::FP_FS_OPEN_ACCESS_SEQ)
+    }
 
+    if fixed {
+        flag = BIT_SET!(flag, file::FP_FS_OPEN_FIXED);
+    }
 
+    if readonly {
+        flag = BIT_SET!(flag, file::FP_FS_OPEN_READONLY);
+        new_block.readonly = true;
+    }
+
+    //TODO: open file.
 
     ctx.blocks.push_back(Arc::new(new_block));
     Ok(Arc::clone(ctx.blocks.back().unwrap()))

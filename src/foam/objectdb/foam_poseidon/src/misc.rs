@@ -53,16 +53,19 @@ macro_rules! BIT_SET {
         BIT_OP!(SET, $value, $mask)
     };
 }
+#[macro_export]
 macro_rules! BIT_CLR {
     ($value:expr, $mask:expr) => {
         BIT_OP!(CLEAR, $value, $mask)
     };
 }
+#[macro_export]
 macro_rules! BIT_TLG {
     ($value:expr, $mask:expr) => {
         BIT_OP!(TOGGLE, $value, $mask)
     };
 }
+#[macro_export]
 macro_rules! BIT_CHK {
     ($value:expr, $mask:expr) => {
         BIT_OP!(CHECK, $value, $mask)
