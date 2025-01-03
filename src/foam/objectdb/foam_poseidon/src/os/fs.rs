@@ -1,3 +1,6 @@
+pub mod file_handle;
+pub mod file_system;
+
 pub static FP_FS_OPEN_ACCESS_RAND:u32 = 0x01u32;
 pub static FP_FS_OPEN_ACCESS_SEQ:u32  = 0x02u32;
 pub static FP_FS_OPEN_CREATE:u32      = 0x04u32;

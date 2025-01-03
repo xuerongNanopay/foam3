@@ -1,3 +1,3 @@
 #![allow(unused)]
-pub mod file;
+pub mod fs;
 pub mod alloc;

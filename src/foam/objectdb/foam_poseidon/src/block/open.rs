@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use super::*;
-use crate::os::file::{self, AccessMode};
+use crate::os::fs::{self, AccessMode};
 use crate::util::hash_city;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
@@ -19,7 +19,7 @@ struct BlockOpenCfg {
     os_cache_max: usize,
     os_cache_dirty_max: usize,
     extend_len: usize,
-    access_mode: file::AccessMode,
+    access_mode: fs::AccessMode,
 }
 
 
@@ -71,16 +71,16 @@ fn block_open<>(
     let mut flag = 0u32;
 
     match default_cfg.access_mode {
-        AccessMode::Random => flag = BIT_SET!(flag, file::FP_FS_OPEN_ACCESS_RAND),
-        AccessMode::Sequential => flag = BIT_SET!(flag, file::FP_FS_OPEN_ACCESS_SEQ)
+        AccessMode::Random => flag = BIT_SET!(flag, fs::FP_FS_OPEN_ACCESS_RAND),
+        AccessMode::Sequential => flag = BIT_SET!(flag, fs::FP_FS_OPEN_ACCESS_SEQ)
     }
 
     if fixed {
-        flag = BIT_SET!(flag, file::FP_FS_OPEN_FIXED);
+        flag = BIT_SET!(flag, fs::FP_FS_OPEN_FIXED);
     }
 
     if readonly {
-        flag = BIT_SET!(flag, file::FP_FS_OPEN_READONLY);
+        flag = BIT_SET!(flag, fs::FP_FS_OPEN_READONLY);
         new_block.readonly = true;
     }
 
