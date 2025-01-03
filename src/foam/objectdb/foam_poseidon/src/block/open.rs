@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 use super::*;
+use crate::os::file;
 use crate::util::hash_city;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
@@ -17,7 +18,10 @@ struct BlockOpenCfg {
     os_cache_max: usize,
     os_cache_dirty_max: usize,
     extend_len: usize,
+    access_mode: file::AccessMode,
 }
+
+
 
 /**
  * 1. find block from ctx.
@@ -63,6 +67,10 @@ fn block_open<>(
     };
 
     //TODO: open file handler;
+    let mut flag = 0u32;
+
+
+
 
     ctx.blocks.push_back(Arc::new(new_block));
     Ok(Arc::clone(ctx.blocks.back().unwrap()))

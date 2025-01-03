@@ -27,3 +27,4 @@ struct Block {
 enum BlockErr {
     NoFound
 }
+
