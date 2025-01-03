@@ -5,7 +5,7 @@ use crate::util::hash_city;
 use std::collections::LinkedList;
 
 
-struct Ctx {
+struct DBCtx {
     blocks: LinkedList<Block>,
     block_lock: std::sync::Mutex<u32>,
 }
@@ -14,7 +14,7 @@ struct Ctx {
  * 1. find block from ctx.
  * 2. if no found, create a new one.
  */
-fn block_open<'b>(ctx: &'b mut Ctx, filename: &str, object_id: u32) -> Result<&'b Block, BlockErr> {
+fn block_open<'b>(ctx: &'b mut DBCtx, filename: &str, object_id: u32) -> Result<&'b Block, BlockErr> {
 
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
@@ -28,6 +28,11 @@ fn block_open<'b>(ctx: &'b mut Ctx, filename: &str, object_id: u32) -> Result<&'
             return Ok(block);
         }
     }
-    // let block: Block = Default::default();
-    Err(BlockErr::NoFound)
+
+    // construct new block.
+    let mut block: Block = Default::default();
+    
+
+    ctx.blocks.append(block);
+    Ok(ctx.blocks.back_mut().unwrap())
 }
