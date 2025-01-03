@@ -1,1 +1,1 @@
-mod hash_city;
+pub mod hash_city;
