@@ -12,7 +12,7 @@ static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 struct Block {
     name: String,   /* Name */
     object_id: u32,
-    reference: u32,
+    reference: std::sync::Mutex<u32>,
 
     size: u64,       /* File size */
     os_cache: usize,

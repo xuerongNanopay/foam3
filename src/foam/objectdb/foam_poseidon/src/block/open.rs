@@ -7,7 +7,7 @@ use std::sync::{Mutex, Arc};
 
 
 struct DBCtx {
-    blocks: LinkedList<Arc<Mutex<Block>>>,
+    blocks: LinkedList<Arc<Block>>,
     block_lock: std::sync::Mutex<u32>,
 }
 
@@ -30,19 +30,18 @@ fn block_open<>(
     object_id: u32,
     allocation_size: u32,
     readonly: bool,
-) -> Result<Arc<Mutex<Block>>, BlockErr> {
+) -> Result<Arc<Block>, BlockErr> {
 
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
     let _guard = ctx.block_lock.lock().unwrap();
     
-    for block_ref in ctx.blocks.iter() {
-        let mut block = block_ref.lock().unwrap();
+    for block in ctx.blocks.iter() {
         if block.name == filename && block.object_id == object_id {
             // block already exits
-            block.reference += 1;
-            return Ok(Arc::clone(block_ref));
+            *block.reference.lock().unwrap() += 1;
+            return Ok(Arc::clone(block));
         }
     }
 
@@ -50,7 +49,7 @@ fn block_open<>(
     let mut new_block = Block {
         name: filename.to_string(),
         object_id,
-        reference: 1,
+        reference: Mutex::new(1),
         allocation_size: if allocation_size == 0 {
             default_cfg.allocation_size
         } else {
@@ -62,8 +61,9 @@ fn block_open<>(
         extend_len: default_cfg.extend_len,
         ..Default::default()
     };
-    // open file handler;
 
-    ctx.blocks.push_back(Arc::new(Mutex::new(new_block)));
+    //TODO: open file handler;
+
+    ctx.blocks.push_back(Arc::new(new_block));
     Ok(Arc::clone(ctx.blocks.back().unwrap()))
 }
