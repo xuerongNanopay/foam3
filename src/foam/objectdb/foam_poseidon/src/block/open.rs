@@ -1,11 +1,33 @@
 #![allow(unused)]
 
-use super::Block;
+use super::*;
 use crate::util::hash_city;
+use std::collections::LinkedList;
 
-fn block_open(filename: &str) -> Result<Block, i32> {
-    let block: Block = Default::default();
+
+struct Ctx {
+    blocks: LinkedList<Block>,
+    block_lock: std::sync::Mutex<u32>,
+}
+
+/**
+ * 1. find block from ctx.
+ * 2. if no found, create a new one.
+ */
+fn block_open<'b>(ctx: &'b mut Ctx, filename: &str, object_id: u32) -> Result<&'b Block, BlockErr> {
 
     let hash = hash_city::city_hash_64(filename, filename.len());
-    return Ok(block)
+    let bucket = hash % 10; //TODO: bucket size should be a config
+
+    let _guard = ctx.block_lock.lock().unwrap();
+    
+    for block in ctx.blocks.iter_mut() {
+        if block.name == filename && block.object_id == object_id {
+            // block already exits
+            block.reference += 1;
+            return Ok(block);
+        }
+    }
+    // let block: Block = Default::default();
+    Err(BlockErr::NoFound)
 }
