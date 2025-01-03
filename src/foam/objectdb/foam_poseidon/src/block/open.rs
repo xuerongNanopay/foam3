@@ -3,5 +3,6 @@
 use super::Block;
 
 fn block_open() -> Result<Block, i32> {
-    return (Err(1))
+    let block: Block = Default::default();
+    return Ok(block)
 }

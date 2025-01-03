@@ -8,7 +8,8 @@ static FP_BLOCK_INVALID_OFFSET: u64 = 0;
  * Block; reference a singal file.
  * Physical representation of page.
  */
-struct Block {
+#[derive(Default)]
+ struct Block {
     name: String,   /* Name */
     object_id: u32,
     reference: u32,
