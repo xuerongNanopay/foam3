@@ -1,4 +1,4 @@
-use crate::error::FpErr;
+use crate::types::FpErr;
 
 use super::*;
 pub trait FileSystem {

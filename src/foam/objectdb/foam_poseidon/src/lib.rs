@@ -6,6 +6,7 @@ mod os;
 mod session;
 mod util;
 mod error;
+mod types;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(

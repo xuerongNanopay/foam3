@@ -1,4 +1,4 @@
-use crate::error::*;
+use crate::types::*;
 use super::{file_system, FileType};
 use std::sync::{Arc};
 
@@ -27,6 +27,13 @@ impl FileHandle {
      * POSIX only
      */
     fn advise(&self, offset: u64, len: u64, advice: i32) -> Result<(), FpErr> {
+        Ok(())
+    }
+
+    /**
+     * Extend the file.
+     */
+    fn extend(&self, offset: u64) -> Result<(), FpErr> {
         Ok(())
     }
 }
