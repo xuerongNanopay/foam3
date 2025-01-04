@@ -28,7 +28,7 @@ struct BlockOpenCfg {
  * 1. find block from ctx.
  * 2. if no found, create a new one.
  */
-fn block_open<>(
+fn block_open(
     ctx: &mut DBCtx, 
     default_cfg: BlockOpenCfg, 
     filename: &str, 
