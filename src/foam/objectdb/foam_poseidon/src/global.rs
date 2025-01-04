@@ -1,8 +1,8 @@
 #![allow(unused)]
 
-use crate::types::FpErr;
+use crate::types::FPErr;
 
-pub const NO_IMPL: FpErr = -1;
+pub const NO_IMPL: FPErr = -1;
 
 struct Global {
     
