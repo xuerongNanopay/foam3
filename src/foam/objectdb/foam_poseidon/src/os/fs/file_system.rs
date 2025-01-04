@@ -1,10 +1,12 @@
+use crate::error::FpErr;
+
 use super::*;
 pub trait FileSystem {
     /**
      * Return a list of file name under given directory
      */
     fn file_ls(dir: &str, prefix: Option<&str>, suffix: Option<&str>) 
-        -> Result<Vec<String>, u32>;
+        -> Result<Vec<String>, FpErr>;
 
     /**
      * Return true if file exits.
