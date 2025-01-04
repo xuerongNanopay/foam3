@@ -1,3 +1,3 @@
 #![allow(unused)]
 
-pub type FpErr = u32;
+pub type FpErr = i32;

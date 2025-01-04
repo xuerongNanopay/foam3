@@ -1,4 +1,6 @@
-use crate::types::FpErr;
+use std::sync::Arc;
+
+use crate::{global::NO_IMPL, types::FpErr};
 
 pub mod posix;
 
@@ -28,73 +30,90 @@ pub trait FileSystem {
     /**
      * Return a list of file name under given directory
      */
-    fn file_ls(dir: &str, prefix: Option<&str>, suffix: Option<&str>) 
-        -> Result<Vec<String>, FpErr>;
+    fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> Result<Vec<String>, FpErr> {
+        Err(NO_IMPL)
+    }
 
     /**
      * Return true if file exits.
      */
-    fn file_exist(name: &str) -> Result<bool, u32>;
+    fn exist(&self, name: &str) -> Result<bool, FpErr>{
+        Err(NO_IMPL)
+    }
 
     /**
      * Open a handle for a file.
      */
-    fn file_open(name: &str, file_type: FileType, flags: u32);
+    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<dyn FileHandle>, FpErr> {
+        Err(NO_IMPL)
+    }
 
     /**
      * Remove a file.
      */
-    fn file_rm(name: &str, flags: u32);
+    fn rm(&self, name: &str, flags: u32) -> Result<(), FpErr> {
+        Err(NO_IMPL)
+    }
 
     /**
      * Rename a file
      */
-    fn file_mv(from: &str, to: &str);
+    fn mv(&self, from: &str, to: &str) -> Result<(), FpErr> {
+        Err(NO_IMPL)
+    }
 
     /**
      * Return size of file
      */
-    fn file_size(name: &str);
-
+    fn size(&self, name: &str) -> Result<u64, FpErr> {
+        Err(NO_IMPL)
+    }
     /**
      * close FileSystem
      */
-    fn close();
+    fn close(&self) -> Result<(), FpErr> {
+        Err(NO_IMPL)
+    }
 }
 
-trait FileHandle {
+pub trait FileHandle {
+    /**
+     * Get file system.
+     */
+    fn get_file_system(&self) -> Arc<dyn FileSystem>;
+
     /**
      * Close a file handle.
      */
     fn close(&self) -> Result<(), FpErr> {
-        Ok(())
+        Err(NO_IMPL)
     }
 
     /**
      * POSIX only
      */
     fn advise(&self, offset: u64, len: u64, advice: i32) -> Result<(), FpErr> {
-        Ok(())
+        Err(NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
     fn extend(&self, offset: u64) -> Result<(), FpErr> {
-        Ok(())
+        Err(NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
     fn extend_nolock(&self, offset: u64) -> Result<(), FpErr> {
-        Ok(())
+        Err(NO_IMPL)
     }
 
     /**
      * Lock/unlock a file.
      */
     fn lock(&self, offset: u64) -> Result<(), FpErr> {
-        Ok(())
+        Err(NO_IMPL)
     }
 }
