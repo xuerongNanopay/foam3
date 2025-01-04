@@ -119,6 +119,7 @@ pub trait FileHandle {
     }
 
     //TODO: mmap interface.
+    //TODO: file 
 
     /**
      * Read from file.
@@ -126,4 +127,40 @@ pub trait FileHandle {
     fn read(&self, offset: FileOffset, len: FileSize) -> Result<FileBuf, FPErr> {
         Err(NO_IMPL)
     }
+
+    /**
+     * Return size of file.
+     */
+    fn size(&self) -> Result<FileSize, FPErr> {
+        Err(NO_IMPL)
+    }
+
+    /**
+     * flush buffered change into file.
+     */
+    fn sync(&self) -> Result<(), FPErr> {
+        Err(NO_IMPL)
+    }
+
+    /**
+     * flush buffered change into file without wait it complete.
+     */
+    fn sync_nowait(&self) -> Result<(), FPErr> {
+        Err(NO_IMPL)
+    }
+
+    /**
+     * Truncate file.
+     */
+    fn truncate(&self, offset: FileOffset) -> Result<FileBuf, FPErr> {
+        Err(NO_IMPL)
+    }
+
+    /**
+     * Write to a file.
+     */
+    fn write(&self, offset: FileOffset, len: FileSize, buf: FileBuf) -> Result<(), FPErr> {
+        Err(NO_IMPL)
+    }
+
 }
