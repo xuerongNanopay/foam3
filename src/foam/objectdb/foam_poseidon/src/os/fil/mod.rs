@@ -289,6 +289,7 @@ impl FileHandle for DefaultFileHandle {
         if let Some(fs) = self.file_system.upgrade() {
             fs.remove(self.name.as_str());
         }
+        self.sync();
         Ok(())
     }
 
