@@ -1,4 +1,4 @@
-use std::{fs::{self, File}, io::Error, path::Path, sync::Arc};
+use std::{fs::{self, File}, io::Error, mem, path::Path, sync::{Arc, Weak}};
 
 use crate::{errors::*, types::*, util::hash_city, FP_IO_ERR};
 
@@ -48,7 +48,7 @@ pub trait FileSystem<T: FileHandle> {
     /**
      * Open a handle for a file.
      */
-    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<T>, FPErr>;
+    fn open(self: &Arc<Self>, name: &str, file_type: FileType, flags: u32) -> Result<Arc<T>, FPErr>;
 
     /**
      * Remove a file.
@@ -79,11 +79,6 @@ pub trait FileSystem<T: FileHandle> {
 }
 
 pub trait FileHandle {
-    /**
-     * Get file system.
-     */
-    // fn get_file_system(&self) -> Arc<dyn FileSystem>;
-
     /**
      * Close a file handle.
      */
@@ -254,7 +249,7 @@ impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
         Ok(s.len())
     }
 
-    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
+    fn open(self: &Arc<Self>, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
         if let Some(fh) = self.search(name) {
             return Ok(fh)
         }
@@ -266,6 +261,7 @@ impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
             written: 0,
             last_sync: 0,
             file_type,
+            file_system: Arc::downgrade(self),
         };
 
         self.save(fd);
@@ -284,10 +280,17 @@ pub struct DefaultFileHandle {
     name_hash: u64,
     last_sync: u64,
     written: FileSize,
+    file_system: Weak<DefaultFileSystem>,
     fd: std::fs::File,
 }
 
 impl FileHandle for DefaultFileHandle {
+    fn close(&self) -> Result<(), FPErr> {
+        if let Some(fs) = self.file_system.upgrade() {
+            fs.remove(self.name.as_str());
+        }
+        Ok(())
+    }
 
 }
 
