@@ -173,12 +173,39 @@ pub struct DefaultFileSystem {
 
 impl FileSystem for DefaultFileSystem {
     fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> FPResult<Vec<String>> {
-        // let entries = match fs::read_dir(dir) {
-        //     Ok(e) => e,
-        //     Err(e) => return Err(convert_std_io_err_to_fp_err(e)),
-        // };
-
         let entries = FP_IO_ERR!(fs::read_dir(dir));
-        Err(FP_NO_IMPL)
+        let mut ret: Vec<String> = vec![];
+
+        for e in entries {
+            let entry = FP_IO_ERR!(e);
+            let filename = String::from(entry.file_name().to_string_lossy());
+
+            if let Some(prefix) = prefix {
+                if !filename.starts_with(prefix) {
+                    continue;
+                }
+            }
+
+            if let Some(suffix) = suffix {
+                if !filename.ends_with(suffix) {
+                    continue;
+                }
+            }
+            ret.push(filename);
+        }
+
+        Ok(ret)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn demo_file_system_ls() {
+        let fs = DefaultFileSystem{};
+        println!("{:?}", fs.ls("./", None, None).unwrap());
+        println!("{:?}", fs.ls("./", None, Some(".lock")).unwrap());
     }
 }
