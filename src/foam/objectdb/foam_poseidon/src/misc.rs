@@ -72,6 +72,13 @@ macro_rules! BIT_CHK {
     };
 }
 
+#[macro_export]
+macro_rules! FP_VERBOSE_DEBUG {
+    ($value:expr, $mask:expr) => {
+        //TODO:
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

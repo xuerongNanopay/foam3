@@ -1,4 +1,4 @@
-use std::{fs::{self, File}, io::Error, mem, path::Path, sync::{Arc, Weak}};
+use std::{fs::{self, File}, io::{Error, Read, Seek, SeekFrom}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
 use crate::{errors::*, types::*, util::hash_city, FP_IO_ERR};
 
@@ -121,7 +121,7 @@ pub trait FileHandle {
     /**
      * Read from file.
      */
-    fn read(&self, offset: FileOffset, len: FileSize) -> Result<FileBuf, FPErr> {
+    fn read(&self, offset: FileOffset, len: FileSize) -> Result<(FileBuf, FileSize), FPErr>  {
         Err(FP_NO_IMPL)
     }
 
@@ -256,7 +256,7 @@ impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
 
         let fd = DefaultFileHandle{
             name: String::from(name),
-            fd: FP_IO_ERR!(File::create_new(name)),
+            fd: RwLock::new(FP_IO_ERR!(File::create_new(name))),
             name_hash: hash_city::city_hash_64(name, name.len()),
             written: 0,
             last_sync: 0,
@@ -281,7 +281,7 @@ pub struct DefaultFileHandle {
     last_sync: u64,
     written: FileSize,
     file_system: Weak<DefaultFileSystem>,
-    fd: std::fs::File,
+    fd: RwLock<std::fs::File>,
 }
 
 impl FileHandle for DefaultFileHandle {
@@ -290,6 +290,27 @@ impl FileHandle for DefaultFileHandle {
             fs.remove(self.name.as_str());
         }
         Ok(())
+    }
+
+    fn read(&self, offset: FileOffset, len: FileSize) -> Result<(FileBuf, FileSize), FPErr> {
+
+        //TODO: add verbose debug
+        //TODO: use read_vectored when len is more than 1GB
+
+        let mut fd = self.fd.write().unwrap();
+
+        // Save current position.
+        let cur_position = FP_IO_ERR!(fd.seek(SeekFrom::Current(0)));
+
+        // Read to buffer.
+        FP_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
+        let mut buffer = vec![0u8; len as usize];
+        let read_size = FP_IO_ERR!(fd.read(&mut buffer[..]));
+
+        // Restore position.
+        FP_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
+    
+        Ok((buffer, read_size as FileSize))
     }
 
 }
@@ -315,5 +336,13 @@ mod tests {
         let key = "foo";
         map.insert(key.to_string(), String::from("bb"));
         println!("{}", map.get(key).unwrap());
+    }
+
+    #[test]
+    fn demo_dynamic_vec_buffer() {
+        let mut buffer = vec![0u8; 1000 as usize];
+        let mut b = buffer.as_mut_slice();
+        let mut c = &mut buffer[..];
+        print!("{}", c.len())
     }
 }
