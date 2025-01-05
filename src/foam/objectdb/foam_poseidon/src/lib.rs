@@ -5,7 +5,7 @@ mod block;
 mod os;
 mod session;
 mod util;
-mod error;
+mod errors;
 mod types;
 mod global;
 

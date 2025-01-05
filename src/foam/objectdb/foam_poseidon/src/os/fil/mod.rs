@@ -1,8 +1,6 @@
-use std::sync::Arc;
+use std::{fs, io::{Error}, sync::Arc};
 
-use crate::{global::NO_IMPL, types::*};
-
-pub mod posix;
+use crate::{errors::*, types::*, FP_IO_ERR};
 
 pub static FP_FS_OPEN_ACCESS_RAND:u32 = 0x01u32;
 pub static FP_FS_OPEN_ACCESS_SEQ:u32  = 0x02u32;
@@ -31,48 +29,48 @@ pub trait FileSystem {
      * Return a list of file name under given directory
      */
     fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> Result<Vec<String>, FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Return true if file exits.
      */
     fn exist(&self, name: &str) -> Result<bool, FPErr>{
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Open a handle for a file.
      */
     fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<dyn FileHandle>, FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Remove a file.
      */
     fn rm(&self, name: &str, flags: u32) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Rename a file
      */
     fn mv(&self, from: &str, to: &str) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Return size of file
      */
     fn size(&self, name: &str) -> Result<u64, FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
     /**
      * close FileSystem
      */
     fn close(&self) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 }
 
@@ -86,28 +84,28 @@ pub trait FileHandle {
      * Close a file handle.
      */
     fn close(&self) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * POSIX only
      */
     fn advise(&self, offset: FileOffset, len: FileSize, advice: i32) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
     fn extend(&self, offset: FileOffset) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
     fn extend_nolock(&self, offset: FileOffset) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
@@ -115,7 +113,7 @@ pub trait FileHandle {
      * @param lock whether to lock or unlock
      */
     fn lock(&self, lock: bool) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     //TODO: mmap interface.
@@ -125,42 +123,62 @@ pub trait FileHandle {
      * Read from file.
      */
     fn read(&self, offset: FileOffset, len: FileSize) -> Result<FileBuf, FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Return size of file.
      */
     fn size(&self) -> Result<FileSize, FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * flush buffered change into file.
      */
     fn sync(&self) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * flush buffered change into file without wait it complete.
      */
     fn sync_nowait(&self) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Truncate file.
      */
     fn truncate(&self, offset: FileOffset) -> Result<FileBuf, FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
     /**
      * Write to a file.
      */
     fn write(&self, offset: FileOffset, len: FileSize, buf: FileBuf) -> Result<(), FPErr> {
-        Err(NO_IMPL)
+        Err(FP_NO_IMPL)
     }
 
+}
+
+/**
+ * Default file system implementation.
+ * Using native rust stb
+ */
+pub struct DefaultFileSystem {
+
+}
+
+impl FileSystem for DefaultFileSystem {
+    fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> FPResult<Vec<String>> {
+        // let entries = match fs::read_dir(dir) {
+        //     Ok(e) => e,
+        //     Err(e) => return Err(convert_std_io_err_to_fp_err(e)),
+        // };
+
+        let entries = FP_IO_ERR!(fs::read_dir(dir));
+        Err(FP_NO_IMPL)
+    }
 }
