@@ -314,6 +314,13 @@ impl FileHandle for DefaultFileHandle {
         Ok((buffer, read_size as FileSize))
     }
 
+    fn write(&self, offset: FileOffset, len: FileSize, buf: FileBuf) -> Result<(), FPErr> {
+        //TODO: add verbose debug
+
+        
+        Err(FP_NO_IMPL)
+    }
+
     /**
      * Return size of file.
      */
