@@ -1,4 +1,4 @@
-use std::{fs, io::{Error}, sync::Arc};
+use std::{fs, io::Error, path::Path, sync::Arc};
 
 use crate::{errors::*, types::*, FP_IO_ERR};
 
@@ -195,6 +195,15 @@ impl FileSystem for DefaultFileSystem {
         }
 
         Ok(ret)
+    }
+
+    fn exist(&self, name: &str) -> Result<bool, FPErr>{
+        Ok(Path::new(name).exists())
+    }
+
+    fn rm(&self, name: &str, flags: u32) -> Result<(), FPErr> {
+        FP_IO_ERR!(fs::remove_file(name));
+        Ok(())
     }
 }
 
