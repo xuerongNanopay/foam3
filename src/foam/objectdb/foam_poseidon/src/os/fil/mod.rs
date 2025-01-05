@@ -255,16 +255,25 @@ impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
     }
 
     fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
-        let fd = Arc::new(DefaultFileHandle{
+        if let Some(fh) = self.search(name) {
+            return Ok(fh)
+        }
+
+        let fd = DefaultFileHandle{
             name: String::from(name),
             fd: FP_IO_ERR!(File::create_new(name)),
             name_hash: hash_city::city_hash_64(name, name.len()),
             written: 0,
             last_sync: 0,
             file_type,
-        });
+        };
 
-        Ok(fd)
+        self.save(fd);
+
+        if let Some(fh) = self.search(name) {
+            return Ok(fh)
+        }
+        Err(FP_IO_NOT_FOUND)
     }
     
 }
