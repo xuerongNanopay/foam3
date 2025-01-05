@@ -313,6 +313,15 @@ impl FileHandle for DefaultFileHandle {
         Ok((buffer, read_size as FileSize))
     }
 
+    /**
+     * Return size of file.
+     */
+    fn size(&self) -> Result<FileSize, FPErr> {
+        let fd = self.fd.read().unwrap();
+        let metadata = FP_IO_ERR!(fd.metadata());
+        Ok(metadata.len())
+    }
+
 }
 
 #[cfg(test)]
