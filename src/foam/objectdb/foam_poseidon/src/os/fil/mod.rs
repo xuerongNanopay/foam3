@@ -56,14 +56,14 @@ pub trait FileSystem {
     /**
      * Rename a file
      */
-    fn mv(&self, from: &str, to: &str) -> Result<(), FPErr> {
+    fn rename(&self, from: &str, to: &str) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Return size of file
      */
-    fn size(&self, name: &str) -> Result<u64, FPErr> {
+    fn size(&self, name: &str) -> Result<FileSize, FPErr> {
         Err(FP_NO_IMPL)
     }
     /**
@@ -204,6 +204,16 @@ impl FileSystem for DefaultFileSystem {
     fn rm(&self, name: &str, flags: u32) -> Result<(), FPErr> {
         FP_IO_ERR!(fs::remove_file(name));
         Ok(())
+    }
+
+    fn rename(&self, from: &str, to: &str) -> Result<(), FPErr> {
+        FP_IO_ERR!(fs::rename(from, to));
+        Ok(())
+    }
+
+    fn size(&self, name: &str) -> Result<FileSize, FPErr> {
+        let s = FP_IO_ERR!(fs::metadata(name));
+        Ok(s.len())
     }
 }
 
