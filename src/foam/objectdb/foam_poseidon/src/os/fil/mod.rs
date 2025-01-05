@@ -1,4 +1,4 @@
-use std::{fs::{self, File}, io::{Error, Read, Seek, SeekFrom}, mem, path::Path, sync::{Arc, RwLock, Weak}};
+use std::{fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
 use crate::{errors::*, types::*, util::hash_city, FP_IO_ERR};
 
@@ -320,6 +320,14 @@ impl FileHandle for DefaultFileHandle {
         let fd = self.fd.read().unwrap();
         let metadata = FP_IO_ERR!(fd.metadata());
         Ok(metadata.len())
+    }
+
+    /**
+     * flush buffered change into file.
+     */
+    fn sync(&self) -> Result<(), FPErr> {
+        let mut fd = self.fd.write().unwrap();
+        Ok(FP_IO_ERR!(fd.flush()))
     }
 
 }
