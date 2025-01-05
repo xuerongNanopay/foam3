@@ -1,6 +1,6 @@
-use std::{fs, io::Error, path::Path, sync::Arc};
+use std::{fs::{self, File}, io::Error, path::Path, sync::Arc};
 
-use crate::{errors::*, types::*, FP_IO_ERR};
+use crate::{errors::*, types::*, util::hash_city, FP_IO_ERR};
 
 pub static FP_FS_OPEN_ACCESS_RAND:u32 = 0x01u32;
 pub static FP_FS_OPEN_ACCESS_SEQ:u32  = 0x02u32;
@@ -24,7 +24,13 @@ pub enum FileType {
     Regular,
 }
 
-pub trait FileSystem {
+pub trait FileSystem<T: FileHandle> {
+    /**
+     * Opened file.
+     */
+
+    fn open_file_count(&self) -> usize;
+
     /**
      * Return a list of file name under given directory
      */
@@ -42,9 +48,7 @@ pub trait FileSystem {
     /**
      * Open a handle for a file.
      */
-    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<dyn FileHandle>, FPErr> {
-        Err(FP_NO_IMPL)
-    }
+    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<T>, FPErr>;
 
     /**
      * Remove a file.
@@ -78,7 +82,7 @@ pub trait FileHandle {
     /**
      * Get file system.
      */
-    fn get_file_system(&self) -> Arc<dyn FileSystem>;
+    // fn get_file_system(&self) -> Arc<dyn FileSystem>;
 
     /**
      * Close a file handle.
@@ -168,10 +172,44 @@ pub trait FileHandle {
  * Using native rust stb
  */
 pub struct DefaultFileSystem {
-
+    file_handles: ConcurrentHashMap<String, Arc<DefaultFileHandle>>
 }
 
-impl FileSystem for DefaultFileSystem {
+impl DefaultFileSystem {
+    /**
+     * Search for an existing handle.
+     */
+    fn search(&self, name: &str) -> Option<Arc<DefaultFileHandle>> {
+        let fds = self.file_handles.read().unwrap();
+        match fds.get(name) {
+            Some(v) => Some(Arc::clone(v)),
+            None => None
+        }
+    }
+
+    /**
+     * Save a filehandle.
+     */
+    fn save(&self, fh: DefaultFileHandle) {
+        let mut fds = self.file_handles.write().unwrap();
+        fds.insert(fh.name.clone(), Arc::new(fh));
+    }
+
+    /**
+     * remove a filehandle.
+     */
+    fn remove(&self, name: &str) {
+        let mut fds = self.file_handles.write().unwrap();
+        fds.remove(name);
+    }
+}
+
+impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
+    fn open_file_count(&self) -> usize {
+        let fds = self.file_handles.read().unwrap();
+        fds.len()
+    }
+
     fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> FPResult<Vec<String>> {
         let entries = FP_IO_ERR!(fs::read_dir(dir));
         let mut ret: Vec<String> = vec![];
@@ -215,16 +253,55 @@ impl FileSystem for DefaultFileSystem {
         let s = FP_IO_ERR!(fs::metadata(name));
         Ok(s.len())
     }
+
+    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
+        let fd = Arc::new(DefaultFileHandle{
+            name: String::from(name),
+            fd: FP_IO_ERR!(File::create_new(name)),
+            name_hash: hash_city::city_hash_64(name, name.len()),
+            written: 0,
+            last_sync: 0,
+            file_type,
+        });
+
+        Ok(fd)
+    }
+    
+}
+
+pub struct DefaultFileHandle {
+    name: String, /* file name */
+    file_type: FileType,
+    name_hash: u64,
+    last_sync: u64,
+    written: FileSize,
+    fd: std::fs::File,
+}
+
+impl FileHandle for DefaultFileHandle {
+
 }
 
 #[cfg(test)]
 mod tests {
+    use std::{collections::HashMap, sync::RwLock};
+
     use super::*;
 
     #[test]
     fn demo_file_system_ls() {
-        let fs = DefaultFileSystem{};
+        let fs = DefaultFileSystem{
+            file_handles: RwLock::new(HashMap::new())
+        };
         println!("{:?}", fs.ls("./", None, None).unwrap());
         println!("{:?}", fs.ls("./", None, Some(".lock")).unwrap());
+    }
+
+    #[test]
+    fn demo_hashmap_with_string_key() {
+        let mut map = HashMap::<String, String>::new();
+        let key = "foo";
+        map.insert(key.to_string(), String::from("bb"));
+        println!("{}", map.get(key).unwrap());
     }
 }
