@@ -2,7 +2,7 @@ pub mod posix;
 
 use std::{fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
-use crate::{errors::*, types::*, util::hash_city, FP_IO_ERR};
+use crate::{error::*, types::*, util::hash_city, FP_IO_ERR};
 
 pub static FP_FS_OPEN_ACCESS_RAND:u32 = 0x01u32;
 pub static FP_FS_OPEN_ACCESS_SEQ:u32  = 0x02u32;
