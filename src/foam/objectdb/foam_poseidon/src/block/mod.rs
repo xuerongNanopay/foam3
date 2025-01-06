@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::sync::Arc;
+use std::{collections::LinkedList, sync::{Arc, RwLock}};
 
 use crate::os::fil::FileHandle;
 
@@ -10,7 +10,7 @@ static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
 
 struct BlockManager {
-    
+    blocks: RwLock<LinkedList<Arc<Block>>>,
 }
 
 /**

@@ -8,11 +8,6 @@ use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-
-struct DBCtx {
-    blocks: Mutex<LinkedList<Arc<Block>>>,
-}
-
 struct BlockOpenCfg {
     allocation_size: u32,
     alloc_first: bool,
@@ -29,7 +24,6 @@ struct BlockOpenCfg {
  * 2. if no found, create a new one.
  */
 fn block_open(
-    ctx: &mut DBCtx,
     block_manager: Arc<BlockManager>,
     file_system: Arc<FPFileSystem>,
     default_cfg: BlockOpenCfg,
@@ -42,15 +36,19 @@ fn block_open(
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
-    let mut blocks: std::sync::MutexGuard<'_, LinkedList<Arc<Block>>> = ctx.blocks.lock().unwrap();
+    {
+        let blocks = block_manager.blocks.read().unwrap();
     
-    for block in blocks.iter() {
-        if block.name == filename && block.object_id == object_id {
-            // block already exits
-            block.ref_count.fetch_add(1, Ordering::SeqCst);
-            return Ok(Arc::clone(block));
+        for block in blocks.iter() {
+            if block.name == filename && block.object_id == object_id {
+                // block already exits
+                block.ref_count.fetch_add(1, Ordering::SeqCst);
+                return Ok(Arc::clone(block));
+            }
         }
     }
+
+    let mut blocks = block_manager.blocks.write().unwrap();
 
     // construct new block.
     let mut new_block = Block {
