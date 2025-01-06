@@ -156,7 +156,7 @@ pub trait FileHandle {
     /**
      * Write to a file.
      */
-    fn write(&self, offset: FileOffset, len: FileSize, buf: FileBuf) -> Result<(), FPErr> {
+    fn write(&self, offset: FileOffset, len: FileSize, buffer: &FileBuf) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
 
@@ -314,10 +314,20 @@ impl FileHandle for DefaultFileHandle {
         Ok((buffer, read_size as FileSize))
     }
 
-    fn write(&self, offset: FileOffset, len: FileSize, buf: FileBuf) -> Result<(), FPErr> {
+    fn write(&self, offset: FileOffset, len: FileSize, buffer: &FileBuf) -> Result<(), FPErr> {
         //TODO: add verbose debug
 
-        
+        let mut fd = self.fd.write().unwrap();
+
+        // Save current position.
+        let cur_position = FP_IO_ERR!(fd.seek(SeekFrom::Current(0)));
+
+        // Write to buffer
+        FP_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
+        FP_IO_ERR!(fd.write_all(buffer));
+
+        // Restore position.
+        FP_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
         Err(FP_NO_IMPL)
     }
 
