@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, sync::{Arc, RwLock}};
 
-use crate::os::fil::{posix::PosixFileSystem, DefaultFileHandle, DefaultFileSystem};
+use crate::os::fil::{native::DefaultFileSystem, posix::PosixFileSystem};
 
 pub type FPErr = i32;
 pub type FPResult<T> = Result<T, FPErr>;
