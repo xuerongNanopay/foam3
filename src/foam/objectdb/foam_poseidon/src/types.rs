@@ -2,10 +2,20 @@
 
 use std::{collections::HashMap, sync::{Arc, RwLock}};
 
+use crate::os::fil::{posix::PosixFileSystem, DefaultFileHandle, DefaultFileSystem};
+
 pub type FPErr = i32;
-pub type FileOffset = u64;
-pub type FileSize = u64;
-pub type FileBuf = Vec<u8>;
 pub type FPResult<T> = Result<T, FPErr>;
 
-pub type ConcurrentHashMap<K, V> = RwLock<HashMap<K, V>>;
+pub type FPFileOffset = u64;
+pub type FPFileSize = u64;
+pub type FPFileBuf = Vec<u8>;
+
+pub type FPConcurrentHashMap<K, V> = RwLock<HashMap<K, V>>;
+
+#[cfg(target_os = "linux")]
+pub type FPFileSystem = DefaultFileSystem;
+#[cfg(target_os = "macos")]
+pub type FPFileSystem = DefaultFileSystem;
+#[cfg(target_os = "windows")]
+pub type FPFileSystem = DefaultFileSystem;

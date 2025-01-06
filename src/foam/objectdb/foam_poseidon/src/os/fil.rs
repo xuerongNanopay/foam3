@@ -1,3 +1,5 @@
+pub mod posix;
+
 use std::{fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
 use crate::{errors::*, types::*, util::hash_city, FP_IO_ERR};
@@ -24,12 +26,13 @@ pub enum FileType {
     Regular,
 }
 
-pub trait FileSystem<T: FileHandle> {
-    /**
-     * Opened file.
-     */
 
-    fn open_file_count(&self) -> usize;
+
+pub trait FileSystem {
+    type FH;
+
+    // TODO: generic stats.
+    // fn open_file_count(&self) -> usize;
 
     /**
      * Return a list of file name under given directory
@@ -48,7 +51,9 @@ pub trait FileSystem<T: FileHandle> {
     /**
      * Open a handle for a file.
      */
-    fn open(self: &Arc<Self>, name: &str, file_type: FileType, flags: u32) -> Result<Arc<T>, FPErr>;
+    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<Self::FH>, FPErr> {
+        Err(FP_NO_IMPL)
+    }
 
     /**
      * Remove a file.
@@ -67,7 +72,7 @@ pub trait FileSystem<T: FileHandle> {
     /**
      * Return size of file
      */
-    fn size(&self, name: &str) -> Result<FileSize, FPErr> {
+    fn size(&self, name: &str) -> Result<FPFileSize, FPErr> {
         Err(FP_NO_IMPL)
     }
     /**
@@ -89,21 +94,21 @@ pub trait FileHandle {
     /**
      * POSIX only
      */
-    fn advise(&self, offset: FileOffset, len: FileSize, advice: i32) -> Result<(), FPErr> {
+    fn advise(&self, offset: FPFileOffset, len: FPFileSize, advice: i32) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
-    fn extend(&self, offset: FileOffset) -> Result<(), FPErr> {
+    fn extend(&self, offset: FPFileOffset) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
-    fn extend_nolock(&self, offset: FileOffset) -> Result<(), FPErr> {
+    fn extend_nolock(&self, offset: FPFileOffset) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
 
@@ -121,14 +126,14 @@ pub trait FileHandle {
     /**
      * Read from file.
      */
-    fn read(&self, offset: FileOffset, len: FileSize) -> Result<(FileBuf, FileSize), FPErr>  {
+    fn read(&self, offset: FPFileOffset, len: FPFileSize) -> Result<(FPFileBuf, FPFileSize), FPErr>  {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Return size of file.
      */
-    fn size(&self) -> Result<FileSize, FPErr> {
+    fn size(&self) -> Result<FPFileSize, FPErr> {
         Err(FP_NO_IMPL)
     }
 
@@ -149,14 +154,14 @@ pub trait FileHandle {
     /**
      * Truncate file.
      */
-    fn truncate(&self, offset: FileOffset) -> Result<FileBuf, FPErr> {
+    fn truncate(&self, offset: FPFileOffset) -> Result<FPFileBuf, FPErr> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Write to a file.
      */
-    fn write(&self, offset: FileOffset, len: FileSize, buffer: &FileBuf) -> Result<(), FPErr> {
+    fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
 
@@ -167,7 +172,7 @@ pub trait FileHandle {
  * Using native rust stb
  */
 pub struct DefaultFileSystem {
-    file_handles: ConcurrentHashMap<String, Arc<DefaultFileHandle>>
+    file_handles: FPConcurrentHashMap<String, Arc<DefaultFileHandle>>
 }
 
 impl DefaultFileSystem {
@@ -199,11 +204,8 @@ impl DefaultFileSystem {
     }
 }
 
-impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
-    fn open_file_count(&self) -> usize {
-        let fds = self.file_handles.read().unwrap();
-        fds.len()
-    }
+impl FileSystem for DefaultFileSystem {
+    type FH = DefaultFileHandle;
 
     fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> FPResult<Vec<String>> {
         let entries = FP_IO_ERR!(fs::read_dir(dir));
@@ -244,12 +246,12 @@ impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
         Ok(())
     }
 
-    fn size(&self, name: &str) -> Result<FileSize, FPErr> {
+    fn size(&self, name: &str) -> Result<FPFileSize, FPErr> {
         let s = FP_IO_ERR!(fs::metadata(name));
         Ok(s.len())
     }
 
-    fn open(self: &Arc<Self>, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
+    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
         if let Some(fh) = self.search(name) {
             return Ok(fh)
         }
@@ -261,7 +263,7 @@ impl FileSystem<DefaultFileHandle> for DefaultFileSystem {
             written: 0,
             last_sync: 0,
             file_type,
-            file_system: Arc::downgrade(self),
+            file_system: Weak::new(),
         };
 
         self.save(fd);
@@ -279,7 +281,7 @@ pub struct DefaultFileHandle {
     file_type: FileType,
     name_hash: u64,
     last_sync: u64,
-    written: FileSize,
+    written: FPFileSize,
     file_system: Weak<DefaultFileSystem>,
     fd: RwLock<std::fs::File>,
 }
@@ -293,7 +295,7 @@ impl FileHandle for DefaultFileHandle {
         Ok(())
     }
 
-    fn read(&self, offset: FileOffset, len: FileSize) -> Result<(FileBuf, FileSize), FPErr> {
+    fn read(&self, offset: FPFileOffset, len: FPFileSize) -> Result<(FPFileBuf, FPFileSize), FPErr> {
 
         //TODO: add verbose debug
         //TODO: use read_vectored when len is more than 1GB
@@ -311,10 +313,10 @@ impl FileHandle for DefaultFileHandle {
         // Restore position.
         FP_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
     
-        Ok((buffer, read_size as FileSize))
+        Ok((buffer, read_size as FPFileSize))
     }
 
-    fn write(&self, offset: FileOffset, len: FileSize, buffer: &FileBuf) -> Result<(), FPErr> {
+    fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> Result<(), FPErr> {
         //TODO: add verbose debug
 
         let mut fd = self.fd.write().unwrap();
@@ -334,7 +336,7 @@ impl FileHandle for DefaultFileHandle {
     /**
      * Return size of file.
      */
-    fn size(&self) -> Result<FileSize, FPErr> {
+    fn size(&self) -> Result<FPFileSize, FPErr> {
         let fd = self.fd.read().unwrap();
         let metadata = FP_IO_ERR!(fd.metadata());
         Ok(metadata.len())
@@ -379,5 +381,36 @@ mod tests {
         let mut b = buffer.as_mut_slice();
         let mut c = &mut buffer[..];
         print!("{}", c.len())
+    }
+
+    #[test]
+    fn demo_arc_self() {
+        use std::sync::Arc;
+
+        struct SharedObject {
+            data: String,
+        }
+
+        impl SharedObject {
+            // Create a new instance wrapped in Arc
+            fn new(data: String) -> Arc<Self> {
+                Arc::new(Self { data })
+            }
+
+            // Shared method using Arc<Self>
+            fn print(self: &Arc<Self>) {
+                println!("Shared data: {}", Arc::strong_count(self));
+            }
+        }
+
+        let obj = SharedObject::new("Hello, Arc!".to_string());
+
+        // Clone Arc for shared ownership
+        let obj_clone = Arc::clone(&obj);
+
+        // Both Arcs can call the print method
+        obj.print();        // Outputs: Shared data: Hello, Arc!
+        obj_clone.print();  // Outputs: Shared data: Hello, Arc!
+        obj.print(); 
     }
 }

@@ -8,6 +8,11 @@ mod open;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
+
+struct BlockManager {
+    
+}
+
 /**
  * Block; reference a singal file.
  * Physical representation of page.
