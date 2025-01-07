@@ -12,5 +12,5 @@ pub struct PosixFileHandle {
 }
 
 impl FileHandle for PosixFileHandle {
-
+    type FM = PosixFileSystem;
 }

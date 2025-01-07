@@ -124,6 +124,8 @@ pub struct DefaultFileHandle {
 }
 
 impl FileHandle for DefaultFileHandle {
+    type FM = DefaultFileSystem;
+
     fn close(&self) -> Result<(), FPErr> {
         if let Some(fs) = self.file_system.upgrade() {
             fs.remove(self.name.as_str());

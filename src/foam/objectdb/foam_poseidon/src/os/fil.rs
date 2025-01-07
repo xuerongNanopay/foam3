@@ -28,13 +28,21 @@ pub enum FileType {
     Regular,
 }
 
+pub struct FileStats {
+    total_file_open: i32,
+}
+
 
 
 pub trait FileSystem {
     type FH;
 
-    // TODO: generic stats.
-    // fn open_file_count(&self) -> usize;
+    /**
+     * Return stats of the FileSystem.
+     */
+    fn stats(&self) -> Option<FileStats> {
+        None
+    }
 
     /**
      * Return a list of file name under given directory
@@ -77,15 +85,19 @@ pub trait FileSystem {
     fn size(&self, name: &str) -> Result<FPFileSize, FPErr> {
         Err(FP_NO_IMPL)
     }
+
     /**
      * close FileSystem
      */
     fn close(&self) -> Result<(), FPErr> {
         Err(FP_NO_IMPL)
     }
+
 }
 
 pub trait FileHandle {
+    type FM;
+
     /**
      * Close a file handle.
      */
@@ -164,6 +176,13 @@ pub trait FileHandle {
      * Write to a file.
      */
     fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> Result<(), FPErr> {
+        Err(FP_NO_IMPL)
+    }
+
+    /**
+     * Peg current fileHandle in to fileSystem
+     */
+    fn peg(&self, file_system: Arc<Self::FM>) -> Result<FPFileBuf, FPErr> {
         Err(FP_NO_IMPL)
     }
 
