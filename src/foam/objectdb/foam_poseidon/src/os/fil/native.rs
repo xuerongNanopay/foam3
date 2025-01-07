@@ -1,6 +1,6 @@
-use std::{fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
+use std::{cell::RefCell, fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
-use crate::{error::*, types::*, util::hash_city, FP_IO_ERR};
+use crate::{error::*, types::*, util::hash_city, FP_ASSERT_IO_ERR};
 
 use super::*;
 
@@ -35,9 +35,9 @@ impl DefaultFileSystem {
     /**
      * remove a filehandle.
      */
-    fn remove(&self, name: &str) {
+    fn remove(&self, name: &str) -> Option<Arc<DefaultFileHandle>> {
         let mut fds = self.file_handles.write().unwrap();
-        fds.remove(name);
+        fds.remove(name)
     }
 }
 
@@ -45,11 +45,11 @@ impl FileSystem for DefaultFileSystem {
     type FH = DefaultFileHandle;
 
     fn ls(&self, dir: &str, prefix: Option<&str>, suffix: Option<&str>) -> FPResult<Vec<String>> {
-        let entries = FP_IO_ERR!(fs::read_dir(dir));
+        let entries = FP_ASSERT_IO_ERR!(fs::read_dir(dir));
         let mut ret: Vec<String> = vec![];
 
         for e in entries {
-            let entry = FP_IO_ERR!(e);
+            let entry = FP_ASSERT_IO_ERR!(e);
             let filename = String::from(entry.file_name().to_string_lossy());
 
             if let Some(prefix) = prefix {
@@ -74,17 +74,17 @@ impl FileSystem for DefaultFileSystem {
     }
 
     fn rm(&self, name: &str, flags: u32) -> FPResult<()> {
-        FP_IO_ERR!(fs::remove_file(name));
+        FP_ASSERT_IO_ERR!(fs::remove_file(name));
         Ok(())
     }
 
     fn rename(&self, from: &str, to: &str) -> FPResult<()> {
-        FP_IO_ERR!(fs::rename(from, to));
+        FP_ASSERT_IO_ERR!(fs::rename(from, to));
         Ok(())
     }
 
     fn size(&self, name: &str) -> FPResult<FPFileSize> {
-        let s = FP_IO_ERR!(fs::metadata(name));
+        let s = FP_ASSERT_IO_ERR!(fs::metadata(name));
         Ok(s.len())
     }
 
@@ -95,12 +95,11 @@ impl FileSystem for DefaultFileSystem {
 
         let fd = DefaultFileHandle{
             name: String::from(name),
-            fd: RwLock::new(FP_IO_ERR!(File::create_new(name))),
+            fd: RwLock::new(FP_ASSERT_IO_ERR!(File::create_new(name))),
             name_hash: hash_city::city_hash_64(name, name.len()),
             written: 0,
             last_sync: 0,
             file_type,
-            file_system: Weak::new(),
         };
 
         self.save(fd);
@@ -109,6 +108,23 @@ impl FileSystem for DefaultFileSystem {
             return Ok(fh)
         }
         Err(FP_IO_NOT_FOUND)
+    }
+
+    fn close_fh(&self, name: &str) -> FPResult<()> {
+        let ofh = self.remove(name);
+        if let Some(fh) = ofh {
+            fh.sync();
+        }
+        Ok(())
+    }
+
+    fn close(&self) -> FPResult<()> {
+        let mut fds = self.file_handles.write().unwrap();
+        for (k, v) in fds.iter() {
+            v.sync();
+        }
+        fds.clear();
+        Ok(())
     }
     
 }
@@ -119,7 +135,6 @@ pub struct DefaultFileHandle {
     name_hash: u64,
     last_sync: u64,
     written: FPFileSize,
-    file_system: Weak<DefaultFileSystem>,
     fd: RwLock<std::fs::File>,
 }
 
@@ -127,9 +142,6 @@ impl FileHandle for DefaultFileHandle {
     type FM = DefaultFileSystem;
 
     fn close(&self) -> FPResult<()> {
-        if let Some(fs) = self.file_system.upgrade() {
-            fs.remove(self.name.as_str());
-        }
         self.sync();
         Ok(())
     }
@@ -142,15 +154,15 @@ impl FileHandle for DefaultFileHandle {
         let mut fd = self.fd.write().unwrap();
 
         // Save current position.
-        let cur_position = FP_IO_ERR!(fd.seek(SeekFrom::Current(0)));
+        let cur_position = FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Current(0)));
 
         // Read to buffer.
-        FP_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
+        FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
         let mut buffer = vec![0u8; len as usize];
-        let read_size = FP_IO_ERR!(fd.read(&mut buffer[..]));
+        let read_size = FP_ASSERT_IO_ERR!(fd.read(&mut buffer[..]));
 
         // Restore position.
-        FP_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
+        FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
     
         Ok((buffer, read_size as FPFileSize))
     }
@@ -161,14 +173,14 @@ impl FileHandle for DefaultFileHandle {
         let mut fd = self.fd.write().unwrap();
 
         // Save current position.
-        let cur_position = FP_IO_ERR!(fd.seek(SeekFrom::Current(0)));
+        let cur_position = FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Current(0)));
 
         // Write to buffer
-        FP_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
-        FP_IO_ERR!(fd.write_all(buffer));
+        FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
+        FP_ASSERT_IO_ERR!(fd.write_all(buffer));
 
         // Restore position.
-        FP_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
+        FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
         Err(FP_NO_IMPL)
     }
 
@@ -177,7 +189,7 @@ impl FileHandle for DefaultFileHandle {
      */
     fn size(&self) -> FPResult<FPFileSize> {
         let fd = self.fd.read().unwrap();
-        let metadata = FP_IO_ERR!(fd.metadata());
+        let metadata = FP_ASSERT_IO_ERR!(fd.metadata());
         Ok(metadata.len())
     }
 
@@ -186,7 +198,7 @@ impl FileHandle for DefaultFileHandle {
      */
     fn sync(&self) -> FPResult<()> {
         let mut fd = self.fd.write().unwrap();
-        Ok(FP_IO_ERR!(fd.flush()))
+        Ok(FP_ASSERT_IO_ERR!(fd.flush()))
     }
 
 }

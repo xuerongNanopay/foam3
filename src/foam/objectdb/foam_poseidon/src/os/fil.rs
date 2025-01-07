@@ -1,11 +1,11 @@
 mod posix;
 mod native;
 
-use std::sync::Arc;
+use std::{result, sync::Arc};
 
 use native::{DefaultFileHandle, DefaultFileSystem};
 
-use crate::{error::FP_NO_IMPL, types::*};
+use crate::{error::FP_NO_IMPL, types::*, FP_ASSERT_ERR, FP_ASSERT_IO_ERR};
 
 OS_LINUX! {
     pub type FPFileSystem = DefaultFileSystem;
@@ -106,6 +106,13 @@ pub trait FileSystem {
     }
 
     /**
+     * Drop a file handle.
+     */
+    fn close_fh(&self, name: &str) -> FPResult<()> {
+        Err(FP_NO_IMPL)
+    }
+
+    /**
      * close FileSystem
      */
     fn close(&self) -> FPResult<()> {
@@ -198,15 +205,14 @@ pub trait FileHandle {
         Err(FP_NO_IMPL)
     }
 
-    /**
-     * Peg current fileHandle in to fileSystem
-     */
-    fn peg(&self, file_system: Arc<Self::FM>) -> Result<FPFileBuf, FPErr> {
-        Err(FP_NO_IMPL)
-    }
-
 }
 
-pub fn open(file_system: Arc<FPFileSystem>, ) -> Result<Arc<FPFileHandle>, FPErr> {
-    Err(FP_NO_IMPL)
+pub fn open(file_system: Arc<FPFileSystem>, name: &str, file_type: FileType, flags: u32) -> FPResult<Arc<FPFileHandle>> {
+    let fh = FP_ASSERT_ERR!(file_system.open(name, file_type, flags));
+    Ok(fh)
+}
+
+pub fn close(file_system: Arc<FPFileSystem>, name: &str) -> FPResult<()> {
+    FP_ASSERT_ERR!(file_system.close_fh(name));
+    Ok(())
 }

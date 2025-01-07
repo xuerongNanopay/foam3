@@ -5,11 +5,21 @@ use crate::types::FPErr;
 pub const FP_NO_IMPL: FPErr = -1;
 
 #[macro_export]
-macro_rules! FP_IO_ERR {
+macro_rules! FP_ASSERT_IO_ERR {
     ($func:expr) => {
         match $func {
             Ok(e) => e,
             Err(e) => return Err(convert_std_io_err_to_fp_err(e)),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! FP_ASSERT_ERR {
+    ($func:expr) => {
+        match $func {
+            Ok(o) => o,
+            Err(e) =>return Err(e),
         }
     };
 }
