@@ -2,7 +2,7 @@
 
 use std::{collections::LinkedList, sync::{Arc, RwLock}};
 
-use crate::os::fil::FileHandle;
+use crate::{os::fil::FileHandle, types::FPConcurrentHashMap};
 
 mod open;
 
@@ -10,7 +10,21 @@ static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
 
 struct BlockManager {
-    blocks: RwLock<LinkedList<Arc<Block>>>,
+    blocks: FPConcurrentHashMap<String, Arc<Block>>
+}
+
+impl BlockManager {
+    fn get_block(&self, filename: &str) -> Option<Arc<Block>> {
+        let blocks = self.blocks.read().unwrap();
+        match blocks.get(filename) {
+            Some(v) => Some(Arc::clone(v)),
+            None => None
+        }
+    }
+    fn insert_block(&self, filename: &str, block: Arc<Block>) {
+        let mut blocks = self.blocks.write().unwrap();
+        blocks.insert(String::from(filename), block);
+    }
 }
 
 /**
@@ -21,7 +35,6 @@ struct BlockManager {
 struct Block {
     name: String,   /* Name */
     object_id: u32,
-    ref_count: std::sync::atomic::AtomicU32,
 
     // filehandle: Arc<dyn FileHandle>,
     size: u64,       /* File size */

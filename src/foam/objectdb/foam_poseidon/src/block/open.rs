@@ -35,16 +35,8 @@ fn block_open(
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
-    {
-        let blocks = block_manager.blocks.read().unwrap();
-    
-        for block in blocks.iter() {
-            if block.name == filename && block.object_id == object_id {
-                // block already exits
-                block.ref_count.fetch_add(1, Ordering::SeqCst);
-                return Ok(Arc::clone(block));
-            }
-        }
+    if let Some(b) = block_manager.get_block(filename) {
+        return Ok(b);
     }
 
     let mut blocks = block_manager.blocks.write().unwrap();
@@ -53,7 +45,6 @@ fn block_open(
     let mut new_block = Block {
         name: filename.to_string(),
         object_id,
-        ref_count: std::sync::atomic::AtomicU32::new(1),
         allocation_size: if allocation_size == 0 {
             default_cfg.allocation_size
         } else {
@@ -84,6 +75,8 @@ fn block_open(
 
     //TODO: open file.
 
-    blocks.push_back(Arc::new(new_block));
-    Ok(Arc::clone(blocks.back().unwrap()))
+    let b = Arc::new(new_block);
+    let ret = Arc::clone(&b);
+    block_manager.insert_block(filename, b);
+    Ok(ret)
 }
