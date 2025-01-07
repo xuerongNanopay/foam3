@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 use super::*;
+use crate::error::{FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
 use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem, FileType};
 use crate::types::FPResult;
 use crate::util::hash_city;
@@ -10,7 +11,7 @@ use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct BlockOpenCfg {
-    allocation_size: u32,
+    allocation_size: FPFileSize,
     alloc_first: bool,
     os_cache_max: usize,
     os_cache_dirty_max: usize,
@@ -30,7 +31,7 @@ fn block_open(
     default_cfg: BlockOpenCfg,
     filename: &str, 
     object_id: u32,
-    allocation_size: u32,
+    allocation_size: FPFileSize,
     readonly: bool,
     fixed: bool,
 ) -> FPResult<Arc<Block>> {
@@ -92,6 +93,10 @@ fn block_open(
 /**
  * Read and verify Meta block.
  */
-fn read_meta(file_handle: Arc<Block>, allocation_size: u32) {
+fn read_meta(file_handle: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
 
+    if file_handle.size < allocation_size {
+        return Err(FP_IO_UNEXPECTED_EOF)
+    }
+    Ok(())
 }

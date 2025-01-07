@@ -37,7 +37,7 @@ struct Block {
 
     size: FPFileSize,       /* File size */
 
-    allocation_size: u32,
+    allocation_size: FPFileSize,
     alloc_first: bool,
 
     // os_cache: usize,
