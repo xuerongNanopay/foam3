@@ -5,6 +5,7 @@ mod block;
 mod os;
 mod session;
 mod util;
+#[macro_use]
 mod error;
 mod types;
 mod global;

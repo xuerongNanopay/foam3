@@ -2,7 +2,7 @@
 
 use std::{collections::LinkedList, sync::{Arc, RwLock}};
 
-use crate::{os::fil::FileHandle, types::FPConcurrentHashMap};
+use crate::{os::fil::{FPFileHandle, FileHandle}, types::{FPConcurrentHashMap, FPFileSize}};
 
 mod open;
 
@@ -31,22 +31,24 @@ impl BlockManager {
  * Block; reference a singal file.
  * Physical representation of page.
  */
-#[derive(Default)]
 struct Block {
     name: String,   /* Name */
     object_id: u32,
 
-    // filehandle: Arc<dyn FileHandle>,
-    size: u64,       /* File size */
-    os_cache: usize,
+    size: FPFileSize,       /* File size */
 
     allocation_size: u32,
     alloc_first: bool,
+
+    // os_cache: usize,
     os_cache_max: usize,
     os_cache_dirty_max: usize,
+
     extend_len: usize,
     
     readonly: bool,
+
+    file_handle: Arc<FPFileHandle>,
 }
 
 enum BlockErr {

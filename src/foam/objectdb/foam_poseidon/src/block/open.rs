@@ -1,8 +1,10 @@
 #![allow(unused)]
 
 use super::*;
-use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem};
+use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem, FileType};
+use crate::types::FPResult;
 use crate::util::hash_city;
+use crate::FP_ASSERT_FP_ERR;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -31,7 +33,7 @@ fn block_open(
     allocation_size: u32,
     readonly: bool,
     fixed: bool,
-) -> Result<Arc<Block>, BlockErr> {
+) -> FPResult<Arc<Block>> {
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
@@ -40,6 +42,24 @@ fn block_open(
     }
 
     let mut blocks = block_manager.blocks.write().unwrap();
+
+    let mut flags = 0u32;
+
+    match default_cfg.access_mode {
+        AccessMode::Random => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
+        AccessMode::Sequential => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
+    }
+
+    if fixed {
+        flags = BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
+    }
+
+    if readonly {
+        flags = BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
+    }
+
+    let file_handle = FP_ASSERT_FP_ERR!(file_system.open(filename, FileType::Data, flags));
+    let fh = file_handle.clone();
 
     // construct new block.
     let mut new_block = Block {
@@ -54,29 +74,24 @@ fn block_open(
         os_cache_max: default_cfg.os_cache_max,
         os_cache_dirty_max: default_cfg.os_cache_dirty_max,
         extend_len: default_cfg.extend_len,
-        ..Default::default()
+
+        readonly,
+        size: FP_ASSERT_FP_ERR!(fh.size()),
+        file_handle,
     };
-
-    let mut flag = 0u32;
-
-    match default_cfg.access_mode {
-        AccessMode::Random => flag = BIT_SET!(flag, fil::FP_FS_OPEN_ACCESS_RAND),
-        AccessMode::Sequential => flag = BIT_SET!(flag, fil::FP_FS_OPEN_ACCESS_SEQ)
-    }
-
-    if fixed {
-        flag = BIT_SET!(flag, fil::FP_FS_OPEN_FIXED);
-    }
-
-    if readonly {
-        flag = BIT_SET!(flag, fil::FP_FS_OPEN_READONLY);
-        new_block.readonly = true;
-    }
-
-    //TODO: open file.
 
     let b = Arc::new(new_block);
     let ret = Arc::clone(&b);
+
+    read_meta(b.clone(), allocation_size);
+
     block_manager.insert_block(filename, b);
     Ok(ret)
+}
+
+/**
+ * Read and verify Meta block.
+ */
+fn read_meta(file_handle: Arc<Block>, allocation_size: u32) {
+
 }

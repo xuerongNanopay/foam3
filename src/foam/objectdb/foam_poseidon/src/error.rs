@@ -15,7 +15,7 @@ macro_rules! FP_ASSERT_IO_ERR {
 }
 
 #[macro_export]
-macro_rules! FP_ASSERT_ERR {
+macro_rules! FP_ASSERT_FP_ERR {
     ($func:expr) => {
         match $func {
             Ok(o) => o,
