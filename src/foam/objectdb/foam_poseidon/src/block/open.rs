@@ -1,8 +1,7 @@
 #![allow(unused)]
 
 use super::*;
-use crate::os::fil::{self, AccessMode, FileSystem};
-use crate::types::FPFileSystem;
+use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem};
 use crate::util::hash_city;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};

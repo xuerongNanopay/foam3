@@ -69,26 +69,26 @@ impl FileSystem for DefaultFileSystem {
         Ok(ret)
     }
 
-    fn exist(&self, name: &str) -> Result<bool, FPErr>{
+    fn exist(&self, name: &str) -> FPResult<bool> {
         Ok(Path::new(name).exists())
     }
 
-    fn rm(&self, name: &str, flags: u32) -> Result<(), FPErr> {
+    fn rm(&self, name: &str, flags: u32) -> FPResult<()> {
         FP_IO_ERR!(fs::remove_file(name));
         Ok(())
     }
 
-    fn rename(&self, from: &str, to: &str) -> Result<(), FPErr> {
+    fn rename(&self, from: &str, to: &str) -> FPResult<()> {
         FP_IO_ERR!(fs::rename(from, to));
         Ok(())
     }
 
-    fn size(&self, name: &str) -> Result<FPFileSize, FPErr> {
+    fn size(&self, name: &str) -> FPResult<FPFileSize> {
         let s = FP_IO_ERR!(fs::metadata(name));
         Ok(s.len())
     }
 
-    fn open(&self, name: &str, file_type: FileType, flags: u32) -> Result<Arc<DefaultFileHandle>, FPErr> {
+    fn open(&self, name: &str, file_type: FileType, flags: u32) -> FPResult<Arc<DefaultFileHandle>> {
         if let Some(fh) = self.search(name) {
             return Ok(fh)
         }
@@ -126,7 +126,7 @@ pub struct DefaultFileHandle {
 impl FileHandle for DefaultFileHandle {
     type FM = DefaultFileSystem;
 
-    fn close(&self) -> Result<(), FPErr> {
+    fn close(&self) -> FPResult<()> {
         if let Some(fs) = self.file_system.upgrade() {
             fs.remove(self.name.as_str());
         }
@@ -134,7 +134,7 @@ impl FileHandle for DefaultFileHandle {
         Ok(())
     }
 
-    fn read(&self, offset: FPFileOffset, len: FPFileSize) -> Result<(FPFileBuf, FPFileSize), FPErr> {
+    fn read(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)> {
 
         //TODO: add verbose debug
         //TODO: use read_vectored when len is more than 1GB
@@ -155,7 +155,7 @@ impl FileHandle for DefaultFileHandle {
         Ok((buffer, read_size as FPFileSize))
     }
 
-    fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> Result<(), FPErr> {
+    fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
         //TODO: add verbose debug
 
         let mut fd = self.fd.write().unwrap();
@@ -175,7 +175,7 @@ impl FileHandle for DefaultFileHandle {
     /**
      * Return size of file.
      */
-    fn size(&self) -> Result<FPFileSize, FPErr> {
+    fn size(&self) -> FPResult<FPFileSize> {
         let fd = self.fd.read().unwrap();
         let metadata = FP_IO_ERR!(fd.metadata());
         Ok(metadata.len())
@@ -184,7 +184,7 @@ impl FileHandle for DefaultFileHandle {
     /**
      * flush buffered change into file.
      */
-    fn sync(&self) -> Result<(), FPErr> {
+    fn sync(&self) -> FPResult<()> {
         let mut fd = self.fd.write().unwrap();
         Ok(FP_IO_ERR!(fd.flush()))
     }

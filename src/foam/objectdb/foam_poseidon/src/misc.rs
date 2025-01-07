@@ -79,6 +79,36 @@ macro_rules! FP_VERBOSE_DEBUG {
     };
 }
 
+#[macro_export]
+macro_rules! OS_LINUX {
+    ($($item:item)*) => {
+        $(
+            #[cfg(target_os = "linux")]
+            $item
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! OS_MACOS {
+    ($($item:item)*) => {
+        $(
+            #[cfg(target_os = "macos")]
+            $item
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! OS_WIN {
+    ($($item:item)*) => {
+        $(
+            #[cfg(target_os = "windows")]
+            $item
+        )*
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
