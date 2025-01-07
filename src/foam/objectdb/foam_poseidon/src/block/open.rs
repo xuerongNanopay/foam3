@@ -93,10 +93,16 @@ fn block_open(
 /**
  * Read and verify Meta block.
  */
-fn read_meta(file_handle: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
+fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
 
-    if file_handle.size < allocation_size {
+    if block.size < allocation_size {
+        //TODO: LOG and Data corrupt case handle.
         return Err(FP_IO_UNEXPECTED_EOF)
     }
+    //TODO: Metrix for the read func.
+
+    let (buf, len) = FP_ASSERT_FP_ERR!(block.file_handle.read(0, allocation_size));
+
+    
     Ok(())
 }

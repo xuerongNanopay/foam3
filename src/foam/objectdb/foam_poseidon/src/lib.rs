@@ -9,6 +9,7 @@ mod util;
 mod error;
 mod types;
 mod global;
+mod test;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
@@ -32,8 +33,6 @@ pub extern "C" fn Java_foam_poseidon_Poseidon_mulNumbers(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn it_works() {
         // let result = add_numbers(2, 2);
