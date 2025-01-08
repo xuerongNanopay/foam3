@@ -1,15 +1,15 @@
 #![allow(unused)]
 
 use super::*;
-use crate::error::{FP_BK_DATA_CORRUPTION, FP_BK_INVALID_MAGIC, FP_BK_INVALID_MAJOR, FP_BK_INVALID_MINOR, FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
-use crate::misc::{FP_BLOCK_MAGIC, FP_BLOCK_MAJOR, FP_BLOCK_MINOR};
+use crate::error::*;
+use crate::misc::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::types::{FPFileSize, FPResult};
 use crate::util::hash_city;
 use crate::FP_ASSERT_FP_ERR;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 /**
  * Block; reference a single file.
@@ -22,7 +22,7 @@ pub struct BlockHandle {
     size: FPFileSize,       /* File size */
 
     allocation_size: FPFileSize,
-    alloc_first: bool,
+    alloc_first: AtomicBool,
 
     // os_cache: usize,
     os_cache_max: usize,
@@ -33,6 +33,10 @@ pub struct BlockHandle {
     readonly: bool,
 
     file_handle: Arc<FPFileHandle>,
+}
+
+impl BlockHandle {
+    // fn set_
 }
 
 
@@ -92,7 +96,7 @@ fn open_block_handle(
         } else {
             allocation_size
         },
-        alloc_first: default_cfg.alloc_first,
+        alloc_first: AtomicBool::new(default_cfg.alloc_first),
         os_cache_max: default_cfg.os_cache_max,
         os_cache_dirty_max: default_cfg.os_cache_dirty_max,
         extend_len: default_cfg.extend_len,
@@ -101,7 +105,7 @@ fn open_block_handle(
         size: FP_ASSERT_FP_ERR!(fh.size()),
         file_handle,
     });
-    FP_ASSERT_FP_ERR!(read_meta(new_block_handle.clone(), allocation_size));
+    FP_ASSERT_FP_ERR!(block_header_read_and_verify(new_block_handle.clone(), allocation_size));
 
     Ok(new_block_handle)
 
@@ -110,7 +114,7 @@ fn open_block_handle(
 /**
  * Read and verify Meta block.
  */
-fn read_meta(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
+fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
 
     if block_handle.size < allocation_size {
         return Err(FP_BK_DATA_CORRUPTION)
@@ -149,6 +153,22 @@ fn read_meta(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPR
 
     //see: block_open.c line: 400 func: __desc_read
     Ok(())
+}
+
+fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: FPFileSize) -> FPResult<()> {
+    let mut buf = VEC_U8!(alloc_size);
+    let header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
+
+    header.magic = FP_BLOCK_MAGIC;
+    header.major = FP_BLOCK_MAJOR;
+    header.minor = FP_BLOCK_MINOR;
+    header.magic = FP_BLOCK_MAGIC;
+
+    header.maybe_convert_endian();
+
+    //TODO: calculate checksum.
+
+    file_handle.write(0, alloc_size, &buf)
 }
 
 /**

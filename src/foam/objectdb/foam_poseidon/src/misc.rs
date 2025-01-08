@@ -114,13 +114,6 @@ macro_rules! OS_WIN {
 }
 
 #[macro_export]
-macro_rules! VEC_U8 {
-    [$($x:expr),*] => {
-        vec![$($x as u8),*]
-    };
-}
-
-#[macro_export]
 macro_rules! REINTERPRET_CAST_BUF {
     ($vec_u8:ident, $type:ty, $offset:expr) => {
         unsafe {
@@ -218,6 +211,23 @@ macro_rules! BIT_REVERSE_64 {
         BIT_REVERSE!(64, $v)
     }
 }
+
+#[macro_export]
+macro_rules! VEC_U8 {
+    [$($x:expr),*] => {
+        vec![$($x as u8),*]
+    };
+    ($s:expr, $f:expr) => {
+        let buf = Vec::<u8>::with_capacity($s);
+        unsafe { w_buf.set_len($s); }
+        buf.fill(0);
+        buf
+    };
+    ($s:expr) => {
+        VEC_U8!($s, 0)
+    };
+}
+
 
 
 #[cfg(test)]
