@@ -159,12 +159,12 @@ impl FileHandle for DefaultFileHandle {
         // Read to buffer.
         FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Start(offset)));
         let mut buffer = vec![0u8; len as usize];
-        let read_size = FP_ASSERT_IO_ERR!(fd.read(&mut buffer[..]));
+        FP_ASSERT_IO_ERR!(fd.read_exact(&mut buffer[..]));
 
         // Restore position.
         FP_ASSERT_IO_ERR!(fd.seek(SeekFrom::Start(cur_position)));
     
-        Ok((buffer, read_size as FPFileSize))
+        Ok((buffer, len))
     }
 
     fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {

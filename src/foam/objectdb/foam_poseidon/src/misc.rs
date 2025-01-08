@@ -109,6 +109,67 @@ macro_rules! OS_WIN {
     };
 }
 
+#[macro_export]
+macro_rules! VEC_U8 {
+    [$($x:expr),*] => {
+        vec![$($x as u8),*]
+    };
+}
+
+#[macro_export]
+macro_rules! REINTERPRET_CAST_BUF {
+    ($vec_u8:ident, $type:ty, $offset:expr) => {
+        unsafe {
+            let p = $vec_u8.as_mut_ptr();
+            p.add($offset);
+            & *(p as *const $type)
+        }
+    };
+    ($vec_u8:ident, $type:ty) => {
+        REINTERPRET_CAST_BUF!($vec_u8, $type, 0)
+    };
+}
+
+#[macro_export]
+macro_rules! REINTERPRET_CAST_BUF_MUT {
+    ($vec_u8:ident, $type:ty, $offset:expr) => {
+        unsafe {
+            let p = $vec_u8.as_mut_ptr();
+            p.add($offset);
+            &mut *(p as *mut $type)
+        }
+    };
+    ($vec_u8:ident, $type:ty) => {
+        REINTERPRET_CAST_BUF_MUT!($vec_u8, $type, 0)
+    };
+}
+
+#[macro_export]
+macro_rules! REINTERPRET_CAST_PTR {
+    ($ptr:ident, $type:ty, $offset:expr) => {
+        unsafe {
+            $ptr.add($offset);
+            & *($ptr as *const $type)
+        }
+    };
+    ($ptr:ident, $type:ty) => {
+        REINTERPRET_CAST_PTR!($ptr, $type, 0)
+    };
+}
+
+#[macro_export]
+macro_rules! REINTERPRET_CAST_PTR_MUT {
+    ($ptr:ident, $type:ty, $offset:expr) => {
+        unsafe {
+            $ptr.add($offset);
+            &mut *($ptr as *mut $type)
+        }
+    };
+    ($ptr:ident, $type:ty) => {
+        REINTERPRET_CAST_PTR_MUT!($ptr, $type, 0)
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
