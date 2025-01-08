@@ -117,6 +117,7 @@ fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
     block_header.checksum = save_checksum;
 
     //TODO: check magic, check version.
+    //see: block_open.c line: 400
     Ok(())
 }
 
