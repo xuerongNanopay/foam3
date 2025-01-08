@@ -174,8 +174,48 @@ macro_rules! REINTERPRET_CAST_PTR_MUT {
 macro_rules! SIZE_OF {
     ($type:ty) => {
         std::mem::size_of::<$type>()
+    };
+}
+
+#[macro_export]
+macro_rules! BIT_REVERSE {
+    (64, $v:expr) => {
+        (($v << 56) & 0xff00000000000000u64) | (($v << 40) & 0x00ff000000000000u64) |
+        (($v << 24) & 0x0000ff0000000000u64) | (($v << 8) & 0x000000ff00000000u64) |
+        (($v >> 8) & 0x00000000ff000000u64) | (($v >> 24) & 0x0000000000ff0000u64) |
+        (($v >> 40) & 0x000000000000ff00u64) | (($v >> 56) & 0x00000000000000ffu64)
+    };
+    (32, $v:expr) => {
+        (($v << 24) & 0xff000000u32) | (($v << 8) & 0x00ff0000u32) | 
+        (($v >> 8) & 0x0000ff00u32) | (($v >> 24) & 0x000000ffu32)
+    };
+    (16, $v:expr) => {
+        (($v << 8) & 0xff00u16) | (($v >> 8) & 0x00ffu16)
     }
 }
+
+#[macro_export]
+macro_rules! BIT_REVERSE_16 {
+    ($v:expr) => {
+        BIT_REVERSE!(16, $v)
+    }
+}
+
+#[macro_export]
+macro_rules! BIT_REVERSE_32 {
+    ($v:expr) => {
+        BIT_REVERSE!(32, $v)
+    }
+}
+
+#[macro_export]
+macro_rules! BIT_REVERSE_64 {
+    ($v:expr) => {
+        BIT_REVERSE!(64, $v)
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -199,5 +239,12 @@ mod tests {
         assert_eq!(BIT_OP!(CHECK, 0u32, 0x2u32), false);
         assert_eq!(BIT_OP!(CHECK, 0x2u32, 0x2u32), true);
         assert_eq!(BIT_SET!(0u32, 0x2u32), 2);
+    }
+
+    #[test]
+    fn test_bit_reverse_macro() {
+        assert_eq!(BIT_REVERSE_16!(0x1122), 0x2211);
+        assert_eq!(BIT_REVERSE_32!(0x11223344), 0x44332211);
+        assert_eq!(BIT_REVERSE_64!(0x1122334411223344), 0x4433221144332211);
     }
 }

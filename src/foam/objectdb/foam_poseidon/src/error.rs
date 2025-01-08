@@ -68,6 +68,8 @@ pub const FP_IO_IN_PROGRESS:               FPErr = 140;
 pub const FP_IO_OTHER:                     FPErr = 141;
 pub const FP_IO_UNKNOWN_ERR:               FPErr = 142;
 
+pub const FP_BK_DATA_CORRUPTION: FPErr = 201;
+
 pub fn convert_std_io_err_to_fp_err(ioe: std::io::Error) -> FPErr {
     match ioe.kind() {
         std::io::ErrorKind::NotFound => FP_IO_NOT_FOUND,

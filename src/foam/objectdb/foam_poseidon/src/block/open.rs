@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use super::*;
-use crate::error::{FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
+use crate::error::{FP_BK_DATA_CORRUPTION, FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
 use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem, FileType};
 use crate::types::FPResult;
 use crate::util::hash_city;
@@ -96,13 +96,16 @@ fn block_open(
 fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
 
     if block.size < allocation_size {
-        //TODO: LOG and Data corrupt case handle.
-        return Err(FP_IO_UNEXPECTED_EOF)
+        return Err(FP_BK_DATA_CORRUPTION)
     }
+
     //TODO: Metrix for the read func.
 
-    let (buf, len) = FP_ASSERT_FP_ERR!(block.file_handle.read(0, allocation_size));
+    let (mut buf, len) = FP_ASSERT_FP_ERR!(block.file_handle.read(0, allocation_size));
 
-    
+    let block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
+
+    let saved_checksum = block_header.checksum;
+
     Ok(())
 }
