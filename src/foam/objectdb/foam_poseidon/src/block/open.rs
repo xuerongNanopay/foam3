@@ -28,8 +28,7 @@ struct BlockOpenCfg {
  * 1. find block from ctx.
  * 2. if no found, create a new one.
  */
-fn block_open(
-    block_manager: Arc<BlockManager>,
+fn open_block(
     file_system: Arc<FPFileSystem>,
     default_cfg: BlockOpenCfg,
     filename: &str, 
@@ -41,55 +40,48 @@ fn block_open(
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
-    if let Some(b) = block_manager.get_block(filename) {
-        return Ok(b);
+    //TODO: cash block in somewhere, we can reuse later.
+
+    let mut flags = 0u32;
+
+    match default_cfg.access_mode {
+        AccessMode::Random => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
+        AccessMode::Sequential => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
     }
 
-    let init_block_f = || -> FPResult<Arc<Block>> {
-        let mut flags = 0u32;
+    if fixed {
+        flags = BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
+    }
 
-        match default_cfg.access_mode {
-            AccessMode::Random => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
-            AccessMode::Sequential => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
-        }
-    
-        if fixed {
-            flags = BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
-        }
-    
-        if readonly {
-            flags = BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
-        }
-    
-        let file_handle = FP_ASSERT_FP_ERR!(file_system.open(filename, FileType::Data, flags));
-        let fh = file_handle.clone();
-    
-        // construct new block.
-        let mut new_block = Arc::new(Block {
-            name: filename.to_string(),
-            object_id,
-            allocation_size: if allocation_size == 0 {
-                default_cfg.allocation_size
-            } else {
-                allocation_size
-            },
-            alloc_first: default_cfg.alloc_first,
-            os_cache_max: default_cfg.os_cache_max,
-            os_cache_dirty_max: default_cfg.os_cache_dirty_max,
-            extend_len: default_cfg.extend_len,
-    
-            readonly,
-            size: FP_ASSERT_FP_ERR!(fh.size()),
-            file_handle,
-        });
-        FP_ASSERT_FP_ERR!(read_meta(new_block.clone(), allocation_size));
+    if readonly {
+        flags = BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
+    }
 
-        Ok(new_block)
-    };
-    
-    let new_block = block_manager.get_block_or_default(filename, init_block_f)?;
+    let file_handle = FP_ASSERT_FP_ERR!(file_system.open(filename, FileType::Data, flags));
+    let fh = file_handle.clone();
+
+    // construct new block.
+    let mut new_block = Arc::new(Block {
+        name: filename.to_string(),
+        object_id,
+        allocation_size: if allocation_size == 0 {
+            default_cfg.allocation_size
+        } else {
+            allocation_size
+        },
+        alloc_first: default_cfg.alloc_first,
+        os_cache_max: default_cfg.os_cache_max,
+        os_cache_dirty_max: default_cfg.os_cache_dirty_max,
+        extend_len: default_cfg.extend_len,
+
+        readonly,
+        size: FP_ASSERT_FP_ERR!(fh.size()),
+        file_handle,
+    });
+    FP_ASSERT_FP_ERR!(read_meta(new_block.clone(), allocation_size));
 
     Ok(new_block)
+
 }
 
 /**

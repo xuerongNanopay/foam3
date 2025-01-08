@@ -12,8 +12,8 @@ static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
 
 /**
- * Block; reference a singal file.
- * Physical representation of page.
+ * Block; reference a single file.
+ * Not physical representation of page.
  */
 pub struct Block {
     name: String,   /* Name */
