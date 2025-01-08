@@ -15,7 +15,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
  * Block; reference a single file.
  * Not physical representation of page.
  */
-pub struct BlockHandle {
+pub(crate) struct BlockHandle {
     name: String,   /* Name */
     object_id: u32,
 
@@ -37,6 +37,15 @@ pub struct BlockHandle {
 
 impl BlockHandle {
     // fn set_
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct BlockStat{
+    allocation_size: u64,
+    block_size: u64,
+    block_magic: u64,
+    block_major: u16,
+    block_minor: u16,
 }
 
 
