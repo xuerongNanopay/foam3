@@ -2,13 +2,13 @@ use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}};
 
 use crate::types::{FPConcurrentHashMap, FPResult};
 
-use super::{block::Block};
+use super::{block_handle::BlockHandle};
 
 /**
  * Block manager, reference to a block(block reference to a file).
  */
 pub(crate) struct BlockManager {
-    block: Arc<Block>,
+    block_handle: Arc<BlockHandle>,
 }
 // pub struct BlockManager {
 //     blocks: FPConcurrentHashMap<String, Arc<Block>>,

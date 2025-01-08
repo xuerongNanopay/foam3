@@ -1,7 +1,5 @@
 #![allow(unused)]
 
-use manager::BlockManager;
-
 use super::*;
 use crate::error::{FP_BK_DATA_CORRUPTION, FP_BK_INVALID_MAGIC, FP_BK_INVALID_MAJOR, FP_BK_INVALID_MINOR, FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
 use crate::misc::{FP_BLOCK_MAGIC, FP_BLOCK_MAJOR, FP_BLOCK_MINOR};
@@ -17,7 +15,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
  * Block; reference a single file.
  * Not physical representation of page.
  */
-pub struct Block {
+pub struct BlockHandle {
     name: String,   /* Name */
     object_id: u32,
 
@@ -50,10 +48,10 @@ struct BlockOpenCfg {
 
 
 /**
- * 1. find block from ctx.
+ * 1. find block handle from ctx.
  * 2. if no found, create a new one.
  */
-fn open_block(
+fn open_block_handle(
     file_system: Arc<FPFileSystem>,
     default_cfg: BlockOpenCfg,
     filename: &str, 
@@ -61,7 +59,7 @@ fn open_block(
     allocation_size: FPFileSize,
     readonly: bool,
     fixed: bool,
-) -> FPResult<Arc<Block>> {
+) -> FPResult<Arc<BlockHandle>> {
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
@@ -86,7 +84,7 @@ fn open_block(
     let fh = file_handle.clone();
 
     // construct new block.
-    let mut new_block = Arc::new(Block {
+    let mut new_block_handle = Arc::new(BlockHandle {
         name: filename.to_string(),
         object_id,
         allocation_size: if allocation_size == 0 {
@@ -103,24 +101,24 @@ fn open_block(
         size: FP_ASSERT_FP_ERR!(fh.size()),
         file_handle,
     });
-    FP_ASSERT_FP_ERR!(read_meta(new_block.clone(), allocation_size));
+    FP_ASSERT_FP_ERR!(read_meta(new_block_handle.clone(), allocation_size));
 
-    Ok(new_block)
+    Ok(new_block_handle)
 
 }
 
 /**
  * Read and verify Meta block.
  */
-fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
+fn read_meta(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
 
-    if block.size < allocation_size {
+    if block_handle.size < allocation_size {
         return Err(FP_BK_DATA_CORRUPTION)
     }
 
     //TODO: Metrix for the read func.
 
-    let (mut buf, len) = FP_ASSERT_FP_ERR!(block.file_handle.read(0, allocation_size));
+    let (mut buf, len) = FP_ASSERT_FP_ERR!(block_handle.file_handle.read(0, allocation_size));
 
     // Create new BlockHeader.
     let mut block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
@@ -153,3 +151,9 @@ fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
     Ok(())
 }
 
+/**
+ * close block handle
+ */
+fn close_block_handle(file_system: Arc<FPFileSystem>, block_handle: &BlockHandle) -> FPResult<()> {
+    file_system.close_fh(block_handle.name.as_str())
+}

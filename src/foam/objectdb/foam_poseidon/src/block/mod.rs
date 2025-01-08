@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 pub mod manager;
-pub mod block;
+pub mod block_handle;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
