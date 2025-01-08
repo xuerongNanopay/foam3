@@ -170,6 +170,12 @@ macro_rules! REINTERPRET_CAST_PTR_MUT {
     };
 }
 
+#[macro_export]
+macro_rules! SIZE_OF {
+    ($type:ty) => {
+        std::mem::size_of::<$type>()
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

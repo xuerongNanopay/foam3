@@ -68,7 +68,7 @@ mod tests {
 
     use std::fs::File;
     use std::io::{self, Bytes, Read, Write};
-    use std::mem;
+    use std::{mem, vec};
 
     use crate::block::BlockHeader;
 
@@ -76,63 +76,27 @@ mod tests {
     fn write_block_header_to_file() {
         let filename = "/tmp/block_header.fp";
         let mut file = File::create(filename).unwrap();
-        let buffer = VEC_U8![0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0];
-        file.write_all(&buffer);
+        let mut w_buf = Vec::<u8>::with_capacity(SIZE_OF!(BlockHeader));
+        unsafe { w_buf.set_len(SIZE_OF!(BlockHeader)); }
+        w_buf.fill(0);
+        let header = REINTERPRET_CAST_BUF_MUT!(w_buf, BlockHeader);
+
+        header.checksum = 11;
+        header.magic = 56;
+
+        println!("{:?}", w_buf);
+        println!("{:?}", header);
+        file.write_all(&w_buf);
         file.sync_all();
 
         let mut file = File::open(filename).unwrap();
-        let mut rbuf = vec![0u8; buffer.len() as usize];
+        let mut rbuf = vec![0u8; w_buf.len() as usize];
         file.read_exact(&mut rbuf);
         
-        println!("{:?}", rbuf);
+        let b_header = REINTERPRET_CAST_BUF!(rbuf, BlockHeader);
 
-        println!("len:{}, cap:{}", rbuf.len(), rbuf.capacity());
-        let b_header: BlockHeader = unsafe { mem::transmute(rbuf.as_slice()) };
-        let c_header = BlockHeader{
-            magic: 32,
-            major: 32,
-            minor: 32,
-            checksum: 32,
-            reserved: 32,
-        };
+        println!("{:?}", rbuf);
         println!("{:?}", b_header);
-        println!("{:?}", c_header);
-
-        let bytes: [u8; mem::size_of::<BlockHeader>()] = [
-            1, 0, 0, 0, 0, 1, 0, 1,
-            4, 0, 0, 0, 0, 0, 24, 64
-        ];
-        let d_header: BlockHeader = unsafe { mem::transmute(bytes) };
-        println!("{:?}", d_header);
-
-        let bytes: Vec<u8> = vec![
-            1, 0, 0, 0, 0, 1, 0, 1,
-            4, 0, 0, 0, 0, 0, 24, 64
-        ];
-        let d_header: BlockHeader = unsafe { mem::transmute(bytes.as_slice()) };
-        println!("{:?}", d_header);
-
-        {
-            let mut e_header = unsafe { 
-                std::ptr::read(rbuf.as_ptr() as *const BlockHeader) 
-            };
-            println!("{:?}", e_header);
-        }
-
-        println!("{:?}", rbuf);
-
-        {
-            let mut e_header = unsafe {
-                let p = rbuf.as_mut_ptr();
-                p.add(0);
-                &mut *(p as *mut BlockHeader)
-            };
-            let mut e_header = REINTERPRET_CAST_BUF_MUT!(rbuf, BlockHeader);
-            e_header.checksum = 7;
-            println!("e_header {:?}", e_header);
-        }
-
-        println!("{:?}", rbuf);
         
     }
 }
