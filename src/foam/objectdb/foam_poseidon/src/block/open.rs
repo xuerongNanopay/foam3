@@ -84,7 +84,7 @@ fn block_open(
     let b = Arc::new(new_block);
     let ret = Arc::clone(&b);
 
-    read_meta(b.clone(), allocation_size);
+    FP_ASSERT_FP_ERR!(read_meta(b.clone(), allocation_size));
 
     block_manager.insert_block(filename, b);
     Ok(ret)
@@ -117,7 +117,7 @@ fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
     block_header.checksum = save_checksum;
 
     //TODO: check magic, check version.
-    //see: block_open.c line: 400
+    //see: block_open.c line: 400 func: __desc_read
     Ok(())
 }
 
