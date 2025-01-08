@@ -3,7 +3,8 @@
 use manager::BlockManager;
 
 use super::*;
-use crate::error::{FP_BK_DATA_CORRUPTION, FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
+use crate::error::{FP_BK_DATA_CORRUPTION, FP_BK_INVALID_MAGIC, FP_BK_INVALID_MAJOR, FP_BK_INVALID_MINOR, FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
+use crate::misc::{FP_BLOCK_MAGIC, FP_BLOCK_MAJOR, FP_BLOCK_MINOR};
 use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem, FileType};
 use crate::types::FPResult;
 use crate::util::hash_city;
@@ -87,7 +88,7 @@ fn block_open(
     };
     
     let new_block = block_manager.get_block_or_default(filename, init_block_f)?;
-    
+
     Ok(new_block)
 }
 
@@ -117,7 +118,20 @@ fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
 
     block_header.checksum = save_checksum;
 
-    //TODO: check magic, check version.
+    block_header.maybe_convert_endian();
+
+    if block_header.magic != FP_BLOCK_MAGIC {
+        return Err(FP_BK_INVALID_MAGIC)
+    }
+
+    if block_header.major > FP_BLOCK_MAJOR {
+        return Err(FP_BK_INVALID_MAJOR)
+    }
+
+    if block_header.major == FP_BLOCK_MAJOR && block_header.minor > FP_BLOCK_MINOR {
+        return Err(FP_BK_INVALID_MINOR)
+    }
+
     //see: block_open.c line: 400 func: __desc_read
     Ok(())
 }
