@@ -5,13 +5,38 @@ use manager::BlockManager;
 use super::*;
 use crate::error::{FP_BK_DATA_CORRUPTION, FP_BK_INVALID_MAGIC, FP_BK_INVALID_MAJOR, FP_BK_INVALID_MINOR, FP_IO_BROKEN_PIPE, FP_IO_UNEXPECTED_EOF};
 use crate::misc::{FP_BLOCK_MAGIC, FP_BLOCK_MAJOR, FP_BLOCK_MINOR};
-use crate::os::fil::{self, AccessMode, FPFileSystem, FileSystem, FileType};
-use crate::types::FPResult;
+use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
+use crate::types::{FPFileSize, FPResult};
 use crate::util::hash_city;
 use crate::FP_ASSERT_FP_ERR;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicUsize, Ordering};
+
+/**
+ * Block; reference a single file.
+ * Not physical representation of page.
+ */
+pub struct Block {
+    name: String,   /* Name */
+    object_id: u32,
+
+    size: FPFileSize,       /* File size */
+
+    allocation_size: FPFileSize,
+    alloc_first: bool,
+
+    // os_cache: usize,
+    os_cache_max: usize,
+    os_cache_dirty_max: usize,
+
+    extend_len: usize,
+    
+    readonly: bool,
+
+    file_handle: Arc<FPFileHandle>,
+}
+
 
 struct BlockOpenCfg {
     allocation_size: FPFileSize,
@@ -40,7 +65,7 @@ fn open_block(
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
-    //TODO: cash block in somewhere, we can reuse later.
+    //TODO: cache block in somewhere, we should only keep one block for a file.
 
     let mut flags = 0u32;
 

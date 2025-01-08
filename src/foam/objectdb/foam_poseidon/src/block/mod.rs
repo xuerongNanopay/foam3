@@ -1,39 +1,10 @@
 #![allow(unused)]
 
 pub mod manager;
-
-use std::{collections::LinkedList, sync::{Arc, RwLock}};
-
-use crate::{os::fil::{FPFileHandle, FileHandle}, types::{FPConcurrentHashMap, FPFileSize}};
-
-mod open;
+pub mod block;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
-
-/**
- * Block; reference a single file.
- * Not physical representation of page.
- */
-pub struct Block {
-    name: String,   /* Name */
-    object_id: u32,
-
-    size: FPFileSize,       /* File size */
-
-    allocation_size: FPFileSize,
-    alloc_first: bool,
-
-    // os_cache: usize,
-    os_cache_max: usize,
-    os_cache_dirty_max: usize,
-
-    extend_len: usize,
-    
-    readonly: bool,
-
-    file_handle: Arc<FPFileHandle>,
-}
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
