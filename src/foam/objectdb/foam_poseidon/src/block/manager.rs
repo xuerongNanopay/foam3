@@ -10,6 +10,11 @@ use super::{block_handle::BlockHandle};
 pub(crate) struct BlockManager {
     block_handle: Arc<BlockHandle>,
 }
+
+fn create(filename: &str, alloc_size: u32) {
+    
+}
+
 // pub struct BlockManager {
 //     blocks: FPConcurrentHashMap<String, Arc<Block>>,
 // }

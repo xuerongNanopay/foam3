@@ -64,7 +64,7 @@ struct BlockOpenCfg {
  * 1. find block handle from ctx.
  * 2. if no found, create a new one.
  */
-fn open_block_handle(
+fn open(
     file_system: Arc<FPFileSystem>,
     default_cfg: BlockOpenCfg,
     filename: &str, 
@@ -164,7 +164,7 @@ fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size:
     Ok(())
 }
 
-fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: FPFileSize) -> FPResult<()> {
+fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
     let mut buf = VEC_U8!(alloc_size);
     let header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
 
@@ -177,12 +177,12 @@ fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: FPFileSize) ->
 
     //TODO: calculate checksum.
 
-    file_handle.write(0, alloc_size, &buf)
+    file_handle.write(0, alloc_size as u64, &buf)
 }
 
 /**
  * close block handle
  */
-fn close_block_handle(file_system: Arc<FPFileSystem>, block_handle: &BlockHandle) -> FPResult<()> {
+fn close(file_system: Arc<FPFileSystem>, block_handle: &BlockHandle) -> FPResult<()> {
     file_system.close_fh(block_handle.name.as_str())
 }
