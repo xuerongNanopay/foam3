@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+pub mod manager;
+
 use std::{collections::LinkedList, sync::{Arc, RwLock}};
 
 use crate::{os::fil::{FPFileHandle, FileHandle}, types::{FPConcurrentHashMap, FPFileSize}};
@@ -9,29 +11,11 @@ mod open;
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
 
-struct BlockManager {
-    blocks: FPConcurrentHashMap<String, Arc<Block>>
-}
-
-impl BlockManager {
-    fn get_block(&self, filename: &str) -> Option<Arc<Block>> {
-        let blocks = self.blocks.read().unwrap();
-        match blocks.get(filename) {
-            Some(v) => Some(Arc::clone(v)),
-            None => None
-        }
-    }
-    fn insert_block(&self, filename: &str, block: Arc<Block>) {
-        let mut blocks = self.blocks.write().unwrap();
-        blocks.insert(String::from(filename), block);
-    }
-}
-
 /**
  * Block; reference a singal file.
  * Physical representation of page.
  */
-struct Block {
+pub struct Block {
     name: String,   /* Name */
     object_id: u32,
 
