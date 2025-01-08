@@ -246,5 +246,6 @@ mod tests {
         assert_eq!(BIT_REVERSE_16!(0x1122), 0x2211);
         assert_eq!(BIT_REVERSE_32!(0x11223344), 0x44332211);
         assert_eq!(BIT_REVERSE_64!(0x1122334411223344), 0x4433221144332211);
+        let a = 8;
     }
 }

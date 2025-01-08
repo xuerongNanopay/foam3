@@ -103,9 +103,20 @@ fn read_meta(block: Arc<Block>, allocation_size: FPFileSize) -> FPResult<()> {
 
     let (mut buf, len) = FP_ASSERT_FP_ERR!(block.file_handle.read(0, allocation_size));
 
-    let block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
+    // Create new BlockHeader.
+    let mut block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
 
-    let saved_checksum = block_header.checksum;
+    // block_header.maybe_convert_endian();
+    
+    let save_checksum = block_header.checksum;
+    let real_checksum = if cfg!(target_endian = "big") { BIT_REVERSE_32!(block_header.checksum) } else { block_header.checksum };
 
+    //TODO: checksum verify.
+    block_header.checksum = 0;
+
+    block_header.checksum = save_checksum;
+
+    //TODO: check magic, check version.
     Ok(())
 }
+

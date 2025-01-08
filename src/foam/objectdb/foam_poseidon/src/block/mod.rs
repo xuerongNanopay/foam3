@@ -52,7 +52,7 @@ struct Block {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct BlockHeader {
     // 0x646464
     magic: u32,
@@ -60,6 +60,18 @@ struct BlockHeader {
     minor: u16,
     checksum: u32,
     reserved: u32,
+}
+
+impl BlockHeader {
+    fn maybe_convert_endian(&mut self) {
+        if cfg!(target_endian = "big") { 
+            self.magic = BIT_REVERSE_32!(self.magic);
+            self.major = BIT_REVERSE_16!(self.major);
+            self.minor = BIT_REVERSE_16!(self.minor);
+            self.checksum = BIT_REVERSE_32!(self.checksum);
+            self.reserved = BIT_REVERSE_32!(self.reserved);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -97,6 +109,11 @@ mod tests {
 
         println!("{:?}", rbuf);
         println!("{:?}", b_header);
-        
+
+        let mut n_header = *b_header;
+        println!("{:?}", n_header);
+        n_header.checksum = 77;
+        println!("{:?}", b_header);
+        println!("{:?}", n_header);
     }
 }
