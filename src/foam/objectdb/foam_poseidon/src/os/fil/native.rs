@@ -130,7 +130,7 @@ impl FileSystem for DefaultFileSystem {
 }
 
 pub struct DefaultFileHandle {
-    name: String, /* file name */
+    pub(crate) name: String, /* file name */
     file_type: FileType,
     name_hash: u64,
     last_sync: u64,

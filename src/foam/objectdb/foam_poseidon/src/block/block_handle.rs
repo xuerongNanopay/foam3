@@ -164,7 +164,7 @@ fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size:
     Ok(())
 }
 
-fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
+pub(crate) fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
     let mut buf = VEC_U8!(alloc_size);
     let header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
 

@@ -1,8 +1,8 @@
 use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}};
 
-use crate::types::{FPConcurrentHashMap, FPResult};
+use crate::{os::fil::{FPFileSystem, FileHandle, FileSystem, FileType, FP_FS_OPEN_CREATE, FP_FS_OPEN_DURABLE, FP_FS_OPEN_EXCLUSIVE}, types::{FPConcurrentHashMap, FPResult}};
 
-use super::{block_handle::BlockHandle};
+use super::block_handle::{self, block_header_write, BlockHandle};
 
 /**
  * Block manager, reference to a block(block reference to a file).
@@ -11,8 +11,15 @@ pub(crate) struct BlockManager {
     block_handle: Arc<BlockHandle>,
 }
 
-fn create(filename: &str, alloc_size: u32) {
-    
+/**
+ * Create a file and write meta data to it.
+ */
+fn create(file_system: Arc<FPFileSystem>, filename: &str, alloc_size: u32) -> FPResult<()> {
+    let fh = file_system.open(filename, FileType::Data, FP_FS_OPEN_CREATE | FP_FS_OPEN_DURABLE | FP_FS_OPEN_EXCLUSIVE)?;
+    block_header_write(fh.clone(), alloc_size)?;
+    fh.sync()?;
+    file_system.close_fh(&fh.name)?;
+    Ok(())
 }
 
 // pub struct BlockManager {
