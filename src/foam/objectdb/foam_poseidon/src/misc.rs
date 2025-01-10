@@ -36,7 +36,7 @@ macro_rules! FP_CLAMP {
 }
 
 #[macro_export]
-macro_rules! BIT_OP {
+macro_rules! FP_BIT_OP {
     (SET, $value:expr, $mask:expr) => {
         $value | $mask
     };
@@ -46,33 +46,33 @@ macro_rules! BIT_OP {
     (TOGGLE, $value:expr, $mask:expr) => {
         $value ^ ($mask)
     };
-    (CHECK, $value:expr, $mask:expr) => {
+    (IS_SET, $value:expr, $mask:expr) => {
         ($value & $mask) != 0
     };
 }
 
 #[macro_export]
-macro_rules! BIT_SET {
+macro_rules! FP_BIT_SET {
     ($value:expr, $mask:expr) => {
-        BIT_OP!(SET, $value, $mask)
+        FP_BIT_OP!(SET, $value, $mask)
     };
 }
 #[macro_export]
-macro_rules! BIT_CLR {
+macro_rules! FP_BIT_CLR {
     ($value:expr, $mask:expr) => {
-        BIT_OP!(CLEAR, $value, $mask)
+        FP_BIT_OP!(CLEAR, $value, $mask)
     };
 }
 #[macro_export]
-macro_rules! BIT_TLG {
+macro_rules! FP_BIT_TLG {
     ($value:expr, $mask:expr) => {
-        BIT_OP!(TOGGLE, $value, $mask)
+        FP_BIT_OP!(TOGGLE, $value, $mask)
     };
 }
 #[macro_export]
-macro_rules! BIT_CHK {
+macro_rules! FP_BIT_IS_SET {
     ($value:expr, $mask:expr) => {
-        BIT_OP!(CHECK, $value, $mask)
+        FP_BIT_OP!(IS_SET, $value, $mask)
     };
 }
 
@@ -246,13 +246,13 @@ mod tests {
 
     #[test]
     fn test_bit_op_macro() {
-        assert_eq!(BIT_OP!(SET, 0u32, 0x2u32), 2);
-        assert_eq!(BIT_OP!(CLEAR, 0x2u32, 0x2u32), 0);
-        assert_eq!(BIT_OP!(TOGGLE, 0u32, 0x2u32), 2);
-        assert_eq!(BIT_OP!(TOGGLE, 0x2u32, 0x2u32), 0);
-        assert_eq!(BIT_OP!(CHECK, 0u32, 0x2u32), false);
-        assert_eq!(BIT_OP!(CHECK, 0x2u32, 0x2u32), true);
-        assert_eq!(BIT_SET!(0u32, 0x2u32), 2);
+        assert_eq!(FP_BIT_OP!(SET, 0u32, 0x2u32), 2);
+        assert_eq!(FP_BIT_OP!(CLEAR, 0x2u32, 0x2u32), 0);
+        assert_eq!(FP_BIT_OP!(TOGGLE, 0u32, 0x2u32), 2);
+        assert_eq!(FP_BIT_OP!(TOGGLE, 0x2u32, 0x2u32), 0);
+        assert_eq!(FP_BIT_OP!(IS_SET, 0u32, 0x2u32), false);
+        assert_eq!(FP_BIT_OP!(IS_SET, 0x2u32, 0x2u32), true);
+        assert_eq!(FP_BIT_SET!(0u32, 0x2u32), 2);
     }
 
     #[test]

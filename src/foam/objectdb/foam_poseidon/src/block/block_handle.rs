@@ -81,16 +81,16 @@ fn open(
     let mut flags = 0u32;
 
     match default_cfg.access_mode {
-        AccessMode::Random => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
-        AccessMode::Sequential => flags = BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
+        AccessMode::Random => flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
+        AccessMode::Sequential => flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
     }
 
     if fixed {
-        flags = BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
+        flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
     }
 
     if readonly {
-        flags = BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
+        flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
     }
 
     let file_handle = FP_ASSERT_FP_ERR!(file_system.open(filename, FileType::Data, flags));
