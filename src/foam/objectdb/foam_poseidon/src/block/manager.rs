@@ -35,7 +35,7 @@ fn drop() {
  * Read a block base on block reference(BlockRef).
  */
 fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) {
-
+    
 }
 
 // pub struct BlockManager {

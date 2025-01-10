@@ -50,12 +50,22 @@ impl<'a> VarintDecodeIterator<'a> {
             position: 0,
         }
     }
-    pub fn new_with_size(slice: &'a [u8], max_size: usize) -> Self {
+    pub fn new_with_limit(slice: &'a [u8], max_size: usize) -> Self {
         Self {
             slice,
             max_size,
             position: 0,
         }
+    }
+    pub fn cur(&self) -> Option<u8> {
+        if self.position < self.slice.len() {
+            return Some(self.slice[self.position]);
+        }
+        None
+    }
+
+    pub fn maybe_next(&self) -> bool {
+        self.position < FP_MIN!(self.slice.len(), self.max_size)
     }
 }
 
@@ -74,7 +84,7 @@ impl<'a> Iterator for VarintDecodeIterator<'a> {
 
         let (l, r) = self.slice.split_at(s);
         self.slice = r;
-        self.max_size -= s;
+        self.position  += s;
         
         Some(v)
     }
@@ -156,6 +166,14 @@ mod tests {
         assert_eq!(iter.next(), Some(127));
         assert_eq!(iter.next(), Some(128));
         assert_eq!(iter.next(), Some(9223372036854775807u64));
+        assert_eq!(iter.next(), None);
+
+        let mut iter = VarintDecodeIterator::new_with_limit(buf, 22);
+
+        assert_eq!(iter.next(), Some(18446744073709551615u64));
+        assert_eq!(iter.next(), Some(4611686018427387903u64));
+        assert_eq!(iter.next(), Some(300));
+        assert_eq!(iter.next(), Some(127));
         assert_eq!(iter.next(), None);
     }
 }

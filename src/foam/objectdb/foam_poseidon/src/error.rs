@@ -27,6 +27,19 @@ macro_rules! FP_ASSERT_FP_ERR {
     };
 }
 
+#[macro_export]
+macro_rules! FP_ASSERT_NOT_NONE {
+    ($option:expr, $err:expr) => {
+        match $option {
+            Some(o) => o,
+            None =>return Err($err),
+        }
+    };
+    ($option:expr) => {
+        FP_ASSERT_NOT_NONE!($option, crate::error::FP_ILLEGAL_ARGUMENT)
+    };
+}
+
 // IO errors.
 pub const FP_IO_NOT_FOUND:                 FPErr = 101;
 pub const FP_IO_PERMISSION_DENIED:         FPErr = 102;
