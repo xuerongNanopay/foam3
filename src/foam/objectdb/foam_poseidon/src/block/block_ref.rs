@@ -2,18 +2,9 @@
 
 use crate::{error::*, types::FPResult, util::compaction::varint::VarintDecodeIterator, FP_ASSERT_NOT_NONE};
 
-use super::block_handle::BlockHandle;
+use super::{block_handle::BlockHandle, BlockRef};
 
 static FP_BLOCK_ADDR_INDICATOR: u8 = 0x01;
-
-#[repr(C)]
-#[derive(Debug, Default, Clone, Copy)]
-struct BlockRef {
-    object_id: u32,
-    offset: u64, // offset in .fp file.
-    size: u32,
-    checksum: u32,
-}
 
 /**
  * Unpack from bytes to block address.

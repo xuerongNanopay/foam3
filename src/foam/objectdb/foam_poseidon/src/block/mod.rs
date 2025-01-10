@@ -4,7 +4,7 @@ use crate::meta::FP_METAFILE;
 
 pub mod manager;
 pub mod block_handle;
-pub mod block_meta;
+pub mod block_ref;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
@@ -30,6 +30,16 @@ impl BlockHeader {
         }
     }
 }
+
+#[repr(C)]
+#[derive(Debug, Default, Clone, Copy)]
+struct BlockRef {
+    object_id: u32,
+    offset: u64, // offset in .fp file.
+    size: u32,
+    checksum: u32,
+}
+
 
 fn is_internal_file(filename: &str) -> bool {
     if filename == FP_METAFILE {
