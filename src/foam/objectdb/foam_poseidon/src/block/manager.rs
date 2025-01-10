@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}, usize};
 
 use crate::{os::fil::{FPFileSystem, FileHandle, FileSystem, FileType, FP_FS_OPEN_CREATE, FP_FS_OPEN_DURABLE, FP_FS_OPEN_EXCLUSIVE}, types::{FPConcurrentHashMap, FPResult}};
 
-use super::block_handle::{self, block_header_write, BlockHandle};
+use super::{block_handle::{self, block_header_write, BlockHandle}, block_ref};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -11,6 +11,8 @@ use super::block_handle::{self, block_header_write, BlockHandle};
  */
 pub(crate) struct BlockManager {
     block_handle: Arc<BlockHandle>,
+
+    is_multi: bool, /* TODO: allow store block into mutli handle */
 }
 
 /**
@@ -34,8 +36,16 @@ fn drop() {
 /**
  * Read a block base on block reference(BlockRef).
  */
-fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) {
+fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> FPResult<()> {
+
+    let bh = block_manager.block_handle.clone();
+
+    let br = block_ref::block_addr_unpack(&bh, raw_addr, addr_size)?;
+
+    //TODO: read from block handle.
+    //TODO: discard.
     
+    Ok(())
 }
 
 // pub struct BlockManager {

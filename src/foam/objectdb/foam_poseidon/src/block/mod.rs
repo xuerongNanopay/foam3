@@ -33,7 +33,7 @@ impl BlockHeader {
 
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy)]
-struct BlockRef {
+pub(crate) struct BlockRef {
     object_id: u32,
     offset: FPFileOffset, /* offset in file */
     size: FPFileSize, /* size of a block in file */
