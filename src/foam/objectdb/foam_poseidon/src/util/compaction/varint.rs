@@ -36,13 +36,13 @@ pub fn encode_uint(mut v: u64) -> FPResult<Vec<u8>> {
     Ok(buffer)
 }
 
-pub struct VarintIterator<'a> {
+pub struct VarintDecodeIterator<'a> {
     slice: &'a [u8],
     max_size: usize,
     position: usize,
 }
 
-impl<'a> VarintIterator<'a> {
+impl<'a> VarintDecodeIterator<'a> {
     pub fn new(slice: &'a [u8], max_size: usize) -> Self {
         Self {
             slice,
@@ -52,7 +52,7 @@ impl<'a> VarintIterator<'a> {
     }
 }
 
-impl<'a> Iterator for VarintIterator<'a> {
+impl<'a> Iterator for VarintDecodeIterator<'a> {
     type Item = u64;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -108,5 +108,32 @@ mod tests {
         let ret = encode_uint(v).unwrap();
         println!("{:?}", ret);
         assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 127]);
+    }
+
+    #[test]
+    fn text_decode() {
+        let (v, s) = decode_uint(&[172, 2]).unwrap();
+        assert_eq!(v, 300);
+        assert_eq!(s, 2);
+
+        let (v, s) = decode_uint(&[127]).unwrap();
+        assert_eq!(v, 127);
+        assert_eq!(s, 1);
+
+        let (v, s) = decode_uint(&[128, 1]).unwrap();
+        assert_eq!(v, 128);
+        assert_eq!(s, 2);
+
+        let (v, s) = decode_uint(&[255, 255, 255, 255, 255, 255, 255, 255, 255, 1]).unwrap();
+        assert_eq!(v, 18446744073709551615u64);
+        assert_eq!(s, 10);
+
+        let (v, s) = decode_uint(&[255, 255, 255, 255, 255, 255, 255, 255, 63]).unwrap();
+        assert_eq!(v, 4611686018427387903u64);
+        assert_eq!(s, 9);
+
+        let (v, s) = decode_uint(&[255, 255, 255, 255, 255, 255, 255, 255, 127]).unwrap();
+        assert_eq!(v, 9223372036854775807u64);
+        assert_eq!(s, 9);
     }
 }
