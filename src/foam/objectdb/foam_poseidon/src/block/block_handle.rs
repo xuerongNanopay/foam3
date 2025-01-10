@@ -21,7 +21,7 @@ pub(crate) struct BlockHandle {
 
     size: FPFileSize,       /* File size */
 
-    allocation_size: FPFileSize,
+    pub(crate) allocation_size: FPFileSize,
     alloc_first: AtomicBool,
 
     // os_cache: usize,
@@ -132,7 +132,7 @@ fn close(file_system: Arc<FPFileSystem>, block_handle: Arc<BlockHandle>) -> FPRe
  */
 fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
 
-    if block_handle.size < allocation_size {
+    if block_handle.size < allocation_size as u64 {
         return Err(FP_BK_DATA_CORRUPTION)
     }
 
