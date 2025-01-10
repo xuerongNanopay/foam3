@@ -36,6 +36,17 @@ pub fn encode_uint(mut v: u64) -> FPResult<Vec<u8>> {
     Ok(buffer)
 }
 
+pub fn encode_uint_inline(mut v: u64, buf: &mut [u8]) -> FPResult<()> {
+    let mut i = 0;
+    while v >= 0x80 {
+        buf[i] = (v as u8 & 0x7F) | 0x80;
+        v >>= 7;
+        i += 1;
+    }
+    buf[i] = v as u8;
+    Ok(())
+}
+
 pub struct VarintDecodeIterator<'a> {
     slice: &'a [u8],
     max_size: usize,
@@ -119,6 +130,40 @@ mod tests {
         let v = 9223372036854775807u64;
         let ret = encode_uint(v).unwrap();
         assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 127]);
+    }
+
+    #[test]
+    fn test_encode_inline() {
+
+        let v = 300u64;
+        let mut buf = [0u8; 2];
+        let b = &mut buf[..];
+        encode_uint_inline(v, b).unwrap();
+        assert_eq!(b, &[172, 2]);
+
+        let v = 127u64;
+        let mut buf = [0u8; 1];
+        let b = &mut buf[..];
+        encode_uint_inline(v, b).unwrap();
+        assert_eq!(b, &[127]);
+
+        let v = 128u64;
+        let mut buf = [0u8; 2];
+        let b = &mut buf[..];
+        encode_uint_inline(v, b).unwrap();
+        assert_eq!(b, &[128, 1]);
+
+        let v = 18446744073709551615u64;
+        let mut buf = [0u8; 10];
+        let b = &mut buf[..];
+        encode_uint_inline(v, b).unwrap();
+        assert_eq!(b, &[255, 255, 255, 255, 255, 255, 255, 255, 255, 1]);
+
+        let v = 4611686018427387903u64;
+        let mut buf = [0u8; 9];
+        let b = &mut buf[..];
+        encode_uint_inline(v, b).unwrap();
+        assert_eq!(b, &[255, 255, 255, 255, 255, 255, 255, 255, 63]);
     }
 
     #[test]
