@@ -1,7 +1,10 @@
 #![allow(unused)]
 
+use crate::meta::FP_METAFILE;
+
 pub mod manager;
 pub mod block_handle;
+pub mod block_meta;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
@@ -27,6 +30,13 @@ impl BlockHeader {
             self.reserved = BIT_REVERSE_32!(self.reserved);
         }
     }
+}
+
+fn is_internal_file(filename: &str) -> bool {
+    if filename == FP_METAFILE {
+        return true
+    }
+    false
 }
 
 #[cfg(test)]

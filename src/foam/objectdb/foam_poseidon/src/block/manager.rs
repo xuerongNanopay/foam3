@@ -1,8 +1,10 @@
-use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}};
+use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}, usize};
 
 use crate::{os::fil::{FPFileSystem, FileHandle, FileSystem, FileType, FP_FS_OPEN_CREATE, FP_FS_OPEN_DURABLE, FP_FS_OPEN_EXCLUSIVE}, types::{FPConcurrentHashMap, FPResult}};
 
 use super::block_handle::{self, block_header_write, BlockHandle};
+
+//TODO: drop file object from directory.(block_open.c line28)
 
 /**
  * Block manager, reference to a block(block reference to a file).
@@ -20,6 +22,20 @@ fn create(file_system: Arc<FPFileSystem>, filename: &str, alloc_size: u32) -> FP
     fh.sync()?;
     file_system.close_fh(&fh.name)?;
     Ok(())
+}
+
+/**
+ * Drop a file.
+ */
+fn drop() {
+
+}
+
+/**
+ * Read a file.
+ */
+fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) {
+
 }
 
 // pub struct BlockManager {

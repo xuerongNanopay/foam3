@@ -121,6 +121,13 @@ fn open(
 }
 
 /**
+ * close block handle
+ */
+fn close(file_system: Arc<FPFileSystem>, block_handle: Arc<BlockHandle>) -> FPResult<()> {
+    file_system.close_fh(block_handle.name.as_str())
+}
+
+/**
  * Read and verify Meta block.
  */
 fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
@@ -178,11 +185,4 @@ pub(crate) fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32
     //TODO: calculate checksum.
 
     file_handle.write(0, alloc_size as u64, &buf)
-}
-
-/**
- * close block handle
- */
-fn close(file_system: Arc<FPFileSystem>, block_handle: &BlockHandle) -> FPResult<()> {
-    file_system.close_fh(block_handle.name.as_str())
 }

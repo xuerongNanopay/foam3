@@ -10,6 +10,7 @@ mod error;
 mod types;
 mod global;
 mod test;
+mod meta;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
