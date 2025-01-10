@@ -53,7 +53,7 @@ impl<'a> VarintDecodeIterator<'a> {
     pub fn new_with_size(slice: &'a [u8], max_size: usize) -> Self {
         Self {
             slice,
-            max_size: max_size,
+            max_size,
             position: 0,
         }
     }
