@@ -81,37 +81,31 @@ mod tests {
     fn test_encode() {
         let v = 300u64;
         let ret = encode_uint(v).unwrap();
-        println!("{:?}", ret);
         assert_eq!(&ret, &[172, 2]);
 
         let v = 127u64;
         let ret = encode_uint(v).unwrap();
-        println!("{:?}", ret);
         assert_eq!(&ret, &[127]);
 
         let v = 128u64;
         let ret = encode_uint(v).unwrap();
-        println!("{:?}", ret);
         assert_eq!(&ret, &[128, 1]);
 
         let v = 18446744073709551615u64;
         let ret = encode_uint(v).unwrap();
-        println!("{:?}", ret);
         assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 255, 1]);
 
         let v = 4611686018427387903u64;
         let ret = encode_uint(v).unwrap();
-        println!("{:?}", ret);
         assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 63]);
 
         let v = 9223372036854775807u64;
         let ret = encode_uint(v).unwrap();
-        println!("{:?}", ret);
         assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 127]);
     }
 
     #[test]
-    fn text_decode() {
+    fn test_decode() {
         let (v, s) = decode_uint(&[172, 2]).unwrap();
         assert_eq!(v, 300);
         assert_eq!(s, 2);
@@ -135,5 +129,10 @@ mod tests {
         let (v, s) = decode_uint(&[255, 255, 255, 255, 255, 255, 255, 255, 127]).unwrap();
         assert_eq!(v, 9223372036854775807u64);
         assert_eq!(s, 9);
+    }
+
+    #[test]
+    fn test_decode_iterator() {
+        let buf: &[u8] = &[255, 255, 255, 255, 255, 255, 255, 255, 255, 1, ];
     }
 }
