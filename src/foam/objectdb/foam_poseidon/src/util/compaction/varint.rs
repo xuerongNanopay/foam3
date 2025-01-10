@@ -43,10 +43,10 @@ pub struct VarintDecodeIterator<'a> {
 }
 
 impl<'a> VarintDecodeIterator<'a> {
-    pub fn new(slice: &'a [u8], max_size: usize) -> Self {
+    pub fn new(slice: &'a [u8]) -> Self {
         Self {
             slice,
-            max_size,
+            max_size: slice.len(),
             position: 0,
         }
     }
@@ -141,7 +141,7 @@ mod tests {
             128, 1,
             255, 255, 255, 255, 255, 255, 255, 255, 127
         ];
-        let mut iter = VarintDecodeIterator::new(buf, 33);
+        let mut iter = VarintDecodeIterator::new(buf);
 
         assert_eq!(iter.next(), Some(18446744073709551615u64));
         assert_eq!(iter.next(), Some(4611686018427387903u64));
