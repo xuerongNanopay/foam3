@@ -133,6 +133,22 @@ mod tests {
 
     #[test]
     fn test_decode_iterator() {
-        let buf: &[u8] = &[255, 255, 255, 255, 255, 255, 255, 255, 255, 1, ];
+        let buf: &[u8] = &[
+            255, 255, 255, 255, 255, 255, 255, 255, 255, 1,
+            255, 255, 255, 255, 255, 255, 255, 255, 63,
+            172, 2,
+            127,
+            128, 1,
+            255, 255, 255, 255, 255, 255, 255, 255, 127
+        ];
+        let mut iter = VarintDecodeIterator::new(buf, 33);
+
+        assert_eq!(iter.next(), Some(18446744073709551615u64));
+        assert_eq!(iter.next(), Some(4611686018427387903u64));
+        assert_eq!(iter.next(), Some(300));
+        assert_eq!(iter.next(), Some(127));
+        assert_eq!(iter.next(), Some(128));
+        assert_eq!(iter.next(), Some(9223372036854775807u64));
+        assert_eq!(iter.next(), None);
     }
 }
