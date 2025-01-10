@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::meta::FP_METAFILE;
+use crate::{meta::FP_METAFILE, types::{FPFileOffset, FPFileSize}};
 
 pub mod manager;
 pub mod block_handle;
@@ -35,8 +35,8 @@ impl BlockHeader {
 #[derive(Debug, Default, Clone, Copy)]
 struct BlockRef {
     object_id: u32,
-    offset: u64, // offset in .fp file.
-    size: u32,
+    offset: FPFileOffset, /* offset in file */
+    size: FPFileSize, /* size of a block in file */
     checksum: u32,
 }
 

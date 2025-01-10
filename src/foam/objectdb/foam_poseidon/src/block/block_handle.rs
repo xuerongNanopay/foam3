@@ -6,7 +6,6 @@ use crate::misc::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::types::{FPFileSize, FPResult};
 use crate::util::hash_city;
-use crate::FP_ASSERT_FP_ERR;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
@@ -93,7 +92,7 @@ fn open(
         flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
     }
 
-    let file_handle = FP_ASSERT_FP_ERR!(file_system.open(filename, FileType::Data, flags));
+    let file_handle = file_system.open(filename, FileType::Data, flags)?;
     let fh = file_handle.clone();
 
     // construct new block.
@@ -111,10 +110,10 @@ fn open(
         extend_len: default_cfg.extend_len,
 
         readonly,
-        size: FP_ASSERT_FP_ERR!(fh.size()),
+        size: fh.size()?,
         file_handle,
     });
-    FP_ASSERT_FP_ERR!(block_header_read_and_verify(new_block_handle.clone(), allocation_size));
+    block_header_read_and_verify(new_block_handle.clone(), allocation_size)?;
 
     Ok(new_block_handle)
 
@@ -138,7 +137,7 @@ fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size:
 
     //TODO: Metrix for the read func.
 
-    let (mut buf, len) = FP_ASSERT_FP_ERR!(block_handle.file_handle.read(0, allocation_size));
+    let (mut buf, len) = block_handle.file_handle.read(0, allocation_size)?;
 
     // Create new BlockHeader.
     let mut block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);

@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{error::*, types::FPResult, util::compaction::varint::VarintDecodeIterator, FP_ASSERT_NOT_NONE};
+use crate::{error::*, types::FPResult, util::compaction::varint::{self, VarintDecodeIterator}, FP_ASSERT_NOT_NONE};
 
 use super::{block_handle::BlockHandle, BlockRef};
 
@@ -33,12 +33,25 @@ fn block_addr_unpack(block_handle: &BlockHandle, bytes: &[u8], addr_size: usize)
         return Ok(BlockRef{
             object_id: object_id as u32,
             offset: (offset + 1) * block_handle.allocation_size,
-            size: size as u32,
+            size: size * block_handle.allocation_size,
             checksum: checksum as u32,
         })
     }
 }
 
-fn block_addr_pack(block_handle: &BlockHandle, bytes: &mut [u8], block_ref: &BlockRef) -> FPResult<()> {
+fn block_addr_pack(bh: &BlockHandle, bytes: &mut [u8], block_ref: &BlockRef) -> FPResult<()> {
+    let mut offset = 0u64;
+    let mut size = 0u64;
+    let mut checksum = 0u64;
+    let mut object_id = 0u64;
+
+    if block_ref.size != 0 {
+        offset    = (block_ref.offset / bh.allocation_size) - 1 as u64;
+        size      = block_ref.size / bh.allocation_size as u64;
+        checksum  = block_ref.checksum as u64;
+        object_id = block_ref.object_id as u64;
+    }
+
+    let cur = varint::encode_uint_inline(offset, bytes)?;
     Ok(())
 }

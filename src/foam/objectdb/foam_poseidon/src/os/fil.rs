@@ -5,7 +5,7 @@ use std::{result, sync::Arc};
 
 use native::{DefaultFileHandle, DefaultFileSystem};
 
-use crate::{error::*, types::*, FP_ASSERT_FP_ERR};
+use crate::{error::*, types::*};
 
 OS_LINUX! {
     pub type FPFileSystem = DefaultFileSystem;
@@ -208,11 +208,11 @@ pub trait FileHandle {
 }
 
 pub fn open(file_system: Arc<FPFileSystem>, name: &str, file_type: FileType, flags: u32) -> FPResult<Arc<FPFileHandle>> {
-    let fh = FP_ASSERT_FP_ERR!(file_system.open(name, file_type, flags));
+    let fh = file_system.open(name, file_type, flags)?;
     Ok(fh)
 }
 
 pub fn close(file_system: Arc<FPFileSystem>, name: &str) -> FPResult<()> {
-    FP_ASSERT_FP_ERR!(file_system.close_fh(name));
+    file_system.close_fh(name)?;
     Ok(())
 }

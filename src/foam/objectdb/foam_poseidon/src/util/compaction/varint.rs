@@ -36,7 +36,7 @@ pub fn encode_uint(mut v: u64) -> FPResult<Vec<u8>> {
     Ok(buffer)
 }
 
-pub fn encode_uint_inline(mut v: u64, buf: &mut [u8]) -> FPResult<()> {
+pub fn encode_uint_inline(mut v: u64, buf: &mut [u8]) -> FPResult<usize> {
     let mut i = 0;
     while v >= 0x80 {
         buf[i] = (v as u8 & 0x7F) | 0x80;
@@ -44,7 +44,7 @@ pub fn encode_uint_inline(mut v: u64, buf: &mut [u8]) -> FPResult<()> {
         i += 1;
     }
     buf[i] = v as u8;
-    Ok(())
+    Ok(i+1)
 }
 
 pub struct VarintDecodeIterator<'a> {
