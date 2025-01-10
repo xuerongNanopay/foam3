@@ -9,7 +9,7 @@ pub mod block_meta;
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 struct BlockHeader {
     // 0x646464
     magic: u32,
