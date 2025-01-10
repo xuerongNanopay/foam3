@@ -53,5 +53,14 @@ fn block_addr_pack(bh: &BlockHandle, bytes: &mut [u8], block_ref: &BlockRef) -> 
     }
 
     let cur = varint::encode_uint_inline(offset, bytes)?;
+    let cur = varint::encode_uint_inline(size, &mut bytes[cur..])?;
+    let mut cur = varint::encode_uint_inline(checksum, &mut bytes[cur..])?;
+
+    if object_id != 0 {
+        bytes[cur] = FP_BLOCK_ADDR_INDICATOR;
+        cur += 1;
+        varint::encode_uint_inline(object_id, &mut bytes[cur..])?;
+    }
+
     Ok(())
 }
