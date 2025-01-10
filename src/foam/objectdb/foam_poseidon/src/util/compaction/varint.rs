@@ -4,7 +4,7 @@
 use crate::{error::FP_ILLEGAL_ARGUMENT, types::FPResult};
 
 //TODO: untested code.
-pub fn decode_uint(b: &[u8]) -> FPResult<u64> {
+pub fn decode_uint(b: &[u8]) -> FPResult<(u64, usize)> {
     let mut result: u64 = 0;
     let mut shift = 0;
 
@@ -13,7 +13,7 @@ pub fn decode_uint(b: &[u8]) -> FPResult<u64> {
         result |= value << shift;
 
         if byte & 0x80 == 0 {
-            return Ok(result);
+            return Ok((result, i+1));
         }
 
         shift += 7;
@@ -34,4 +34,79 @@ pub fn encode_uint(mut v: u64) -> FPResult<Vec<u8>> {
     }
     buffer.push(v as u8);
     Ok(buffer)
+}
+
+pub struct VarintIterator<'a> {
+    slice: &'a [u8],
+    max_size: usize,
+    position: usize,
+}
+
+impl<'a> VarintIterator<'a> {
+    pub fn new(slice: &'a [u8], max_size: usize) -> Self {
+        Self {
+            slice,
+            max_size,
+            position: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for VarintIterator<'a> {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.position >= self.max_size {
+            return None;
+        }
+    
+        let(v, s) = match decode_uint(self.slice) {
+            Ok((v, s)) => (v, s),
+            Err(e) => return None,
+        };
+
+        let (l, r) = self.slice.split_at(s);
+        self.slice = r;
+        self.max_size -= s;
+        
+        Some(v)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encode() {
+        let v = 300u64;
+        let ret = encode_uint(v).unwrap();
+        println!("{:?}", ret);
+        assert_eq!(&ret, &[172, 2]);
+
+        let v = 127u64;
+        let ret = encode_uint(v).unwrap();
+        println!("{:?}", ret);
+        assert_eq!(&ret, &[127]);
+
+        let v = 128u64;
+        let ret = encode_uint(v).unwrap();
+        println!("{:?}", ret);
+        assert_eq!(&ret, &[128, 1]);
+
+        let v = 18446744073709551615u64;
+        let ret = encode_uint(v).unwrap();
+        println!("{:?}", ret);
+        assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 255, 1]);
+
+        let v = 4611686018427387903u64;
+        let ret = encode_uint(v).unwrap();
+        println!("{:?}", ret);
+        assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 63]);
+
+        let v = 9223372036854775807u64;
+        let ret = encode_uint(v).unwrap();
+        println!("{:?}", ret);
+        assert_eq!(&ret, &[255, 255, 255, 255, 255, 255, 255, 255, 127]);
+    }
 }
