@@ -146,7 +146,7 @@ impl FileHandle for DefaultFileHandle {
         Ok(())
     }
 
-    fn read(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)> {
+    fn read_exact(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)> {
 
         //TODO: add verbose debug
         //TODO: use read_vectored when len is more than 1GB
@@ -166,6 +166,28 @@ impl FileHandle for DefaultFileHandle {
     
         Ok((buffer, len))
     }
+
+    // fn read(&self, offset: FPFileOffset, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize> {
+
+    //     //TODO: add verbose debug
+    //     //TODO: use read_vectored when len is more than 1GB
+
+    //     let mut fd = self.fd.write().unwrap();
+
+    //     // Save current position.
+    //     let cur_position = FP_IO_ERR_RET!(fd.seek(SeekFrom::Current(0)));
+
+    //     // Read to buffer.
+    //     FP_IO_ERR_RET!(fd.seek(SeekFrom::Start(offset)));
+    //     let mut buffer = vec![0u8; len as usize];
+    //     FP_IO_ERR_RET!(fd.read_exact(&mut buffer[..]));
+
+    //     // Restore position.
+    //     FP_IO_ERR_RET!(fd.seek(SeekFrom::Start(cur_position)));
+    
+    //     Ok((buffer, len))
+    // }
+
 
     fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
         //TODO: add verbose debug

@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::error::*;
-use crate::misc::*;
+use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::types::{FPFileSize, FPResult};
 use crate::util::hash_city;
@@ -31,7 +31,7 @@ pub(crate) struct BlockHandle {
     
     readonly: bool,
 
-    file_handle: Arc<FPFileHandle>,
+    pub file_handle: Arc<FPFileHandle>,
 }
 
 impl BlockHandle {
@@ -137,7 +137,7 @@ fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size:
 
     //TODO: Metrix for the read func.
 
-    let (mut buf, len) = block_handle.file_handle.read(0, allocation_size)?;
+    let (mut buf, len) = block_handle.file_handle.read_exact(0, allocation_size)?;
 
     // Create new BlockHeader.
     let mut block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);

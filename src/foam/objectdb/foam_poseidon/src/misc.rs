@@ -10,10 +10,6 @@ static FP_EXABYTE:  u64 = 1152921504606846976;
 static FP_DAY:    u64 = 86400;
 static FP_MINITE: u64 = 60;
 
-pub(crate) static FP_BLOCK_MAGIC: u32 = 0x64646464;
-pub(crate) static FP_BLOCK_MAJOR: u16 = 1;
-pub(crate) static FP_BLOCK_MINOR: u16 = 0;
-
 #[macro_export]
 macro_rules! FP_MIN {
     ($a:expr, $b:expr) => {

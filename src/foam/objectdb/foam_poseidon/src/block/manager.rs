@@ -74,6 +74,11 @@ fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPRe
     if block_ref.size < block_handle.allocation_size {
         FP_LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);
     }
+
+    //TODO: retry.
+
+    let (r_buf, r_size) = block_handle.file_handle.read_exact(block_ref.offset, block_ref.size)?;
+
     Ok(())
 }
 

@@ -166,7 +166,14 @@ pub trait FileHandle {
     /**
      * Read from file.
      */
-    fn read(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)>  {
+    fn read_exact(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)>  {
+        Err(FP_NO_IMPL)
+    }
+
+    /**
+     * Read from file.
+     */
+    fn read(&self, offset: FPFileOffset, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize>  {
         Err(FP_NO_IMPL)
     }
 
