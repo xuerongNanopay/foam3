@@ -13,7 +13,7 @@ mod test;
 mod meta;
 #[macro_use]
 mod stats;
-#[macro_use]
+// #[macro_use]
 mod log;
 
 #[no_mangle]

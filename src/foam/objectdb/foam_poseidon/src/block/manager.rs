@@ -1,6 +1,19 @@
 use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}, usize};
 
-use crate::{os::fil::{FPFileSystem, FileHandle, FileSystem, FileType, FP_FS_OPEN_CREATE, FP_FS_OPEN_DURABLE, FP_FS_OPEN_EXCLUSIVE}, types::{FPConcurrentHashMap, FPResult}, FP_STATS_INCR};
+use crate::{
+    os::fil::{
+        FPFileSystem, 
+        FileHandle, 
+        FileSystem, 
+        FileType, 
+        FP_FS_OPEN_CREATE, 
+        FP_FS_OPEN_DURABLE, 
+        FP_FS_OPEN_EXCLUSIVE
+    }, types::{
+        FPConcurrentHashMap, 
+        FPResult
+    }, FP_STATS_INCR, LOG_ERR, LOG_INFO
+};
 
 use super::{block_handle::{self, block_header_write, BlockHandle}, block_ref, BlockRef};
 
@@ -59,8 +72,7 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<()> {
     
     if block_ref.size < block_handle.allocation_size {
-        //TODO: log.
-        
+        LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);
     }
     Ok(())
 }

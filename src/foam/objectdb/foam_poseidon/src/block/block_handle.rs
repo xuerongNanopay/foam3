@@ -18,7 +18,7 @@ pub(crate) struct BlockHandle {
     name: String,   /* Name */
     object_id: u32,
 
-    size: FPFileSize,       /* File size */
+    pub(crate) size: FPFileSize,       /* File size */
 
     pub(crate) allocation_size: FPFileSize,
     alloc_first: AtomicBool,
