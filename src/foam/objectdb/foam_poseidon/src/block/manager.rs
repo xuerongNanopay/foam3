@@ -1,8 +1,8 @@
 use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}, usize};
 
-use crate::{os::fil::{FPFileSystem, FileHandle, FileSystem, FileType, FP_FS_OPEN_CREATE, FP_FS_OPEN_DURABLE, FP_FS_OPEN_EXCLUSIVE}, types::{FPConcurrentHashMap, FPResult}};
+use crate::{os::fil::{FPFileSystem, FileHandle, FileSystem, FileType, FP_FS_OPEN_CREATE, FP_FS_OPEN_DURABLE, FP_FS_OPEN_EXCLUSIVE}, types::{FPConcurrentHashMap, FPResult}, FP_STATS_INCR};
 
-use super::{block_handle::{self, block_header_write, BlockHandle}, block_ref};
+use super::{block_handle::{self, block_header_write, BlockHandle}, block_ref, BlockRef};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -42,8 +42,18 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 
     let br = block_ref::block_addr_unpack(&bh, raw_addr, addr_size)?;
 
+    FP_STATS_INCR!(block_read);
+    FP_STATS_INCR!(block_size, br.size);
     //TODO: read from block handle.
     //TODO: discard.
+
+    Ok(())
+}
+
+/**
+ * Read a block into a buffer.
+ */
+fn read_offset(block_ref: &BlockRef) -> FPResult<()> {
     
     Ok(())
 }
