@@ -41,9 +41,12 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
     let bh = block_manager.block_handle.clone();
 
     let br = block_ref::block_addr_unpack(&bh, raw_addr, addr_size)?;
-
+    
     FP_STATS_INCR!(block_read);
     FP_STATS_INCR!(block_size, br.size);
+
+    read_offset_from_bh(&bh, &br);
+
     //TODO: read from block handle.
     //TODO: discard.
 
@@ -53,8 +56,12 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 /**
  * Read a block into a buffer.
  */
-fn read_offset(block_ref: &BlockRef) -> FPResult<()> {
+fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<()> {
     
+    if block_ref.size < block_handle.allocation_size {
+        //TODO: log.
+        
+    }
     Ok(())
 }
 

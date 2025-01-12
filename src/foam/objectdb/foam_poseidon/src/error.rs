@@ -104,11 +104,12 @@ pub const FP_IO_OTHER:                     FPErr = 141;
 pub const FP_IO_UNKNOWN_ERR:               FPErr = 142;
 
 // block errors.
-pub const FP_BK_DATA_CORRUPTION:  FPErr = 201;
-pub const FP_BK_INVALID_MAGIC:    FPErr = 202;
-pub const FP_BK_INVALID_MAJOR:    FPErr = 203;
-pub const FP_BK_INVALID_MINOR:    FPErr = 204;
-pub const FP_BK_ILLEGAL_ARGUMENT: FPErr = 205;
+pub const FP_BK_DATA_CORRUPTION:    FPErr = 201;
+pub const FP_BK_INVALID_MAGIC:      FPErr = 202;
+pub const FP_BK_INVALID_MAJOR:      FPErr = 203;
+pub const FP_BK_INVALID_MINOR:      FPErr = 204;
+pub const FP_BK_ILLEGAL_ARGUMENT:   FPErr = 205;
+pub const FP_BK_ILLEGAL_BLOCK_SIZE: FPErr = 206;
 
 pub fn convert_std_io_err_to_fp_err(ioe: std::io::Error) -> FPErr {
     match ioe.kind() {
