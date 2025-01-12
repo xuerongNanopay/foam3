@@ -12,7 +12,7 @@ use crate::{
     }, types::{
         FPConcurrentHashMap, 
         FPResult
-    }, FP_STATS_INCR, LOG_ERR, LOG_INFO
+    }, FP_STATS_INCR, FP_LOG_ERR
 };
 
 use super::{block_handle::{self, block_header_write, BlockHandle}, block_ref, BlockRef};
@@ -72,7 +72,7 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<()> {
     
     if block_ref.size < block_handle.allocation_size {
-        LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);
+        FP_LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);
     }
     Ok(())
 }

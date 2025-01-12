@@ -1,14 +1,14 @@
 #![allow(unused)]
 
 #[macro_export]
-macro_rules! LOG_INFO {
+macro_rules! FP_LOG_INFO {
     ($($arg:tt)*) => {
         println!("file: {} | line: {} | message: {}", line!(), file!(), format!($($arg)*));   
     };
 }
 
 #[macro_export]
-macro_rules! LOG_ERR {
+macro_rules! FP_LOG_ERR {
     ($($arg:tt)*) => {
         println!("file: {} | line: {} | message: {}", line!(), file!(), format!($($arg)*));   
     };
@@ -20,6 +20,6 @@ mod tests {
 
     #[test]
     fn it_works() {
-        LOG_INFO!("hello, {} -- {}", "World", "Xuerong")
+        FP_LOG_ERR!("hello, {} -- {}", "World", "Xuerong")
     }
 }
