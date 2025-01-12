@@ -8,9 +8,12 @@ pub mod block_ref;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
+/**
+ * Each .fp file has one FileHeader
+ */
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy)]
-struct BlockHeader {
+struct FileHeader {
     // 0x646464
     magic: u32,
     major: u16,
@@ -19,7 +22,7 @@ struct BlockHeader {
     reserved: u32,
 }
 
-impl BlockHeader {
+impl FileHeader {
     fn maybe_convert_endian(&mut self) {
         if cfg!(target_endian = "big") { 
             self.magic = BIT_REVERSE_32!(self.magic);
@@ -56,16 +59,16 @@ mod tests {
     use std::io::{self, Bytes, Read, Write};
     use std::{mem, vec};
 
-    use crate::block::BlockHeader;
+    use crate::block::FileHeader;
 
     #[test]
     fn write_block_header_to_file() {
         let filename = "/tmp/block_header.fp";
         let mut file = File::create(filename).unwrap();
-        let mut w_buf = Vec::<u8>::with_capacity(SIZE_OF!(BlockHeader));
-        unsafe { w_buf.set_len(SIZE_OF!(BlockHeader)); }
+        let mut w_buf = Vec::<u8>::with_capacity(SIZE_OF!(FileHeader));
+        unsafe { w_buf.set_len(SIZE_OF!(FileHeader)); }
         w_buf.fill(0);
-        let header = REINTERPRET_CAST_BUF_MUT!(w_buf, BlockHeader);
+        let header = REINTERPRET_CAST_BUF_MUT!(w_buf, FileHeader);
 
         header.checksum = 11;
         header.magic = 56;
@@ -79,7 +82,7 @@ mod tests {
         let mut rbuf = vec![0u8; w_buf.len() as usize];
         file.read_exact(&mut rbuf);
         
-        let b_header = REINTERPRET_CAST_BUF!(rbuf, BlockHeader);
+        let b_header = REINTERPRET_CAST_BUF!(rbuf, FileHeader);
 
         println!("{:?}", rbuf);
         println!("{:?}", b_header);

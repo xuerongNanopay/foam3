@@ -113,7 +113,7 @@ fn open(
         size: fh.size()?,
         file_handle,
     });
-    block_header_read_and_verify(new_block_handle.clone(), allocation_size)?;
+    file_header_read_and_verify(new_block_handle.clone(), allocation_size)?;
 
     Ok(new_block_handle)
 
@@ -129,7 +129,7 @@ fn close(file_system: Arc<FPFileSystem>, block_handle: Arc<BlockHandle>) -> FPRe
 /**
  * Read and verify Meta block.
  */
-fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
+fn file_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
 
     if block_handle.size < allocation_size as u64 {
         return Err(FP_BK_DATA_CORRUPTION)
@@ -139,30 +139,30 @@ fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size:
 
     let (mut buf, len) = block_handle.file_handle.read_exact(0, allocation_size)?;
 
-    // Create new BlockHeader.
-    let mut block_header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
+    // Create new FileHeader.
+    let mut file_header = REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
 
-    // block_header.maybe_convert_endian();
+    // file_header.maybe_convert_endian();
     
-    let save_checksum = block_header.checksum;
-    let real_checksum = if cfg!(target_endian = "big") { BIT_REVERSE_32!(block_header.checksum) } else { block_header.checksum };
+    let save_checksum = file_header.checksum;
+    let real_checksum = if cfg!(target_endian = "big") { BIT_REVERSE_32!(file_header.checksum) } else { file_header.checksum };
 
     //TODO: checksum verify.
-    block_header.checksum = 0;
+    file_header.checksum = 0;
 
-    block_header.checksum = save_checksum;
+    file_header.checksum = save_checksum;
 
-    block_header.maybe_convert_endian();
+    file_header.maybe_convert_endian();
 
-    if block_header.magic != FP_BLOCK_MAGIC {
+    if file_header.magic != FP_BLOCK_MAGIC {
         return Err(FP_BK_INVALID_MAGIC)
     }
 
-    if block_header.major > FP_BLOCK_MAJOR {
+    if file_header.major > FP_BLOCK_MAJOR {
         return Err(FP_BK_INVALID_MAJOR)
     }
 
-    if block_header.major == FP_BLOCK_MAJOR && block_header.minor > FP_BLOCK_MINOR {
+    if file_header.major == FP_BLOCK_MAJOR && file_header.minor > FP_BLOCK_MINOR {
         return Err(FP_BK_INVALID_MINOR)
     }
 
@@ -170,9 +170,9 @@ fn block_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size:
     Ok(())
 }
 
-pub(crate) fn block_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
+pub(crate) fn file_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
     let mut buf = VEC_U8!(alloc_size);
-    let header = REINTERPRET_CAST_BUF_MUT!(buf, BlockHeader);
+    let header = REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
 
     header.magic = FP_BLOCK_MAGIC;
     header.major = FP_BLOCK_MAJOR;

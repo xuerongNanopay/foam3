@@ -15,7 +15,7 @@ use crate::{
     }, FP_STATS_INCR, FP_LOG_ERR
 };
 
-use super::{block_handle::{self, block_header_write, BlockHandle}, block_ref, BlockRef};
+use super::{block_handle::{self, file_header_write, BlockHandle}, block_ref, BlockRef};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -33,7 +33,7 @@ pub(crate) struct BlockManager {
  */
 fn create(file_system: Arc<FPFileSystem>, filename: &str, alloc_size: u32) -> FPResult<()> {
     let fh = file_system.open(filename, FileType::Data, FP_FS_OPEN_CREATE | FP_FS_OPEN_DURABLE | FP_FS_OPEN_EXCLUSIVE)?;
-    block_header_write(fh.clone(), alloc_size)?;
+    file_header_write(fh.clone(), alloc_size)?;
     fh.sync()?;
     file_system.close_fh(&fh.name)?;
     Ok(())
