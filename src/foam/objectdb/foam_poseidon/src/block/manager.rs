@@ -12,7 +12,7 @@ use crate::{
     }, types::{
         FPConcurrentHashMap, 
         FPResult
-    }, FP_LOG_ERR, FP_STATS_INCR
+    }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR
 };
 
 use super::{block_handle::{self, file_header_write, BlockHandle}, block_ref, BlockHeader, BlockRef, PageHeader};
@@ -69,7 +69,7 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 /**
  * Read a block into a buffer.
  */
-fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<()> {
+fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<Vec<u8>> {
     
     if block_ref.size < block_handle.allocation_size {
         FP_LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);
@@ -77,13 +77,17 @@ fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPRe
 
     //TODO: retry.
 
-    let (r_buf, r_size) = block_handle.file_handle.read_exact(block_ref.offset, block_ref.size)?;
-    let mut block_header = *FP_REINTERPRET_CAST_BUF!(r_buf, BlockHeader, SIZE_OF!(PageHeader));
+    let (mut r_buf, r_size) = block_handle.file_handle.read_exact(block_ref.offset, block_ref.size)?;
+    let mut block_header_in_buf = FP_REINTERPRET_CAST_BUF_MUT!(r_buf, BlockHeader, SIZE_OF!(PageHeader));
+    let mut block_header= *block_header_in_buf;
     block_header.maybe_convert_endian();
 
     // Valify check sum
     if block_ref.checksum == block_header.checksum {
-
+        block_header_in_buf.checksum = 0;
+        if FP_CHECKSUM_EQ!(&r_buf, size, block_header.checksum) {
+            return Ok(r_buf);
+        }
     }
 
     Err(FP_BK_ILLEGAL_CHECKSUM)
