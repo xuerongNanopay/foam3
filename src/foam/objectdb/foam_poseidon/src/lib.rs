@@ -8,6 +8,7 @@ mod util;
 #[macro_use]
 mod error;
 mod types;
+#[macro_use]
 mod global;
 mod test;
 mod meta;
