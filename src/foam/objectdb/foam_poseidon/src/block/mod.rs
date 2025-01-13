@@ -14,7 +14,6 @@ static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy)]
 struct FileHeader {
-    // 0x646464
     magic: u32,
     major: u16,
     minor: u16,
@@ -44,6 +43,48 @@ pub(crate) struct BlockRef {
 }
 
 
+#[repr(C)]
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct BlockHeader {
+    disk_size: u32,
+    checksum: u32,
+    flags: u8,
+    unused: [u8; 3],
+}
+
+impl BlockHeader {
+    fn maybe_convert_endian(&mut self) {
+        if cfg!(target_endian = "big") { 
+            self.disk_size = BIT_REVERSE_32!(self.disk_size);
+            self.checksum = BIT_REVERSE_32!(self.checksum);
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct PageHeader {
+    record_number: u64, /* For column oriented storage to store the record id of the first tuple in the page */
+    write_epoch: u64,
+    memory_size: u32,
+    entries: u32,
+    overflow_data_len: u32,
+    page_type: u8,
+}
+
+impl PageHeader {
+    fn maybe_convert_endian(&mut self) {
+        if cfg!(target_endian = "big") { 
+            self.record_number = BIT_REVERSE_64!(self.record_number);
+            self.write_epoch = BIT_REVERSE_64!(self.write_epoch);
+            self.memory_size = BIT_REVERSE_32!(self.memory_size);
+            self.entries = BIT_REVERSE_32!(self.entries);
+            self.overflow_data_len = BIT_REVERSE_32!(self.overflow_data_len);
+        }
+    }
+}
+
+
 fn is_internal_file(filename: &str) -> bool {
     if filename == FP_METAFILE {
         return true
@@ -68,7 +109,7 @@ mod tests {
         let mut w_buf = Vec::<u8>::with_capacity(SIZE_OF!(FileHeader));
         unsafe { w_buf.set_len(SIZE_OF!(FileHeader)); }
         w_buf.fill(0);
-        let header = REINTERPRET_CAST_BUF_MUT!(w_buf, FileHeader);
+        let header = FP_REINTERPRET_CAST_BUF_MUT!(w_buf, FileHeader);
 
         header.checksum = 11;
         header.magic = 56;
@@ -82,7 +123,7 @@ mod tests {
         let mut rbuf = vec![0u8; w_buf.len() as usize];
         file.read_exact(&mut rbuf);
         
-        let b_header = REINTERPRET_CAST_BUF!(rbuf, FileHeader);
+        let b_header = FP_REINTERPRET_CAST_BUF!(rbuf, FileHeader);
 
         println!("{:?}", rbuf);
         println!("{:?}", b_header);

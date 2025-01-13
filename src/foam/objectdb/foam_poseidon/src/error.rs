@@ -110,6 +110,7 @@ pub const FP_BK_INVALID_MAJOR:      FPErr = 203;
 pub const FP_BK_INVALID_MINOR:      FPErr = 204;
 pub const FP_BK_ILLEGAL_ARGUMENT:   FPErr = 205;
 pub const FP_BK_ILLEGAL_BLOCK_SIZE: FPErr = 206;
+pub const FP_BK_ILLEGAL_CHECKSUM:   FPErr = 207;
 
 pub fn convert_std_io_err_to_fp_err(ioe: std::io::Error) -> FPErr {
     match ioe.kind() {

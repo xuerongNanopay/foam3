@@ -140,7 +140,7 @@ fn file_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: 
     let (mut buf, len) = block_handle.file_handle.read_exact(0, allocation_size)?;
 
     // Create new FileHeader.
-    let mut file_header = REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
+    let mut file_header = FP_REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
 
     // file_header.maybe_convert_endian();
     
@@ -172,7 +172,7 @@ fn file_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: 
 
 pub(crate) fn file_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
     let mut buf = VEC_U8!(alloc_size);
-    let header = REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
+    let header = FP_REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
 
     header.magic = FP_BLOCK_MAGIC;
     header.major = FP_BLOCK_MAJOR;

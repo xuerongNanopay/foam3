@@ -80,7 +80,7 @@ macro_rules! FP_VERBOSE_DEBUG {
 }
 
 #[macro_export]
-macro_rules! OS_LINUX {
+macro_rules! FP_OS_LINUX {
     ($($item:item)*) => {
         $(
             #[cfg(target_os = "linux")]
@@ -90,7 +90,7 @@ macro_rules! OS_LINUX {
 }
 
 #[macro_export]
-macro_rules! OS_MACOS {
+macro_rules! FP_OS_MACOS {
     ($($item:item)*) => {
         $(
             #[cfg(target_os = "macos")]
@@ -100,7 +100,7 @@ macro_rules! OS_MACOS {
 }
 
 #[macro_export]
-macro_rules! OS_WIN {
+macro_rules! FP_OS_WIN {
     ($($item:item)*) => {
         $(
             #[cfg(target_os = "windows")]
@@ -110,21 +110,21 @@ macro_rules! OS_WIN {
 }
 
 #[macro_export]
-macro_rules! REINTERPRET_CAST_BUF {
+macro_rules! FP_REINTERPRET_CAST_BUF {
     ($vec_u8:ident, $type:ty, $offset:expr) => {
         unsafe {
-            let p = $vec_u8.as_mut_ptr();
+            let p = $vec_u8.as_ptr();
             p.add($offset);
             & *(p as *const $type)
         }
     };
     ($vec_u8:ident, $type:ty) => {
-        REINTERPRET_CAST_BUF!($vec_u8, $type, 0)
+        FP_REINTERPRET_CAST_BUF!($vec_u8, $type, 0)
     };
 }
 
 #[macro_export]
-macro_rules! REINTERPRET_CAST_BUF_MUT {
+macro_rules! FP_REINTERPRET_CAST_BUF_MUT {
     ($vec_u8:ident, $type:ty, $offset:expr) => {
         unsafe {
             let p = $vec_u8.as_mut_ptr();
@@ -133,12 +133,12 @@ macro_rules! REINTERPRET_CAST_BUF_MUT {
         }
     };
     ($vec_u8:ident, $type:ty) => {
-        REINTERPRET_CAST_BUF_MUT!($vec_u8, $type, 0)
+        FP_REINTERPRET_CAST_BUF_MUT!($vec_u8, $type, 0)
     };
 }
 
 #[macro_export]
-macro_rules! REINTERPRET_CAST_PTR {
+macro_rules! FP_REINTERPRET_CAST_PTR {
     ($ptr:ident, $type:ty, $offset:expr) => {
         unsafe {
             $ptr.add($offset);
@@ -146,12 +146,12 @@ macro_rules! REINTERPRET_CAST_PTR {
         }
     };
     ($ptr:ident, $type:ty) => {
-        REINTERPRET_CAST_PTR!($ptr, $type, 0)
+        FP_REINTERPRET_CAST_PTR!($ptr, $type, 0)
     };
 }
 
 #[macro_export]
-macro_rules! REINTERPRET_CAST_PTR_MUT {
+macro_rules! FP_REINTERPRET_CAST_PTR_MUT {
     ($ptr:ident, $type:ty, $offset:expr) => {
         unsafe {
             $ptr.add($offset);
@@ -159,7 +159,7 @@ macro_rules! REINTERPRET_CAST_PTR_MUT {
         }
     };
     ($ptr:ident, $type:ty) => {
-        REINTERPRET_CAST_PTR_MUT!($ptr, $type, 0)
+        FP_REINTERPRET_CAST_PTR_MUT!($ptr, $type, 0)
     };
 }
 

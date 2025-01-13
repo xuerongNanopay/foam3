@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}, usize};
 
 use crate::{
-    os::fil::{
+    error::FP_BK_ILLEGAL_CHECKSUM, os::fil::{
         FPFileSystem, 
         FileHandle, 
         FileSystem, 
@@ -12,10 +12,10 @@ use crate::{
     }, types::{
         FPConcurrentHashMap, 
         FPResult
-    }, FP_STATS_INCR, FP_LOG_ERR
+    }, FP_LOG_ERR, FP_STATS_INCR
 };
 
-use super::{block_handle::{self, file_header_write, BlockHandle}, block_ref, BlockRef};
+use super::{block_handle::{self, file_header_write, BlockHandle}, block_ref, BlockHeader, BlockRef, PageHeader};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -78,8 +78,15 @@ fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPRe
     //TODO: retry.
 
     let (r_buf, r_size) = block_handle.file_handle.read_exact(block_ref.offset, block_ref.size)?;
+    let mut block_header = *FP_REINTERPRET_CAST_BUF!(r_buf, BlockHeader, SIZE_OF!(PageHeader));
+    block_header.maybe_convert_endian();
 
-    Ok(())
+    // Valify check sum
+    if block_ref.checksum == block_header.checksum {
+
+    }
+
+    Err(FP_BK_ILLEGAL_CHECKSUM)
 }
 
 // pub struct BlockManager {

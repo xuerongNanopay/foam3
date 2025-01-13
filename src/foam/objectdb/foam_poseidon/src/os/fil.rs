@@ -7,19 +7,19 @@ use native::{DefaultFileHandle, DefaultFileSystem};
 
 use crate::{error::*, types::*};
 
-OS_LINUX! {
+FP_OS_LINUX! {
     pub type FPFileSystem = DefaultFileSystem;
     pub type FPFileHandle = DefaultFileHandle;
 }
 
 
-OS_MACOS! {
+FP_OS_MACOS! {
     pub type FPFileSystem = DefaultFileSystem;
     pub type FPFileHandle = DefaultFileHandle;
 }
 
 
-OS_WIN! {
+FP_OS_WIN! {
     pub type FPFileSystem = DefaultFileSystem;
     pub type FPFileHandle = DefaultFileHandle;
 }
