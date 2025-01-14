@@ -68,6 +68,7 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 
 /**
  * Read a block into a buffer.
+ * TODO: retry logic and checksum verify.
  */
 fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<Vec<u8>> {
     
