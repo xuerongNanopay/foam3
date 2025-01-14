@@ -21,11 +21,12 @@ use super::{handle::{self, file_header_write, BlockHandle}, addr, BlockHeader, B
 
 /**
  * Block manager, reference to a block(block reference to a file).
+ * TODO: multi block handler block manager.
  */
 pub(crate) struct BlockManager {
     block_handle: Arc<BlockHandle>,
 
-    is_multi: bool, /* TODO: allow store block into mutli handle */
+    is_multi_handle: bool, /* TODO: allow store block into mutli handle */
 }
 
 /**

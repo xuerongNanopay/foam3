@@ -2,3 +2,4 @@
 
 pub mod hash_city;
 pub mod compaction;
+pub mod sync;

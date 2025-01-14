@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{meta::FP_METAFILE, types::{FPFileOffset, FPFileSize}};
+use crate::{meta::FP_METAFILE, types::{FPFileSize}};
 
 pub mod manager;
 pub mod handle;
@@ -38,7 +38,7 @@ impl FileHeader {
 #[derive(Debug, Default, Clone, Copy)]
 pub(crate) struct BlockRef {
     object_id: u32,
-    offset: FPFileOffset, /* offset in file */
+    offset: FPFileSize, /* offset in file */
     size: FPFileSize, /* size of a block in file */
     checksum: u32,
 }
@@ -83,6 +83,15 @@ impl PageHeader {
             self.overflow_data_len = BIT_REVERSE_32!(self.overflow_data_len);
         }
     }
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct BlockStat{
+    allocation_size: u64,
+    block_size: u64,
+    block_magic: u64,
+    block_major: u16,
+    block_minor: u16,
 }
 
 

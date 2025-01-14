@@ -14,37 +14,32 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
  * Block; reference a single file.
  * Not physical representation of page.
  */
+
 pub(crate) struct BlockHandle {
     name: String,   /* Name */
     object_id: u32,
 
-    pub(crate) size: FPFileSize,       /* File size */
+    pub file_handle: Arc<FPFileHandle>,  /* underline file handle */
+    pub(crate) size: FPFileSize,         /* File size */
+    extend_size: FPFileSize,             /* File extended size */
+    extend_len: FPFileSize,              /* File extend chunk size */
+
+    sync_on_checkpoint: bool,     /* fsync the handle after the next checkpoint */
+    remote: bool,                 /* remove handler */
+    readonly: bool,               /* underline file is read only */
 
     pub(crate) allocation_size: FPFileSize,
     alloc_first: AtomicBool,
 
-    // os_cache: usize,
-    os_cache_max: usize,
-    os_cache_dirty_max: usize,
+    // os_cache: usize,              
+    // os_cache_max: usize,
+    // os_cache_dirty_max: usize,
 
-    extend_len: usize,
-    
-    readonly: bool,
-
-    pub file_handle: Arc<FPFileHandle>,
+    // block_header_size: u32,
 }
 
 impl BlockHandle {
     // fn set_
-}
-
-#[derive(Default, Debug, Clone, Copy)]
-pub struct BlockStat{
-    allocation_size: u64,
-    block_size: u64,
-    block_magic: u64,
-    block_major: u16,
-    block_minor: u16,
 }
 
 
@@ -53,7 +48,7 @@ struct BlockOpenCfg {
     alloc_first: bool,
     os_cache_max: usize,
     os_cache_dirty_max: usize,
-    extend_len: usize,
+    extend_len: FPFileSize,
     access_mode: fil::AccessMode,
 }
 
@@ -99,19 +94,26 @@ fn open(
     let mut new_block_handle = Arc::new(BlockHandle {
         name: filename.to_string(),
         object_id,
+
+        file_handle,
+        size: fh.size()?,
+        extend_size: 0,
+        extend_len: default_cfg.extend_len,
+
+        sync_on_checkpoint: true,
+        remote: false,
+        readonly,
+
         allocation_size: if allocation_size == 0 {
             default_cfg.allocation_size
         } else {
             allocation_size
         },
         alloc_first: AtomicBool::new(default_cfg.alloc_first),
-        os_cache_max: default_cfg.os_cache_max,
-        os_cache_dirty_max: default_cfg.os_cache_dirty_max,
-        extend_len: default_cfg.extend_len,
 
-        readonly,
-        size: fh.size()?,
-        file_handle,
+        // os_cache_max: default_cfg.os_cache_max,
+        // os_cache_dirty_max: default_cfg.os_cache_dirty_max,
+
     });
     file_header_read_and_verify(new_block_handle.clone(), allocation_size)?;
 

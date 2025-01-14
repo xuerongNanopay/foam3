@@ -146,7 +146,7 @@ impl FileHandle for DefaultFileHandle {
         Ok(())
     }
 
-    fn read_exact(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)> {
+    fn read_exact(&self, offset: FPFileSize, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)> {
 
         //TODO: add verbose debug
         //TODO: use read_vectored when len is more than 1GB
@@ -167,7 +167,7 @@ impl FileHandle for DefaultFileHandle {
         Ok((buffer, len))
     }
 
-    // fn read(&self, offset: FPFileOffset, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize> {
+    // fn read(&self, offset: FPFileSize, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize> {
 
     //     //TODO: add verbose debug
     //     //TODO: use read_vectored when len is more than 1GB
@@ -189,7 +189,7 @@ impl FileHandle for DefaultFileHandle {
     // }
 
 
-    fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
+    fn write(&self, offset: FPFileSize, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
         //TODO: add verbose debug
 
         let mut fd = self.fd.write().unwrap();

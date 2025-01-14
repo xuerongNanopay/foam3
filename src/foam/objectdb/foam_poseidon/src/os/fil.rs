@@ -134,21 +134,21 @@ pub trait FileHandle {
     /**
      * POSIX only
      */
-    fn advise(&self, offset: FPFileOffset, len: FPFileSize, advice: i32) -> FPResult<()> {
+    fn advise(&self, offset: FPFileSize, len: FPFileSize, advice: i32) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
-    fn extend(&self, offset: FPFileOffset) -> FPResult<()> {
+    fn extend(&self, offset: FPFileSize) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
-    fn extend_nolock(&self, offset: FPFileOffset) -> FPResult<()> {
+    fn extend_nolock(&self, offset: FPFileSize) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
@@ -166,14 +166,14 @@ pub trait FileHandle {
     /**
      * Read from file.
      */
-    fn read_exact(&self, offset: FPFileOffset, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)>  {
+    fn read_exact(&self, offset: FPFileSize, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)>  {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Read from file.
      */
-    fn read(&self, offset: FPFileOffset, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize>  {
+    fn read(&self, offset: FPFileSize, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize>  {
         Err(FP_NO_IMPL)
     }
 
@@ -201,14 +201,14 @@ pub trait FileHandle {
     /**
      * Truncate file.
      */
-    fn truncate(&self, offset: FPFileOffset) -> Result<FPFileBuf, FPErr> {
+    fn truncate(&self, offset: FPFileSize) -> Result<FPFileBuf, FPErr> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Write to a file.
      */
-    fn write(&self, offset: FPFileOffset, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
+    fn write(&self, offset: FPFileSize, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
