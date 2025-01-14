@@ -15,7 +15,7 @@ use crate::{
     }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR
 };
 
-use super::{block_handle::{self, file_header_write, BlockHandle}, block_ref, BlockHeader, BlockRef, PageHeader};
+use super::{handle::{self, file_header_write, BlockHandle}, addr, BlockHeader, BlockRef, PageHeader};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -53,7 +53,7 @@ fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> 
 
     let bh = block_manager.block_handle.clone();
 
-    let br = block_ref::block_addr_unpack(&bh, raw_addr, addr_size)?;
+    let br = addr::block_addr_unpack(&bh, raw_addr, addr_size)?;
     
     FP_STATS_INCR!(block_read);
     FP_STATS_INCR!(block_size, br.size);

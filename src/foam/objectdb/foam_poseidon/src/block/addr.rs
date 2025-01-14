@@ -2,7 +2,7 @@
 
 use crate::{error::*, types::FPResult, util::compaction::varint::{self, VarintDecodeIterator}, FP_ASSERT_NOT_NONE};
 
-use super::{block_handle::BlockHandle, BlockRef};
+use super::{handle::BlockHandle, BlockRef};
 
 static FP_BLOCK_ADDR_INDICATOR: u8 = 0x01;
 

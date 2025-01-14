@@ -3,8 +3,9 @@
 use crate::{meta::FP_METAFILE, types::{FPFileOffset, FPFileSize}};
 
 pub mod manager;
-pub mod block_handle;
-pub mod block_ref;
+pub mod handle;
+pub mod addr;
+pub mod cache;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
