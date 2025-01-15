@@ -3,7 +3,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::cell::UnsafeCell;
 
-struct SpinLock<T: ?Sized> {
+pub struct SpinLock<T: ?Sized> {
     flag: AtomicBool,
     data: UnsafeCell<T>,
 }
@@ -23,7 +23,7 @@ impl<T> SpinLock<T> {
     }
 }
 
-struct SpinLockGuard<'a, T> {
+pub struct SpinLockGuard<'a, T> {
     lock: &'a SpinLock<T>,
 }
 

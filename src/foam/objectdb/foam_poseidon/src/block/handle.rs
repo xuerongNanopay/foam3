@@ -39,9 +39,7 @@ pub(crate) struct BlockHandle {
 }
 
 impl BlockHandle {
-    // fn set_
 }
-
 
 struct BlockOpenCfg {
     allocation_size: FPFileSize,

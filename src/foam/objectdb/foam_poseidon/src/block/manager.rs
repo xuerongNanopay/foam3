@@ -29,6 +29,25 @@ pub(crate) struct BlockManager {
     is_multi_handle: bool, /* TODO: allow store block into mutli handle */
 }
 
+impl BlockManager {
+    /**
+     * Read a block base on block reference(BlockRef).
+     */
+    fn read(&self, raw_addr: &[u8], addr_size: usize) -> FPResult<()> {
+        let br = addr::block_addr_unpack(&self.block_handle, raw_addr, addr_size)?;
+        
+        FP_STATS_INCR!(block_read);
+        FP_STATS_INCR!(block_size, br.size);
+
+        read_offset_from_bh(&self.block_handle, &br);
+
+        //TODO: read from block handle.
+        //TODO: discard.
+
+        Ok(())
+    }
+}
+
 /**
  * Create a file and write meta data to it.
  */
@@ -45,26 +64,6 @@ fn create(file_system: Arc<FPFileSystem>, filename: &str, alloc_size: u32) -> FP
  */
 fn drop() {
 
-}
-
-/**
- * Read a block base on block reference(BlockRef).
- */
-fn read(block_manager: Arc<BlockManager>, raw_addr: &[u8], addr_size: usize) -> FPResult<()> {
-
-    let bh = block_manager.block_handle.clone();
-
-    let br = addr::block_addr_unpack(&bh, raw_addr, addr_size)?;
-    
-    FP_STATS_INCR!(block_read);
-    FP_STATS_INCR!(block_size, br.size);
-
-    read_offset_from_bh(&bh, &br);
-
-    //TODO: read from block handle.
-    //TODO: discard.
-
-    Ok(())
 }
 
 /**
