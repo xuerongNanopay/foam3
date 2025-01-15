@@ -16,6 +16,7 @@ mod meta;
 mod stats;
 // #[macro_use]
 mod log;
+mod context;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
