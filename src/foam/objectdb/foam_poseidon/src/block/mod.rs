@@ -85,6 +85,11 @@ impl PageHeader {
     }
 }
 
+pub(crate) struct BufItem {
+    pub(crate) size: FPFileSize,
+    pub(crate) mem: Vec<u8>
+}
+
 #[derive(Default, Debug, Clone, Copy)]
 pub struct BlockStat{
     allocation_size: u64,
