@@ -7,7 +7,7 @@ use crate::util::sync::spin::SpinLock;
 
 // }
 
-struct Context {
+pub struct Context {
     // //TODO: file system.
     // block_handles: SpinLock<>
 }
