@@ -2,18 +2,32 @@
 
 use std::{sync::{Arc, Weak}, task::Context};
 
-use crate::block::manager::BlockManager;
+use crate::{block::manager::BlockManager, types::FPResult};
 
-enum BTreePageOriented {
+#[derive(Copy, Clone, Debug)]
+enum BTreeStoreOriented {
     ColumnFix,
     ColumnVar,
     Row
 }
 
+impl std::fmt::Display for BTreeStoreOriented {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            BTreeStoreOriented::ColumnFix => write!(f, "ColumnFix"),
+            BTreeStoreOriented::ColumnVar => write!(f, "ColumnVar"),
+            BTreeStoreOriented::Row => write!(f, "Row"),
+        }
+    }
+}
+
 enum BTreePageType {
-    Internal,
-    Leaf,
-    Root,
+    ColumnFix,
+    ColumnVar,
+    ColumnIntl,
+    RowIntl,
+    RowLeaf,
+    Overflow,
 }
 
 enum BtreePageStatus {
@@ -85,30 +99,29 @@ struct BtreePageChildren {
 }
 
 struct BTree {
-    r#type: BTreePageType,
-    page_oriented: BTreePageOriented,
+    store_oriented: BTreeStoreOriented,
 
-    k_format: String,
-    v_format: String,
-    fixed_length_field_size: u8,
+    // k_format: String,
+    // v_format: String,
+    // fixed_length_field_size: u8,
 
-    logging_file_id: u32,
+    // logging_file_id: u32,
 
-    allocation_size: u32,
-    max_internal_size: u32,
-    max_leaf_page: u32,
-    max_leaf_key: u32,
-    max_leaf_value: u32,
-    max_mem_page: u32,
-    mem_page_split_throttle: u64,
+    // allocation_size: u32,
+    // max_internal_size: u32,
+    // max_leaf_page: u32,
+    // max_leaf_key: u32,
+    // max_leaf_value: u32,
+    // max_mem_page: u32,
+    // mem_page_split_throttle: u64,
 
-    dictionary: u32,
-    internal_key_truncate: bool,
-    prefix_compression: bool,
+    // dictionary: u32,
+    // internal_key_truncate: bool,
+    // prefix_compression: bool,
 
-    split_percentage: i32,
+    // split_percentage: i32,
 
-    block_header: u32,
+    // block_header: u32,
 
     // block_manager: Arc<BlockManager>
 }
@@ -130,19 +143,41 @@ struct TreeCreateOpt {
  * Create an empty in-memory B-tree.
  */
 fn btree_open_tree_create(btree: &mut BTree) {
+    let root: BtreePage;
+    let page_ref: BTreePageRef;
 
+    match btree.store_oriented {
+        BTreeStoreOriented::ColumnFix | BTreeStoreOriented::ColumnVar => {
+
+        },
+        BTreeStoreOriented::Row => {
+
+        },
+    };
 }
 
 fn btree_open_tree_open(ctx: &mut Context) {
 
 }
+
+/**
+ * Create or read a page.
+ */
+fn btree_page_alloc() -> FPResult<()> {
+
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_btree_open_tree_create() {
-        // let result = add_numbers(2, 2);
-        // assert_eq!(result, 4);
+        let mut btree = BTree{
+            store_oriented: BTreeStoreOriented::Row
+        };
+        btree_open_tree_create(&mut btree)
     }
 }
