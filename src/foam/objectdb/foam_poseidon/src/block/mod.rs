@@ -121,8 +121,8 @@ mod tests {
     fn write_block_header_to_file() {
         let filename = "/tmp/block_header.fp";
         let mut file = File::create(filename).unwrap();
-        let mut w_buf = Vec::<u8>::with_capacity(SIZE_OF!(FileHeader));
-        unsafe { w_buf.set_len(SIZE_OF!(FileHeader)); }
+        let mut w_buf = Vec::<u8>::with_capacity(FP_SIZE_OF!(FileHeader));
+        unsafe { w_buf.set_len(FP_SIZE_OF!(FileHeader)); }
         w_buf.fill(0);
         let header = FP_REINTERPRET_CAST_BUF_MUT!(w_buf, FileHeader);
 

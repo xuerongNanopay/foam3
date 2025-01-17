@@ -80,7 +80,7 @@ fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPRe
     //TODO: retry.
 
     let (mut r_buf, r_size) = block_handle.file_handle.read_exact(block_ref.offset, block_ref.size)?;
-    let mut block_header_in_buf = FP_REINTERPRET_CAST_BUF_MUT!(r_buf, BlockHeader, SIZE_OF!(PageHeader));
+    let mut block_header_in_buf = FP_REINTERPRET_CAST_BUF_MUT!(r_buf, BlockHeader, FP_SIZE_OF!(PageHeader));
     let mut block_header= *block_header_in_buf;
     block_header.maybe_convert_endian();
 

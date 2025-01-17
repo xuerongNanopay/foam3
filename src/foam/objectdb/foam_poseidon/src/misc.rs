@@ -164,7 +164,21 @@ macro_rules! FP_REINTERPRET_CAST_PTR_MUT {
 }
 
 #[macro_export]
-macro_rules! SIZE_OF {
+macro_rules! FP_SIZE_OF {
+    ($type:ty) => {
+        std::mem::size_of::<$type>()
+    };
+}
+
+// #[macro_export]
+// macro_rules! FP_ALLOC {
+//     ($size:expr) => {
+//         std::alloc::Layout
+//     };
+// }
+
+#[macro_export]
+macro_rules! FP_DE_ALLOC {
     ($type:ty) => {
         std::mem::size_of::<$type>()
     };

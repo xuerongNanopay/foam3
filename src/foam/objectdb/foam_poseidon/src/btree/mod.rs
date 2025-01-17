@@ -2,7 +2,7 @@
 
 use std::{sync::{Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, types::FPResult};
+use crate::{block::manager::BlockManager, types::FPResult, FP_SIZE_OF};
 
 #[derive(Copy, Clone, Debug)]
 enum BTreeStoreOriented {
@@ -37,20 +37,26 @@ enum BtreePageStatus {
     Locked,
 }
 
+enum EvictRule {
+    NotSet,
+    EvictSoon,
+    WontNeed,
+}
+
 /**
- * Internal page.
+ * Row store Internal page.
  */
 struct BtreePageIntl {
-    parent: Weak<BTreePageRef>,
-    split_generation: u64,
-    children: BtreePageChildren,
+    // parent: Weak<BTreePageRef>,
+    // split_generation: u64,
+    // children: BtreePageChildren,
 }
 
 /**
  * Row store leaf page.
  */
 struct BtreePageRow {
-    key: *mut (),
+    // key: *mut (),
 }
 
 /**
@@ -67,15 +73,24 @@ struct BtreePageColVar {
 
 }
 
+enum BtreePageContent {
+    RowIntl(BtreePageIntl),
+    RowLeaf(BtreePageRow),
+}
 
+// #[derive(Default)]
 struct BtreePage {
-    intl_page: BtreePageIntl,
-    row_leaf_page: BtreePageRow,
-    col_fix_leaf_page: BtreePageColFix,
-    col_var_leaf_page: BtreePageColVar,
+    r#type: BTreePageType,
+    read_gen: EvictRule,
+    entries: u32, /* Leaf page entries */
+
+    content: BtreePageContent,
+    // row_leaf_page: BtreePageRow,
+    // col_fix_leaf_page: BtreePageColFix,
+    // col_var_leaf_page: BtreePageColVar,
 
 
-    leaf_entries: u32,
+    // leaf_entries: u32,
 }
 
 
@@ -163,21 +178,68 @@ fn btree_open_tree_open(ctx: &mut Context) {
 /**
  * Create or read a page.
  */
-fn btree_page_alloc() -> FPResult<()> {
+fn btree_page_alloc(
+    page_type: BTreePageType,
+    alloc_entries: u32,
+) -> FPResult<BtreePage> {
 
+    let mut size = FP_SIZE_OF!(BtreePage);
 
-    Ok(())
+    let entries;
+    let content;
+
+    match page_type {
+        BTreePageType::RowIntl | BTreePageType::ColumnFix | BTreePageType::ColumnIntl => {},
+        BTreePageType::RowLeaf => size += alloc_entries as usize * FP_SIZE_OF!(BtreePageRow),
+        _ => panic!("not support"),
+    }
+
+    match page_type {
+        BTreePageType::RowLeaf => {
+            entries = alloc_entries;
+            content = BtreePageContent::RowLeaf(BtreePageRow{
+
+            });
+        },
+        BTreePageType::RowIntl => {
+            entries = alloc_entries;
+            content = BtreePageContent::RowIntl(BtreePageIntl{
+
+            });
+        },
+        _ => panic!("unsupport"),
+    };
+
+    let page = BtreePage {
+        r#type: page_type,
+        read_gen: EvictRule::NotSet,
+        entries,
+        content,
+    };
+
+    Ok(page)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::FP_FP_SIZE_OF;
+
     use super::*;
 
     #[test]
     fn test_btree_open_tree_create() {
         let mut btree = BTree{
-            store_oriented: BTreeStoreOriented::Row
+            store_oriented: BTreeStoreOriented::Row,
         };
         btree_open_tree_create(&mut btree)
     }
+
+    #[test]
+    fn test_btree_page_alloc() {
+        enum Foo {
+            A(i32),
+            B(i64),
+        }
+        print!("size of Foo: {}", FP_FP_SIZE_OF!(Foo))
+    }    
 }
