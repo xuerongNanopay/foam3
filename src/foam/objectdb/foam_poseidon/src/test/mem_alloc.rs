@@ -46,13 +46,20 @@ mod tests {
     }
 
     #[test]
-    fn test_alloc_a_type() {
-        let (mut t, _) = FP_ALLOC!(AAA);
-        t.i = 10;
-        assert_eq!(t.i, 10);
-        let (mut t, _)  = FP_ALLOC!(AAA, 2);
-        t[1].i = 20;
-        assert_eq!(t[1].i, 20);
+    fn test_alloc_single_type() {
+        {
+            let (mut t, _) = FP_ALLOC!(AAA);
+            t.i = 10;
+            assert_eq!(t.i, 10);
+            let (mut t, _)  = FP_ALLOC!(AAA, 2);
+            t[1].i = 20;
+            assert_eq!(t[1].i, 20);
+        }
+    }
 
+    #[test]
+    fn test_alloc_different_type() {
+        let (layout, pa1, pb1, pc1) = FP_ALLOC!{AAA: 1, BBB: 2, CCC: 1};
+        let (layout, pa2, pb2, pc2) = FP_ALLOC![AAA, BBB, CCC];
     }
 }

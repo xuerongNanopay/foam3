@@ -221,33 +221,21 @@ macro_rules! FP_ALLOC {
     ($size:expr) => {
         FP_ALLOC!($size, 8)
     };
-}
-
-#[macro_export]
-macro_rules! FP_DEALLOC {
-    ($ptr:expr, $layout:expr) => {
-        unsafe {
-            std::alloc::dealloc($ptr as *mut u8, $layout)
-        }
+    [$($t:ty),*] => {
+        FP_ALLOC!{$($t: 1),*}
     };
-}
-
-#[macro_export]
-macro_rules! FP_ALLOC_TYPE {
-    ($type:ty) => {{
-        let layout = std::alloc::Layout::new::<$type>();
-        unsafe {
-            let ptr = std::alloc::alloc(layout);
-            std::ptr::write_bytes(ptr, 0, layout.size());
-            let t = ptr as *mut $type;
-            let t = Box::from_raw(t);
-            t
-        }
+    {$($t:ty: $v:expr),*} => {{
+        FP_ALLOC!($($t, $v, 
+        {
+            if $v > 1 {
+                std::alloc::Layout::array::<$t>($v).unwrap()
+            } else {
+                std::alloc::Layout::new::<$t>()
+            }
+        },
+        0usize
+        ),*)
     }};
-}
-
-#[macro_export]
-macro_rules! FP_ALLOC_TYPES {
     ($ft:ty, $fv:expr, $fl:expr, $fo:expr, $($t:ty, $v:expr, $l:expr, $o:expr),*) => {{
         let mut combined_layout: std::alloc::Layout = $fl;
         let mut i = 1usize;
@@ -289,18 +277,15 @@ macro_rules! FP_ALLOC_TYPES {
             )
         }
     }};
-    {$($t:ty: $v:expr),*} => {{
-        FP_ALLOC_TYPES!($($t, $v, 
-        {
-            if $v > 1 {
-                std::alloc::Layout::array::<$t>($v).unwrap()
-            } else {
-                std::alloc::Layout::new::<$t>()
-            }
-        },
-        0usize
-        ),*)
-    }};
+}
+
+#[macro_export]
+macro_rules! FP_DEALLOC {
+    ($ptr:expr, $layout:expr) => {
+        unsafe {
+            std::alloc::dealloc($ptr as *mut u8, $layout)
+        }
+    };
 }
 
 #[macro_export]
