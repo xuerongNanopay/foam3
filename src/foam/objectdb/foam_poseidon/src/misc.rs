@@ -241,7 +241,6 @@ macro_rules! FP_ALLOC {
         let mut i = 1usize;
         let mut offsets: Vec<usize> = vec![$fo, $($o),*];
         $(
-            println!("aaavv {} {} {}", i, $o, $l.size());
             //TODO: wrap into custom error.
             let (c, o) = combined_layout.extend($l).unwrap();
             combined_layout = c;
@@ -259,6 +258,8 @@ macro_rules! FP_ALLOC {
             std::ptr::write_bytes(ptr, 0, combined_layout.size());
             ptr
         };
+
+        println!("{:?}", offsets);
 
         let mut i = 0usize;
         unsafe {

@@ -5,20 +5,20 @@ mod tests {
 
     #[repr(C)]
     struct AAA {
-        i: u8,
-        j: u32,
+        pub i: u8,
+        pub j: u32,
     }
 
     #[repr(align(16))]
     struct BBB {
-        i: u8,
-        j: u64,
+        pub i: u8,
+        pub j: u64,
     }
 
     #[repr(C)]
     struct CCC {
-        i: bool,
-        j: u64,
+        pub i: bool,
+        pub j: u64,
     }
 
 
@@ -59,7 +59,20 @@ mod tests {
 
     #[test]
     fn test_alloc_different_type() {
-        let (layout, pa1, pb1, pc1) = FP_ALLOC!{AAA: 1, BBB: 2, CCC: 1};
-        let (layout, pa2, pb2, pc2) = FP_ALLOC![AAA, BBB, CCC];
+        let (layout, mut pa1, pb1, pc1) = FP_ALLOC!{AAA: 1, BBB: 1, CCC: 1};
+        {
+            //Illegal, combine layout should use dealloc.
+            // let bpa1 = unsafe {
+            //     Box::from_raw(pa1)   
+            // };
+            // let bpa1 = unsafe {
+            //     Box::from_raw(pc1)   
+            // };
+        }
+
+        FP_DEALLOC!(pa1, layout);
+        // double alloc.
+        // FP_DEALLOC!(pa1, layout);
+        // let (layout, pa2, pb2, pc2) = FP_ALLOC![AAA, BBB, CCC];
     }
 }
