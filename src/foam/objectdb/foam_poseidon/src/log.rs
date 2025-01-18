@@ -10,7 +10,7 @@ macro_rules! FP_LOG_INFO {
 #[macro_export]
 macro_rules! FP_LOG_ERR {
     ($($arg:tt)*) => {
-        println!("file: {} | line: {} | message: {}", line!(), file!(), format!($($arg)*));   
+        println!("file: {} | line: {} | message: {}", line!(), file!(), format!($($arg)*))   
     };
 }
 

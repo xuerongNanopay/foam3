@@ -222,7 +222,7 @@ fn btree_page_alloc(
 
 #[cfg(test)]
 mod tests {
-    use crate::FP_FP_SIZE_OF;
+    use crate::{FP_ALLOC_MEM, FP_ALLOC_TYPE, FP_ALLOC_TYPES, FP_DEALLOC_MEM, FP_SIZE_OF};
 
     use super::*;
 
@@ -240,6 +240,72 @@ mod tests {
             A(i32),
             B(i64),
         }
-        print!("size of Foo: {}", FP_FP_SIZE_OF!(Foo))
-    }    
+        print!("size of Foo: {} bytes", FP_SIZE_OF!(Foo))
+    }
+
+    #[test]
+    fn test_alloc() {
+        use std::alloc::{Layout, alloc};
+        #[repr(C)]
+        enum Foo {
+            A(i32),
+            B(i64),
+        }
+        println!("size of Foo: {} bytes", FP_SIZE_OF!(Foo));
+
+        let layout = Layout::from_size_align(FP_SIZE_OF!(Foo), 8).unwrap();
+        println!("Size: {}", layout.size());   // Output: 1024
+        println!("Alignment: {}", layout.align()); // Output: 8
+        let foo = unsafe {
+            let ptr = alloc(layout); // Allocate memory
+            std::ptr::write_bytes(ptr, 1, layout.size());
+
+            if ptr.is_null() {
+                panic!("Memory allocation failed");
+            }
+
+            println!("Memory allocated at: {:p}", ptr);
+
+            let foo = ptr as *mut Foo;
+            let foo = Box::from_raw(foo);
+            foo
+        };
+        match *foo {
+            Foo::A(a) => println!("A: {}", a),
+            Foo::B(a) => println!("B: {}", a),
+        };
+
+        let a = FP_ALLOC_TYPE!(Foo);
+        match *a {
+            Foo::A(a) => println!("A: {}", a),
+            Foo::B(a) => println!("B: {}", a),
+        };
+
+        let (a, b, c, d) = FP_ALLOC_TYPES!{Foo: 1, Foo: 2, Foo: 1};
+    }        
+
+    #[test]
+    fn test_alignment() {
+        use std::alloc::Layout;
+
+        #[repr(C)]
+        struct A {
+            x: u8,
+        }
+
+        #[repr(C)]
+        struct B {
+            y: u32,
+        }
+
+        let layout_a = Layout::new::<A>();
+        let layout_b = Layout::new::<B>();
+
+        // Combine the layouts
+        // let combined_layout = layout_a.extend(layout_b).unwrap().0.pad_to_align();
+        let combined_layout = layout_a.extend(layout_b).unwrap().0;
+
+        println!("Final layout - size: {}, align: {}", combined_layout.size(), combined_layout.align());
+
+    }
 }

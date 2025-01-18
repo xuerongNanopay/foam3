@@ -170,18 +170,108 @@ macro_rules! FP_SIZE_OF {
     };
 }
 
-// #[macro_export]
-// macro_rules! FP_ALLOC {
-//     ($size:expr) => {
-//         std::alloc::Layout
-//     };
-// }
+#[macro_export]
+macro_rules! FP_ALIGN_OF {
+    ($type:ty) => {
+        std::mem::align_of::<$type>()
+    };
+}
 
 #[macro_export]
-macro_rules! FP_DE_ALLOC {
-    ($type:ty) => {
-        std::mem::size_of::<$type>()
+macro_rules! FP_ALLOC_MEM {
+    ($size:expr, $align:expr) => {{
+        let layout = std::alloc::Layout::from_size_align($size, $align).unwrap();
+        let final_layout = layout.pad_to_align();
+        let ptr = unsafe {
+            let ptr = std::alloc::alloc(final_layout);
+            std::ptr::write_bytes(ptr, 0, layout.size());
+            ptr
+        };
+        (ptr, final_layout)
+    }};
+    ($size:expr) => {
+        FP_ALLOC_MEM!($size, 8)
     };
+}
+
+#[macro_export]
+macro_rules! FP_DEALLOC_MEM {
+    ($ptr:expr, $layout:expr) => {
+        unsafe {
+            std::alloc::dealloc($ptr as *mut u8, $layout)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! FP_ALLOC_TYPE {
+    ($type:ty) => {{
+        let layout = std::alloc::Layout::new::<$type>();
+        unsafe {
+            let ptr = std::alloc::alloc(layout);
+            std::ptr::write_bytes(ptr, 0, layout.size());
+            let t = ptr as *mut $type;
+            let t = Box::from_raw(t);
+            t
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! FP_ALLOC_TYPES {
+    ($ft:ty, $fv:expr, $fl:expr, $fo:expr, $($t:ty, $v:expr, $l:expr, $o:expr),*) => {{
+        let mut combined_layout: std::alloc::Layout = $fl;
+        let mut i = 1usize;
+        let mut offsets: Vec<usize> = vec![$fo, $($o),*];
+        $(
+            println!("aaavv {} {} {}", i, $o, $l.size());
+            //TODO: wrap into custom error.
+            let (c, o) = combined_layout.extend($l).unwrap();
+            combined_layout = c;
+            offsets[i] = o;
+            i += 1;
+        )*
+        let combined_layout = combined_layout.pad_to_align();
+
+        let ptr = unsafe {
+            let ptr = std::alloc::alloc(combined_layout);
+            if ptr.is_null() {
+                //TODO: wrap into custom error.
+                panic!("FP_ALLOC_TYPES Memory allocation failed");
+            }
+            std::ptr::write_bytes(ptr, 0, combined_layout.size());
+            ptr
+        };
+
+        let mut i = 0usize;
+        unsafe {
+            (
+                combined_layout,
+                {
+                    let r = ptr.add(offsets[i]) as *mut $ft;
+                    i += 1;
+                    r
+                },
+                $({
+                    let r = ptr.add(offsets[i]) as *mut $t;
+                    i += 1;
+                    r
+                }),*
+            )
+        }
+    }};
+    {$($t:ty: $v:expr),*} => {{
+        FP_ALLOC_TYPES!($($t, $v, 
+        {
+            if $v > 1 {
+                std::alloc::Layout::array::<$t>($v).unwrap()
+            } else {
+                std::alloc::Layout::new::<$t>()
+            }
+        },
+        0usize
+        ),*)
+    }};
 }
 
 #[macro_export]
