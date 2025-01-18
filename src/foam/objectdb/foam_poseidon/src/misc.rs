@@ -178,24 +178,53 @@ macro_rules! FP_ALIGN_OF {
 }
 
 #[macro_export]
-macro_rules! FP_ALLOC_MEM {
+macro_rules! FP_ALLOC {
+    ($type:ty) => {{
+        let layout = std::alloc::Layout::new::<$type>();
+        unsafe {
+            let ptr = std::alloc::alloc(layout);
+            if ptr.is_null() {
+                panic!("Memory allocation failed");
+            }
+            std::ptr::write_bytes(ptr, 0, layout.size());
+            let t = ptr as *mut $type;
+            let t = Box::from_raw(t);
+            (t, layout)
+        }
+    }};
+    ($type:ty, $size: expr) => {{
+        let layout = std::alloc::Layout::array::<$type>($size).unwrap();
+        unsafe {
+            let ptr = std::alloc::alloc(layout);
+            if ptr.is_null() {
+                panic!("Memory allocation failed");
+            }
+            std::ptr::write_bytes(ptr, 0, layout.size());
+            let t = ptr as *mut $type;
+            let t = Vec::from_raw_parts(t, $size, $size);
+            (t, layout)
+        }
+    }};
     ($size:expr, $align:expr) => {{
         let layout = std::alloc::Layout::from_size_align($size, $align).unwrap();
         let final_layout = layout.pad_to_align();
         let ptr = unsafe {
             let ptr = std::alloc::alloc(final_layout);
+            if ptr.is_null() {
+                panic!("Memory allocation failed");
+            }
             std::ptr::write_bytes(ptr, 0, layout.size());
             ptr
         };
         (ptr, final_layout)
     }};
     ($size:expr) => {
-        FP_ALLOC_MEM!($size, 8)
+        FP_ALLOC!($size, 8)
     };
 }
 
 #[macro_export]
-macro_rules! FP_DEALLOC_MEM {
+macro_rules! FP_DEALLOC {
     ($ptr:expr, $layout:expr) => {
         unsafe {
             std::alloc::dealloc($ptr as *mut u8, $layout)

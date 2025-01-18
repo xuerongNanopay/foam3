@@ -222,7 +222,7 @@ fn btree_page_alloc(
 
 #[cfg(test)]
 mod tests {
-    use crate::{FP_ALLOC_MEM, FP_ALLOC_TYPE, FP_ALLOC_TYPES, FP_DEALLOC_MEM, FP_SIZE_OF};
+    use crate::{FP_ALLOC_TYPE, FP_ALLOC_TYPES, FP_SIZE_OF};
 
     use super::*;
 
