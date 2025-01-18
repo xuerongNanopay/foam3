@@ -6,6 +6,9 @@ use crate::types::FPErr;
 pub const FP_NO_IMPL: FPErr           = -1;
 pub const FP_ILLEGAL_ARGUMENT: FPErr  = -2;
 
+// Mem.
+pub const FP_ALLOC_FAIL: FPErr           = 1;
+
 
 #[macro_export]
 macro_rules! FP_IO_ERR_RET {

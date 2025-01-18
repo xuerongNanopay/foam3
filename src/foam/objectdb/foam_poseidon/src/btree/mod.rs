@@ -1,8 +1,8 @@
 #![allow(unused)]
 
-use std::{sync::{Arc, Weak}, task::Context};
+use std::{ptr, sync::{Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, types::FPResult, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_SIZE_OF};
 
 #[derive(Copy, Clone, Debug)]
 enum BTreeStoreOriented {
@@ -47,7 +47,7 @@ enum EvictRule {
  * Row store Internal page.
  */
 struct BtreePageIntl {
-    // parent: Weak<BTreePageRef>,
+    parent: * const BTreePageRef,
     // split_generation: u64,
     // children: BtreePageChildren,
 }
@@ -56,7 +56,7 @@ struct BtreePageIntl {
  * Row store leaf page.
  */
 struct BtreePageRow {
-    // key: *mut (),
+    key: *mut (), /* key in the row store leaf page. */
 }
 
 /**
@@ -181,7 +181,7 @@ fn btree_open_tree_open(ctx: &mut Context) {
 fn btree_page_alloc(
     page_type: BTreePageType,
     alloc_entries: u32,
-) -> FPResult<BtreePage> {
+) -> FPResult<LayoutPtr<BtreePage>> {
 
     let mut size = FP_SIZE_OF!(BtreePage);
 
@@ -198,13 +198,13 @@ fn btree_page_alloc(
         BTreePageType::RowLeaf => {
             entries = alloc_entries;
             content = BtreePageContent::RowLeaf(BtreePageRow{
-
+                key: ptr::null_mut(),
             });
         },
         BTreePageType::RowIntl => {
             entries = alloc_entries;
             content = BtreePageContent::RowIntl(BtreePageIntl{
-
+                parent: ptr::null_mut(),
             });
         },
         _ => panic!("unsupport"),
