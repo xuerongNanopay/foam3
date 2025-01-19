@@ -93,7 +93,7 @@ union BtreePageContent {
 struct BtreePage {
     r#type: BTreePageType,
     read_gen: EvictRule,
-    entries: u32, /* Leaf page entries */
+    entries: usize, /* Leaf page entries */
 
     content: BtreePageContent,
     // row_leaf_page: BtreePageRow,
@@ -109,8 +109,8 @@ struct BtreePage {
  */
 #[repr(C)]
  struct BTreePageIndex {
-    entries: u32,
-    deleted_entries: u32,
+    entries: usize,
+    deleted_entries: usize,
     
     page_refs: *mut *mut BTreePageRef,
 }
@@ -197,7 +197,7 @@ impl BtreePage {
      */
     fn btree_page_alloc(
         page_type: BTreePageType,
-        alloc_entries: u32,
+        alloc_entries: usize,
         is_alloc_page_refs: bool,
     ) -> FPResult<()> {
 
@@ -220,15 +220,23 @@ impl BtreePage {
 
                 let (l2, page_index, page_refs) = FP_ALLOC!{
                     BTreePageIndex: 1,
-                    * mut BTreePageRef: alloc_entries as usize,
+                    * mut BTreePageRef: alloc_entries,
                 };
-                mem_size += FP_SIZE_OF!(BTreePageIndex) + alloc_entries as usize * FP_SIZE_OF!(* mut BTreePageRef);
+                mem_size += FP_SIZE_OF!(BTreePageIndex) + alloc_entries * FP_SIZE_OF!(* mut BTreePageRef);
                 
                 unsafe {
                     (*page_index).entries = alloc_entries;
                     (*page_index).page_refs = page_refs;
-                    //TODO: #![feature(asm)] atomic store.
+                    //TODO: #![feature(asm)] atomic store. Release Boundary. Need?
                     (*tree_page).content.row_intl.page_index = page_index;
+
+                    if is_alloc_page_refs {
+                        for i in 0..alloc_entries {
+                            let c_ptr = (*page_index).page_refs.add(i);
+                            
+                            mem_size += FP_SIZE_OF!(BTreePageRef)
+                        }
+                    }
                 }
             }
             _ => panic!("not support"),

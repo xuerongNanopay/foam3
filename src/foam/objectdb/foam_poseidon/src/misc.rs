@@ -295,7 +295,8 @@ macro_rules! FP_ALLOC {
 macro_rules! FP_DEALLOC {
     ($ptr:expr, $layout:expr) => {
         unsafe {
-            std::alloc::dealloc($ptr as *mut u8, $layout)
+            std::alloc::dealloc($ptr as *mut u8, $layout);
+            $ptr = std::ptr::null_mut();
         }
     };
 }

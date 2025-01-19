@@ -2,6 +2,7 @@
 
 use std::{alloc::Layout, ops::{Deref, DerefMut}};
 
+#[repr(C)]
 pub struct LayoutPtr<T> {
     layout: Layout,
     ptr: *mut T,
@@ -33,6 +34,41 @@ impl<T> DerefMut for LayoutPtr<T> {
 impl<T>  Drop for LayoutPtr<T> {
     fn drop(&mut self) {
         FP_DEALLOC!(self.ptr, self.layout);
-        self.ptr = std::ptr::null_mut();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::mem::ManuallyDrop;
+
+    use super::*;
+
+    struct MyStruct {
+        data: String,
+    }
+
+    impl Drop for MyStruct {
+        fn drop(&mut self) {
+            println!("Dropping MyStruct with data: {}", self.data);
+        }
+    }
+
+    
+    #[test]
+    fn test_manualdrop() {
+        let mut my_struct = ManuallyDrop::new(MyStruct {
+            data: String::from("Hello, manual drop!"),
+        });
+    
+        // Access fields safely
+        println!("Data: {}", my_struct.data);
+    
+        // Manually drop the struct
+        unsafe {
+            ManuallyDrop::drop(&mut my_struct);
+        }
+
+        println!("end {}", my_struct.data);
+
     }
 }
