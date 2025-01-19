@@ -21,6 +21,7 @@ impl std::fmt::Display for BTreeStoreOriented {
     }
 }
 
+#[repr(C)]
 enum BTreePageType {
     ColumnFix,
     ColumnVar,
@@ -30,6 +31,7 @@ enum BTreePageType {
     Overflow,
 }
 
+#[repr(C)]
 enum BtreePageStatus {
     Disk,
     Mem,
@@ -37,6 +39,7 @@ enum BtreePageStatus {
     Locked,
 }
 
+#[repr(C)]
 enum EvictRule {
     NotSet,
     EvictSoon,
@@ -46,6 +49,8 @@ enum EvictRule {
 /**
  * Row store Internal page.
  */
+#[repr(C)]
+#[derive(Copy, Clone)]
 struct BtreePageIntl {
     parent: *mut BTreePageRef,
     split_generation: u64,
@@ -55,6 +60,8 @@ struct BtreePageIntl {
 /**
  * Row store leaf page.
  */
+#[repr(C)]
+#[derive(Copy, Clone)]
 struct BtreePageRow {
     key: *mut (), /* key in the row store leaf page. */
 }
@@ -62,21 +69,23 @@ struct BtreePageRow {
 /**
  * Fixed-length column-store leaf page.
  */
-struct BtreePageColFix {
+#[repr(C)]
+ struct BtreePageColFix {
     fix_bitf: u8,
 }
 
 /**
  * Variable-length column-store leaf page.
  */
-struct BtreePageColVar {
+#[repr(C)]
+ struct BtreePageColVar {
 
 }
 
 #[repr(C)]
 union BtreePageContent {
-    p_row_intl: *mut BtreePageIntl,
-    p_row_leaf: *mut BtreePageRow,
+    row_intl: BtreePageIntl,
+    row_leaf: BtreePageRow,
 }
 
 // #[derive(Default)]
@@ -98,7 +107,8 @@ struct BtreePage {
 /**
  * The page index held by each internal page.
  */
-struct BTreePageIndex {
+#[repr(C)]
+ struct BTreePageIndex {
     entries: u32,
     deleted_entries: u32,
     
@@ -108,7 +118,8 @@ struct BTreePageIndex {
 /**
  * A single in-memory page and state information.
  */
-struct BTreePageRef {
+#[repr(C)]
+ struct BTreePageRef {
     page: *mut BtreePage,
     unused: u8,
     flags: u8,
@@ -116,6 +127,7 @@ struct BTreePageRef {
     page_status: BtreePageStatus, /* prefetch/reading */
 }
 
+#[repr(C)]
 struct BTree {
     store_oriented: BTreeStoreOriented,
 
@@ -186,20 +198,38 @@ impl BtreePage {
     fn btree_page_alloc(
         page_type: BTreePageType,
         alloc_entries: u32,
+        is_alloc_page_refs: bool,
     ) -> FPResult<()> {
 
-        let mut size = FP_SIZE_OF!(BtreePage);
+        // let mut size = FP_SIZE_OF!(BtreePage);
+        let mut mem_size: usize = 0;
 
         let entries;
         // let content;
 
+        // let content = BtreePageContent {
+        //     p_row_intl: ptr::null_mut(),
+        // };
+    
         let tree_page = match page_type {
             // Create tree page for row internal page.
             BTreePageType::RowIntl => {
-                let (layout, index_page, page_refs) = FP_ALLOC!{
+                let (l1, tree_page) = FP_ALLOC!{
+                    BtreePage: 1,
+                };
+
+                let (l2, page_index, page_refs) = FP_ALLOC!{
                     BTreePageIndex: 1,
                     * mut BTreePageRef: alloc_entries as usize,
                 };
+                mem_size += FP_SIZE_OF!(BTreePageIndex) + alloc_entries as usize * FP_SIZE_OF!(* mut BTreePageRef);
+                
+                unsafe {
+                    (*page_index).entries = alloc_entries;
+                    (*page_index).page_refs = page_refs;
+                    //TODO: #![feature(asm)] atomic store.
+                    (*tree_page).content.row_intl.page_index = page_index;
+                }
             }
             _ => panic!("not support"),
         };
@@ -233,7 +263,11 @@ impl BtreePage {
             entries,
             //TODO: refactor
             content: BtreePageContent {
-                p_row_intl: ptr::null_mut(),
+                row_intl: BtreePageIntl{
+                    parent: ptr::null_mut(),
+                    split_generation: 0,
+                    page_index: ptr::null_mut(),
+                },
             },
         };
 
