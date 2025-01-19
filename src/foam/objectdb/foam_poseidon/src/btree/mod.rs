@@ -2,7 +2,7 @@
 
 use std::{ptr, sync::{Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
 #[derive(Copy, Clone, Debug)]
 enum BTreeStoreOriented {
@@ -79,6 +79,7 @@ enum BtreePageContent {
 }
 
 // #[derive(Default)]
+#[repr(C)]
 struct BtreePage {
     r#type: BTreePageType,
     read_gen: EvictRule,
@@ -181,7 +182,7 @@ fn btree_open_tree_open(ctx: &mut Context) {
 fn btree_page_alloc(
     page_type: BTreePageType,
     alloc_entries: u32,
-) -> FPResult<LayoutPtr<BtreePage>> {
+) -> FPResult<()> {
 
     let mut size = FP_SIZE_OF!(BtreePage);
 
@@ -189,10 +190,18 @@ fn btree_page_alloc(
     let content;
 
     match page_type {
-        BTreePageType::RowIntl | BTreePageType::ColumnFix | BTreePageType::ColumnIntl => {},
+        BTreePageType::RowIntl | BTreePageType::ColumnFix | BTreePageType::ColumnIntl => {
+        },
         BTreePageType::RowLeaf => size += alloc_entries as usize * FP_SIZE_OF!(BtreePageRow),
         _ => panic!("not support"),
     }
+
+    // let a = FP_ALLOC!{
+    //     BTreePageType: 1
+    // }
+    // let a = FP_ALLOC!{
+    //     // i32: 1
+    // };
 
     match page_type {
         BTreePageType::RowLeaf => {
@@ -210,6 +219,8 @@ fn btree_page_alloc(
         _ => panic!("unsupport"),
     };
 
+    
+
     let page = BtreePage {
         r#type: page_type,
         read_gen: EvictRule::NotSet,
@@ -217,7 +228,9 @@ fn btree_page_alloc(
         content,
     };
 
-    Ok(page)
+
+
+    Ok(())
 }
 
 #[cfg(test)]

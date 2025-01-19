@@ -224,18 +224,29 @@ macro_rules! FP_ALLOC {
     [$($t:ty),*] => {
         FP_ALLOC!{$($t: 1),*}
     };
-    {$($t:ty: $v:expr),*} => {{
-        FP_ALLOC!($($t, $v, 
-        {
-            if $v > 1 {
-                std::alloc::Layout::array::<$t>($v).unwrap()
-            } else {
-                std::alloc::Layout::new::<$t>()
-            }
-        },
-        0usize
-        ),*)
-    }};
+    {$ft:ty: $fv:expr, $(,)? $($t:ty: $v:expr),* $(,)?} => {
+        FP_ALLOC!(
+            $ft, $fv,
+            {
+                if $fv > 1 {
+                    std::alloc::Layout::array::<$ft>($fv).unwrap()
+                } else {
+                    std::alloc::Layout::new::<$ft>()
+                }
+            },
+            0usize,
+            $($t, $v, 
+            {
+                if $v > 1 {
+                    std::alloc::Layout::array::<$t>($v).unwrap()
+                } else {
+                    std::alloc::Layout::new::<$t>()
+                }
+            },
+            0usize
+            ),*
+        )
+    };
     ($ft:ty, $fv:expr, $fl:expr, $fo:expr, $($t:ty, $v:expr, $l:expr, $o:expr),*) => {{
         let mut combined_layout: std::alloc::Layout = $fl;
         let mut i = 1usize;

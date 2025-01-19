@@ -59,7 +59,11 @@ mod tests {
 
     #[test]
     fn test_alloc_different_type() {
-        let (layout, mut pa1, pb1, pc1) = FP_ALLOC!{AAA: 1, BBB: 1, CCC: 1};
+        let (layout, mut pa1, p2) = FP_ALLOC!{
+            AAA: 1,
+            BBB: 2,
+            // CCC: 3,
+        };
         {
             //Illegal, combine layout should use dealloc.
             // let bpa1 = unsafe {
