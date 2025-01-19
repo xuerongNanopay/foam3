@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::{ptr, sync::{Arc, Weak}, task::Context};
+use std::{mem::ManuallyDrop, ptr, sync::{Arc, Weak}, task::Context};
 
 use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
@@ -50,18 +50,17 @@ enum EvictRule {
  * Row store Internal page.
  */
 #[repr(C)]
-#[derive(Copy, Clone)]
 struct BtreePageIntl {
     parent: *mut BTreePageRef,
-    split_generation: u64,
-    page_index: *mut BTreePageIndex,
+    // split_generation: u64,
+    page_index: LayoutPtr<BTreePageIndex>,
 }
 
 /**
  * Row store leaf page.
  */
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 struct BtreePageRow {
     key: *mut (), /* key in the row store leaf page. */
 }
@@ -84,8 +83,8 @@ struct BtreePageRow {
 
 #[repr(C)]
 union BtreePageContent {
-    row_intl: BtreePageIntl,
-    row_leaf: BtreePageRow,
+    row_intl: ManuallyDrop<BtreePageIntl>,
+    row_leaf: ManuallyDrop<BtreePageRow>,
 }
 
 // #[derive(Default)]
@@ -214,29 +213,43 @@ impl BtreePage {
         let tree_page = match page_type {
             // Create tree page for row internal page.
             BTreePageType::RowIntl => {
-                let (l1, tree_page) = FP_ALLOC!{
+                // Create tree page.
+                let (l1, p_tree_page) = FP_ALLOC!{
                     BtreePage: 1,
                 };
+                let mut tree_page = LayoutPtr::new(l1, p_tree_page);
 
-                let (l2, page_index, page_refs) = FP_ALLOC!{
+                // Create index for row store internal page.
+                let (l2, p_page_index, page_refs) = FP_ALLOC!{
                     BTreePageIndex: 1,
                     * mut BTreePageRef: alloc_entries,
                 };
                 mem_size += FP_SIZE_OF!(BTreePageIndex) + alloc_entries * FP_SIZE_OF!(* mut BTreePageRef);
                 
+                let mut page_index = LayoutPtr::new(l2, p_page_index);
+
                 unsafe {
                     (*page_index).entries = alloc_entries;
                     (*page_index).page_refs = page_refs;
+                    (*tree_page).content = BtreePageContent {
+                        row_intl:  ManuallyDrop::new(BtreePageIntl{
+                            parent: ptr::null_mut(),
+                            page_index: page_index,
+                        })
+                    };
                     //TODO: #![feature(asm)] atomic store. Release Boundary. Need?
-                    (*tree_page).content.row_intl.page_index = page_index;
+                    // (*tree_page).content = BtreePageContent{
+                    //     row_intl: 
+                    // };
+                    // (*tree_page).content.row_intl.page_index = page_index;
 
-                    if is_alloc_page_refs {
-                        for i in 0..alloc_entries {
-                            let c_ptr = (*page_index).page_refs.add(i);
+                    // if is_alloc_page_refs {
+                    //     for i in 0..alloc_entries {
+                    //         let c_ptr = (*page_index).page_refs.add(i);
                             
-                            mem_size += FP_SIZE_OF!(BTreePageRef)
-                        }
-                    }
+                    //         mem_size += FP_SIZE_OF!(BTreePageRef)
+                    //     }
+                    // }
                 }
             }
             _ => panic!("not support"),
@@ -265,19 +278,19 @@ impl BtreePage {
 
         
 
-        let page = BtreePage {
-            r#type: page_type,
-            read_gen: EvictRule::NotSet,
-            entries,
-            //TODO: refactor
-            content: BtreePageContent {
-                row_intl: BtreePageIntl{
-                    parent: ptr::null_mut(),
-                    split_generation: 0,
-                    page_index: ptr::null_mut(),
-                },
-            },
-        };
+        // let page = BtreePage {
+        //     r#type: page_type,
+        //     read_gen: EvictRule::NotSet,
+        //     entries,
+        //     //TODO: refactor
+        //     content: BtreePageContent {
+        //         row_intl: BtreePageIntl{
+        //             parent: ptr::null_mut(),
+        //             split_generation: 0,
+        //             page_index: ptr::null_mut(),
+        //         },
+        //     },
+        // };
 
 
 
