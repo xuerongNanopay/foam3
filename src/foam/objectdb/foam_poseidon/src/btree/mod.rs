@@ -47,9 +47,9 @@ enum EvictRule {
  * Row store Internal page.
  */
 struct BtreePageIntl {
-    parent: * const BTreePageRef,
-    // split_generation: u64,
-    // children: BtreePageChildren,
+    parent: *mut BTreePageRef,
+    split_generation: u64,
+    page_index: *mut BTreePageIndex,
 }
 
 /**
@@ -73,9 +73,10 @@ struct BtreePageColVar {
 
 }
 
-enum BtreePageContent {
-    RowIntl(BtreePageIntl),
-    RowLeaf(BtreePageRow),
+#[repr(C)]
+union BtreePageContent {
+    p_row_intl: *mut BtreePageIntl,
+    p_row_leaf: *mut BtreePageRow,
 }
 
 // #[derive(Default)]
@@ -94,24 +95,25 @@ struct BtreePage {
     // leaf_entries: u32,
 }
 
+/**
+ * The page index held by each internal page.
+ */
+struct BTreePageIndex {
+    entries: u32,
+    deleted_entries: u32,
+    
+    page_refs: *mut *mut BTreePageRef,
+}
 
 /**
  * A single in-memory page and state information.
  */
 struct BTreePageRef {
     page: *mut BtreePage,
+    unused: u8,
     flags: u8,
     
     page_status: BtreePageStatus, /* prefetch/reading */
-}
-
-/**
- * The page index held by each internal page.
- */
-struct BtreePageChildren {
-    entires: u32,
-    deleted_entries: u32,
-    indexes: Vec<BTreePageRef>,
 }
 
 struct BTree {
@@ -176,63 +178,71 @@ fn btree_open_tree_open(ctx: &mut Context) {
 
 }
 
-/**
- * Create or read a page.
- */
-fn btree_page_alloc(
-    page_type: BTreePageType,
-    alloc_entries: u32,
-) -> FPResult<()> {
+impl BtreePage {
 
-    let mut size = FP_SIZE_OF!(BtreePage);
+    /**
+     * Create or read a page.
+     */
+    fn btree_page_alloc(
+        page_type: BTreePageType,
+        alloc_entries: u32,
+    ) -> FPResult<()> {
 
-    let entries;
-    let content;
+        let mut size = FP_SIZE_OF!(BtreePage);
 
-    match page_type {
-        BTreePageType::RowIntl | BTreePageType::ColumnFix | BTreePageType::ColumnIntl => {
-        },
-        BTreePageType::RowLeaf => size += alloc_entries as usize * FP_SIZE_OF!(BtreePageRow),
-        _ => panic!("not support"),
+        let entries;
+        // let content;
+
+        let tree_page = match page_type {
+            // Create tree page for row internal page.
+            BTreePageType::RowIntl => {
+                let (layout, index_page, page_refs) = FP_ALLOC!{
+                    BTreePageIndex: 1,
+                    * mut BTreePageRef: alloc_entries as usize,
+                };
+            }
+            _ => panic!("not support"),
+        };
+
+        // let (layout, mut btree, ) = FP_ALLOC!{
+        //     BtreePage: 1,
+        //     BtreePageRow: entries,
+        // };
+
+        match page_type {
+            BTreePageType::RowLeaf => {
+                entries = alloc_entries;
+                // content = BtreePageContent::RowLeaf(BtreePageRow{
+                //     key: ptr::null_mut(),
+                // });
+            },
+            BTreePageType::RowIntl => {
+                entries = alloc_entries;
+                // content = BtreePageContent::RowIntl(BtreePageIntl{
+                //     parent: ptr::null_mut(),
+                // });
+            },
+            _ => panic!("unsupport"),
+        };
+
+        
+
+        let page = BtreePage {
+            r#type: page_type,
+            read_gen: EvictRule::NotSet,
+            entries,
+            //TODO: refactor
+            content: BtreePageContent {
+                p_row_intl: ptr::null_mut(),
+            },
+        };
+
+
+
+        Ok(())
     }
 
-    // let a = FP_ALLOC!{
-    //     BTreePageType: 1
-    // }
-    // let a = FP_ALLOC!{
-    //     // i32: 1
-    // };
-
-    match page_type {
-        BTreePageType::RowLeaf => {
-            entries = alloc_entries;
-            content = BtreePageContent::RowLeaf(BtreePageRow{
-                key: ptr::null_mut(),
-            });
-        },
-        BTreePageType::RowIntl => {
-            entries = alloc_entries;
-            content = BtreePageContent::RowIntl(BtreePageIntl{
-                parent: ptr::null_mut(),
-            });
-        },
-        _ => panic!("unsupport"),
-    };
-
-    
-
-    let page = BtreePage {
-        r#type: page_type,
-        read_gen: EvictRule::NotSet,
-        entries,
-        content,
-    };
-
-
-
-    Ok(())
 }
-
 #[cfg(test)]
 mod tests {
     use crate::{FP_SIZE_OF};
@@ -257,3 +267,33 @@ mod tests {
     }
 
 }
+
+// use std::alloc::{alloc, dealloc, Layout};
+// use std::collections::HashMap;
+// use std::sync::Mutex;
+
+// lazy_static::lazy_static! {
+//     static ref MEMORY_MAP: Mutex<HashMap<*mut u8, Layout>> = Mutex::new(HashMap::new());
+// }
+
+// fn allocate(size: usize, align: usize) -> *mut u8 {
+//     let layout = Layout::from_size_align(size, align).expect("Invalid layout");
+//     let ptr = unsafe { alloc(layout) };
+//     if ptr.is_null() {
+//         panic!("Memory allocation failed");
+//     }
+//     MEMORY_MAP.lock().unwrap().insert(ptr, layout);
+//     ptr
+// }
+
+// fn deallocate(ptr: *mut u8) {
+//     let layout = MEMORY_MAP.lock().unwrap().remove(&ptr).expect("Pointer not found");
+//     unsafe { dealloc(ptr, layout) };
+//     println!("Memory deallocated");
+// }
+
+// fn main() {
+//     let ptr = allocate(128, 16);
+//     println!("Memory allocated at: {:?}", ptr);
+//     deallocate(ptr);
+// }

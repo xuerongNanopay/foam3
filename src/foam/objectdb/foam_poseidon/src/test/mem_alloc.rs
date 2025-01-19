@@ -39,19 +39,19 @@ mod tests {
 
     #[test]
     fn test_alloc_a_buffer() {
-        let (p, l) = FP_ALLOC!(13, 16);
+        let (l, p) = FP_ALLOC!(13, 16);
         assert_eq!((p as usize)%16, 0);
-        let (p, l) = FP_ALLOC!(13);
+        let (l, p) = FP_ALLOC!(13);
         assert_eq!((p as usize)%8, 0);
     }
 
     #[test]
     fn test_alloc_single_type() {
         {
-            let (mut t, _) = FP_ALLOC!(AAA);
+            let (_, mut t) = FP_ALLOC!(AAA);
             t.i = 10;
             assert_eq!(t.i, 10);
-            let (mut t, _)  = FP_ALLOC!(AAA, 2);
+            let (_, mut t)  = FP_ALLOC!(AAA, 2);
             t[1].i = 20;
             assert_eq!(t[1].i, 20);
         }

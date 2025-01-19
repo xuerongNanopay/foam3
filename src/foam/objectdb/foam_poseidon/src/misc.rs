@@ -189,7 +189,7 @@ macro_rules! FP_ALLOC {
             std::ptr::write_bytes(ptr, 0, layout.size());
             let t = ptr as *mut $type;
             let t = Box::from_raw(t);
-            (t, layout)
+            (layout, t)
         }
     }};
     ($type:ty, $size: expr) => {{
@@ -202,7 +202,7 @@ macro_rules! FP_ALLOC {
             std::ptr::write_bytes(ptr, 0, layout.size());
             let t = ptr as *mut $type;
             let t = Vec::from_raw_parts(t, $size, $size);
-            (t, layout)
+            (layout, t)
         }
     }};
     ($size:expr, $align:expr) => {{
@@ -216,7 +216,7 @@ macro_rules! FP_ALLOC {
             std::ptr::write_bytes(ptr, 0, layout.size());
             ptr
         };
-        (ptr, final_layout)
+        (final_layout, ptr)
     }};
     ($size:expr) => {
         FP_ALLOC!($size, 8)
