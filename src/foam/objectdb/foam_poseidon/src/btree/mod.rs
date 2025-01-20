@@ -222,19 +222,11 @@ impl BtreePage {
         page_type: BTreePageType,
         alloc_entries: usize,
         is_alloc_page_refs: bool,
-    ) -> FPResult<()> {
+    ) -> FPResult<(LayoutPtr<BtreePage>)> {
 
-        // let mut size = FP_SIZE_OF!(BtreePage);
         let mut mem_size: usize = 0;
-
-        let entries;
-        // let content;
-
-        // let content = BtreePageContent {
-        //     p_row_intl: ptr::null_mut(),
-        // };
     
-        let tree_page = match page_type {
+        let tree_page: LayoutPtr<BtreePage> = match page_type {
             // Create tree page for row internal page.
             BTreePageType::RowIntl => {
                 // Create tree page.
@@ -274,50 +266,12 @@ impl BtreePage {
                         }
                     }
                 }
+                tree_page
             }
             _ => panic!("not support"),
         };
 
-        // let (layout, mut btree, ) = FP_ALLOC!{
-        //     BtreePage: 1,
-        //     BtreePageRow: entries,
-        // };
-
-        match page_type {
-            BTreePageType::RowLeaf => {
-                entries = alloc_entries;
-                // content = BtreePageContent::RowLeaf(BtreePageRow{
-                //     key: ptr::null_mut(),
-                // });
-            },
-            BTreePageType::RowIntl => {
-                entries = alloc_entries;
-                // content = BtreePageContent::RowIntl(BtreePageIntl{
-                //     parent: ptr::null_mut(),
-                // });
-            },
-            _ => panic!("unsupport"),
-        };
-
-        
-
-        // let page = BtreePage {
-        //     r#type: page_type,
-        //     read_gen: EvictRule::NotSet,
-        //     entries,
-        //     //TODO: refactor
-        //     content: BtreePageContent {
-        //         row_intl: BtreePageIntl{
-        //             parent: ptr::null_mut(),
-        //             split_generation: 0,
-        //             page_index: ptr::null_mut(),
-        //         },
-        //     },
-        // };
-
-
-
-        Ok(())
+        Ok(tree_page)
     }
 
 }
