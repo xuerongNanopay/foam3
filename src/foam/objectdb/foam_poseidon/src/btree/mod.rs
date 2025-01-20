@@ -60,7 +60,6 @@ struct BtreePageIntl {
  * Row store leaf page.
  */
 #[repr(C)]
-#[derive(Clone)]
 struct BtreePageRow {
     key: *mut (), /* key in the row store leaf page. */
 }
@@ -84,7 +83,8 @@ struct BtreePageRow {
 #[repr(C)]
 union BtreePageContent {
     row_intl: ManuallyDrop<BtreePageIntl>,
-    row_leaf: ManuallyDrop<BtreePageRow>,
+    /* no need to clean it */
+    row_leaf: *mut BtreePageRow,
 }
 
 // #[derive(Default)]
@@ -107,6 +107,18 @@ impl Drop for BtreePage {
         if let BTreePageType::RowIntl = self.r#type {
             unsafe {
                 ManuallyDrop::drop(&mut self.content.row_intl);
+            }
+        }
+        if let BTreePageType::RowLeaf = self.r#type {
+            unsafe {
+                for i in 0..self.entries {
+                    let mut p = self.content.row_leaf.add(i);
+                    if !p.is_null() {
+                        ptr::drop_in_place(p);
+                        p = ptr::null_mut();
+                    }
+    
+                }
             }
         }
     }
@@ -234,6 +246,7 @@ impl BtreePage {
                     BtreePage: 1,
                 };
                 let mut tree_page = LayoutPtr::new(l1, p_tree_page);
+                mem_size += FP_SIZE_OF!(BtreePage);
 
                 // Create index for row store internal page.
                 let (l2, p_page_index, page_refs) = FP_ALLOC!{
@@ -266,6 +279,24 @@ impl BtreePage {
                         }
                     }
                 }
+
+                tree_page
+            },
+            BTreePageType::RowLeaf => {
+                let (l1, p_tree_page, p_page_row) = FP_ALLOC!{
+                    BtreePage: 1,
+                    BtreePageRow: alloc_entries,
+                };
+                let mut tree_page = LayoutPtr::new(l1, p_tree_page);
+                mem_size += FP_SIZE_OF!(BtreePage);
+
+                unsafe {
+                    (*tree_page).content = BtreePageContent {
+                        row_leaf: p_page_row,
+                    };
+                    (*tree_page).entries= alloc_entries;
+                }
+
                 tree_page
             }
             _ => panic!("not support"),
