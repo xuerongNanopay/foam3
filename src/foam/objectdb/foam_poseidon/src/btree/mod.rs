@@ -244,7 +244,7 @@ impl BtreePage {
                 // Create tree page.
                 let (l1, p_tree_page) = FP_ALLOC!{
                     BtreePage: 1,
-                };
+                }?;
                 let mut tree_page = LayoutPtr::new(l1, p_tree_page);
                 mem_size += FP_SIZE_OF!(BtreePage);
 
@@ -252,7 +252,7 @@ impl BtreePage {
                 let (l2, p_page_index, page_refs) = FP_ALLOC!{
                     BTreePageIndex: 1,
                     LayoutPtr<BTreePageRef>: alloc_entries,
-                };
+                }?;
                 mem_size += FP_SIZE_OF!(BTreePageIndex) + alloc_entries * FP_SIZE_OF!(* mut BTreePageRef);
                 
                 let mut page_index = LayoutPtr::new(l2, p_page_index);
@@ -273,7 +273,7 @@ impl BtreePage {
                             let c_ptr: *mut LayoutPtr<BTreePageRef> = (*p_page_index).page_refs.add(i);
                             let (l, p) = FP_ALLOC!{
                                 BTreePageRef: 1,
-                            };
+                            }?;
                             *c_ptr = LayoutPtr::new(l, p);
                             mem_size += FP_SIZE_OF!(BTreePageRef);
                         }
@@ -286,7 +286,7 @@ impl BtreePage {
                 let (l1, p_tree_page, p_page_row) = FP_ALLOC!{
                     BtreePage: 1,
                     BtreePageRow: alloc_entries,
-                };
+                }?;
                 let mut tree_page = LayoutPtr::new(l1, p_tree_page);
                 mem_size += FP_SIZE_OF!(BtreePage);
 

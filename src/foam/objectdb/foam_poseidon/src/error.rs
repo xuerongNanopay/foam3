@@ -22,16 +22,10 @@ macro_rules! FP_IO_ERR_RET {
 
 #[macro_export]
 macro_rules! FP_ERR_RET {
-    // ($func:expr) => {
-    //     match $func {
-    //         Ok(o) => o,
-    //         Err(e) =>return Err(e),
-    //     }
-    // };
     ($func:expr, $e:expr) => {
         match $func {
             Ok(o) => o,
-            Err(e) =>return Err($e),
+            Err(e) => return Err($e),
         }
     };
 }

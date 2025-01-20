@@ -184,12 +184,13 @@ macro_rules! FP_ALLOC {
         unsafe {
             let ptr = std::alloc::alloc(layout);
             if ptr.is_null() {
-                panic!("Memory allocation failed");
+                Err(crate::error::FP_ALLOC_FAIL)
+            } else {
+                std::ptr::write_bytes(ptr, 0, layout.size());
+                let t = ptr as *mut $type;
+                let t = Box::from_raw(t);
+                Ok((layout, t))
             }
-            std::ptr::write_bytes(ptr, 0, layout.size());
-            let t = ptr as *mut $type;
-            let t = Box::from_raw(t);
-            (layout, t)
         }
     }};
     ($type:ty, $size: expr) => {{
@@ -197,26 +198,27 @@ macro_rules! FP_ALLOC {
         unsafe {
             let ptr = std::alloc::alloc(layout);
             if ptr.is_null() {
-                panic!("Memory allocation failed");
+                Err(crate::error::FP_ALLOC_FAIL)
+            } else {
+                std::ptr::write_bytes(ptr, 0, layout.size());
+                let t = ptr as *mut $type;
+                let t = Vec::from_raw_parts(t, $size, $size);
+                Ok((layout, t))
             }
-            std::ptr::write_bytes(ptr, 0, layout.size());
-            let t = ptr as *mut $type;
-            let t = Vec::from_raw_parts(t, $size, $size);
-            (layout, t)
         }
     }};
     ($size:expr, $align:expr) => {{
         let layout = std::alloc::Layout::from_size_align($size, $align).unwrap();
         let final_layout = layout.pad_to_align();
-        let ptr = unsafe {
+        unsafe {
             let ptr = std::alloc::alloc(final_layout);
             if ptr.is_null() {
-                panic!("Memory allocation failed");
+                Err(crate::error::FP_ALLOC_FAIL)
+            } else {
+                std::ptr::write_bytes(ptr, 0, layout.size());
+                Ok((final_layout, ptr))
             }
-            std::ptr::write_bytes(ptr, 0, layout.size());
-            ptr
-        };
-        (final_layout, ptr)
+        }
     }};
     ($size:expr) => {
         FP_ALLOC!($size, 8)
@@ -257,33 +259,31 @@ macro_rules! FP_ALLOC {
         )*
         let combined_layout = combined_layout.pad_to_align();
 
-        let ptr = unsafe {
+        unsafe {
             let ptr = std::alloc::alloc(combined_layout);
             if ptr.is_null() {
-                //TODO: wrap into custom error.
-                panic!("FP_ALLOC_TYPES Memory allocation failed");
+                Err(crate::error::FP_ALLOC_FAIL)
+            } else {
+                std::ptr::write_bytes(ptr, 0, combined_layout.size());
+
+                // println!("{:?}", offsets);
+                let mut i = 0usize;
+                Ok(unsafe {
+                    (
+                        combined_layout,
+                        {
+                            let r = ptr.add(offsets[i]) as *mut $ft;
+                            i += 1;
+                            r
+                        },
+                        $({
+                            let r = ptr.add(offsets[i]) as *mut $t;
+                            i += 1;
+                            r
+                        }),*
+                    )
+                })
             }
-            std::ptr::write_bytes(ptr, 0, combined_layout.size());
-            ptr
-        };
-
-        println!("{:?}", offsets);
-
-        let mut i = 0usize;
-        unsafe {
-            (
-                combined_layout,
-                {
-                    let r = ptr.add(offsets[i]) as *mut $ft;
-                    i += 1;
-                    r
-                },
-                $({
-                    let r = ptr.add(offsets[i]) as *mut $t;
-                    i += 1;
-                    r
-                }),*
-            )
         }
     }};
 }

@@ -39,19 +39,19 @@ mod tests {
 
     #[test]
     fn test_alloc_a_buffer() {
-        let (l, p) = FP_ALLOC!(13, 16);
+        let (l, p) = FP_ALLOC!(13, 16).unwrap();
         assert_eq!((p as usize)%16, 0);
-        let (l, p) = FP_ALLOC!(13);
+        let (l, p) = FP_ALLOC!(13).unwrap();
         assert_eq!((p as usize)%8, 0);
     }
 
     #[test]
     fn test_alloc_single_type() {
         {
-            let (_, mut t) = FP_ALLOC!(AAA);
+            let (_, mut t) = FP_ALLOC!(AAA).unwrap();
             t.i = 10;
             assert_eq!(t.i, 10);
-            let (_, mut t)  = FP_ALLOC!(AAA, 2);
+            let (_, mut t)  = FP_ALLOC!(AAA, 2).unwrap();
             t[1].i = 20;
             assert_eq!(t[1].i, 20);
         }
@@ -63,7 +63,8 @@ mod tests {
             AAA: 1,
             BBB: 2,
             // CCC: 3,
-        };
+        }.unwrap();
+        
         {
             //Illegal, combine layout should use dealloc.
             // let bpa1 = unsafe {
