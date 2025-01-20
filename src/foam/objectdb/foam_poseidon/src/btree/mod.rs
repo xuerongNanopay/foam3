@@ -127,7 +127,12 @@ impl Drop for BTreePageIndex {
     fn drop(&mut self) {
         unsafe {
             for i in 0..self.entries {
-                ptr::drop_in_place(self.page_refs.add(i));
+                let mut p = self.page_refs.add(i);
+                if !p.is_null() {
+                    ptr::drop_in_place(p);
+                    p = ptr::null_mut();
+                }
+
             }
         }
     }
@@ -260,9 +265,12 @@ impl BtreePage {
 
                     if is_alloc_page_refs {
                         for i in 0..alloc_entries {
-                            let c_ptr = (*p_page_index).page_refs.add(i);
-                            
-                            mem_size += FP_SIZE_OF!(BTreePageRef)
+                            let c_ptr: *mut LayoutPtr<BTreePageRef> = (*p_page_index).page_refs.add(i);
+                            let (l, p) = FP_ALLOC!{
+                                BTreePageRef: 1,
+                            };
+                            *c_ptr = LayoutPtr::new(l, p);
+                            mem_size += FP_SIZE_OF!(BTreePageRef);
                         }
                     }
                 }

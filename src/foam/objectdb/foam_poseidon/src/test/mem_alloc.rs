@@ -75,6 +75,8 @@ mod tests {
         }
 
         FP_DEALLOC!(pa1, layout);
+
+        let a = FP_ALLOC![AAA];
         // double alloc.
         // FP_DEALLOC!(pa1, layout);
         // let (layout, pa2, pb2, pc2) = FP_ALLOC![AAA, BBB, CCC];

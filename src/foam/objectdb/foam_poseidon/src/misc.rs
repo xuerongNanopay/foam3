@@ -221,9 +221,6 @@ macro_rules! FP_ALLOC {
     ($size:expr) => {
         FP_ALLOC!($size, 8)
     };
-    [$($t:ty),*] => {
-        FP_ALLOC!{$($t: 1),*}
-    };
     {$ft:ty: $fv:expr, $(,)? $($t:ty: $v:expr),* $(,)?} => {
         FP_ALLOC!(
             $ft, $fv,
