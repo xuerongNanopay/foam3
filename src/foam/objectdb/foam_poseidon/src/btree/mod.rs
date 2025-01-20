@@ -52,7 +52,7 @@ enum EvictRule {
 #[repr(C)]
 struct BtreePageIntl {
     parent: *mut BTreePageRef,
-    // split_generation: u64,
+    split_generation: u64,
     page_index: LayoutPtr<BTreePageIndex>,
 }
 
@@ -93,7 +93,6 @@ struct BtreePage {
     r#type: BTreePageType,
     read_gen: EvictRule,
     entries: usize, /* Leaf page entries */
-
     content: BtreePageContent,
     // row_leaf_page: BtreePageRow,
     // col_fix_leaf_page: BtreePageColFix,
@@ -103,15 +102,35 @@ struct BtreePage {
     // leaf_entries: u32,
 }
 
+impl Drop for BtreePage {
+    fn drop(&mut self) {
+        if let BTreePageType::RowIntl = self.r#type {
+            unsafe {
+                ManuallyDrop::drop(&mut self.content.row_intl);
+            }
+        }
+    }
+}
+
+
 /**
  * The page index held by each internal page.
  */
 #[repr(C)]
- struct BTreePageIndex {
+struct BTreePageIndex {
     entries: usize,
     deleted_entries: usize,
-    
-    page_refs: *mut *mut BTreePageRef,
+    page_refs: *mut LayoutPtr<BTreePageRef>,
+}
+
+impl Drop for BTreePageIndex {
+    fn drop(&mut self) {
+        unsafe {
+            for i in 0..self.entries {
+                ptr::drop_in_place(self.page_refs.add(i));
+            }
+        }
+    }
 }
 
 /**
@@ -222,7 +241,7 @@ impl BtreePage {
                 // Create index for row store internal page.
                 let (l2, p_page_index, page_refs) = FP_ALLOC!{
                     BTreePageIndex: 1,
-                    * mut BTreePageRef: alloc_entries,
+                    LayoutPtr<BTreePageRef>: alloc_entries,
                 };
                 mem_size += FP_SIZE_OF!(BTreePageIndex) + alloc_entries * FP_SIZE_OF!(* mut BTreePageRef);
                 
@@ -234,22 +253,18 @@ impl BtreePage {
                     (*tree_page).content = BtreePageContent {
                         row_intl:  ManuallyDrop::new(BtreePageIntl{
                             parent: ptr::null_mut(),
-                            page_index: page_index,
+                            split_generation: 0,
+                            page_index,
                         })
                     };
-                    //TODO: #![feature(asm)] atomic store. Release Boundary. Need?
-                    // (*tree_page).content = BtreePageContent{
-                    //     row_intl: 
-                    // };
-                    // (*tree_page).content.row_intl.page_index = page_index;
 
-                    // if is_alloc_page_refs {
-                    //     for i in 0..alloc_entries {
-                    //         let c_ptr = (*page_index).page_refs.add(i);
+                    if is_alloc_page_refs {
+                        for i in 0..alloc_entries {
+                            let c_ptr = (*p_page_index).page_refs.add(i);
                             
-                    //         mem_size += FP_SIZE_OF!(BTreePageRef)
-                    //     }
-                    // }
+                            mem_size += FP_SIZE_OF!(BTreePageRef)
+                        }
+                    }
                 }
             }
             _ => panic!("not support"),
