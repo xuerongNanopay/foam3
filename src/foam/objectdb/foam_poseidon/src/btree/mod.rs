@@ -87,43 +87,6 @@ union BtreePageContent {
     row_leaf: *mut BtreePageRow,
 }
 
-// #[derive(Default)]
-#[repr(C)]
-struct BtreePage {
-    r#type: BTreePageType,
-    read_gen: EvictRule,
-    entries: usize, /* Leaf page entries */
-    content: BtreePageContent,
-    // row_leaf_page: BtreePageRow,
-    // col_fix_leaf_page: BtreePageColFix,
-    // col_var_leaf_page: BtreePageColVar,
-
-
-    // leaf_entries: u32,
-}
-
-impl Drop for BtreePage {
-    fn drop(&mut self) {
-        if let BTreePageType::RowIntl = self.r#type {
-            unsafe {
-                ManuallyDrop::drop(&mut self.content.row_intl);
-            }
-        }
-        if let BTreePageType::RowLeaf = self.r#type {
-            unsafe {
-                for i in 0..self.entries {
-                    let mut p = self.content.row_leaf.add(i);
-                    if !p.is_null() {
-                        ptr::drop_in_place(p);
-                        p = ptr::null_mut();
-                    }
-    
-                }
-            }
-        }
-    }
-}
-
 
 /**
  * The page index held by each internal page.
@@ -191,6 +154,30 @@ struct BTree {
     // block_manager: Arc<BlockManager>
 }
 
+impl BTree {
+
+    /*
+    * Create a new empty in-memory B-tree.
+    */
+    fn new(btree: &mut BTree) {
+        let root: BtreePage;
+        let page_ref: BTreePageRef;
+
+        match btree.store_oriented {
+            BTreeStoreOriented::ColumnFix | BTreeStoreOriented::ColumnVar => {
+
+            },
+            BTreeStoreOriented::Row => {
+
+            },
+        };
+    }
+
+    fn open(ctx: &mut Context) {
+
+    }
+
+}
 /**
  * __wt_btree_open -> (__wt_blkcache_open,__wti_btree_tree_open)
  * creation = ckpt.raw.size == 0;
@@ -204,25 +191,41 @@ struct TreeCreateOpt {
 
 }
 
-/*
- * Create an empty in-memory B-tree.
- */
-fn btree_open_tree_create(btree: &mut BTree) {
-    let root: BtreePage;
-    let page_ref: BTreePageRef;
+// #[derive(Default)]
+#[repr(C)]
+struct BtreePage {
+    r#type: BTreePageType,
+    read_gen: EvictRule,
+    entries: usize, /* Leaf page entries */
+    content: BtreePageContent,
+    // row_leaf_page: BtreePageRow,
+    // col_fix_leaf_page: BtreePageColFix,
+    // col_var_leaf_page: BtreePageColVar,
 
-    match btree.store_oriented {
-        BTreeStoreOriented::ColumnFix | BTreeStoreOriented::ColumnVar => {
 
-        },
-        BTreeStoreOriented::Row => {
-
-        },
-    };
+    // leaf_entries: u32,
 }
 
-fn btree_open_tree_open(ctx: &mut Context) {
-
+impl Drop for BtreePage {
+    fn drop(&mut self) {
+        if let BTreePageType::RowIntl = self.r#type {
+            unsafe {
+                ManuallyDrop::drop(&mut self.content.row_intl);
+            }
+        }
+        if let BTreePageType::RowLeaf = self.r#type {
+            unsafe {
+                for i in 0..self.entries {
+                    let mut p = self.content.row_leaf.add(i);
+                    if !p.is_null() {
+                        ptr::drop_in_place(p);
+                        p = ptr::null_mut();
+                    }
+    
+                }
+            }
+        }
+    }
 }
 
 impl BtreePage {
@@ -230,7 +233,7 @@ impl BtreePage {
     /**
      * Create or read a page.
      */
-    fn btree_page_alloc(
+    fn new(
         page_type: BTreePageType,
         alloc_entries: usize,
         is_alloc_page_refs: bool,
@@ -282,6 +285,7 @@ impl BtreePage {
 
                 tree_page
             },
+            // Create tree page for row leaf page.
             BTreePageType::RowLeaf => {
                 let (l1, p_tree_page, p_page_row) = FP_ALLOC!{
                     BtreePage: 1,
