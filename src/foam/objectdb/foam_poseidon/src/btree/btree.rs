@@ -209,9 +209,9 @@ enum BTreeType {
 impl BTree {
 
     /*
-    * Create a new empty in-memory B-tree.
+    * Initial an empty in-memory B-tree.
     */
-    fn initial_empty(btree: &LayoutPtr<BTree>) -> FPResult<()> {
+    fn initial_empty(btree: &mut LayoutPtr<BTree>) -> FPResult<()> {
         match btree.r#type {
             BTreeType::Row => {
                 // First b-tree page(Internal).
@@ -230,6 +230,8 @@ impl BTree {
                     (*first_ref).key = BTreePageKey::RowMem(Self::init_mem_row_key("")?);
 
                 }
+
+                btree.root.page = Some(root);
             },
             _ => panic!("BTreeType does not support")
         };
