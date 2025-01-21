@@ -1,0 +1,33 @@
+#![allow(unused)]
+
+use std::{alloc::Layout, ptr, str::FromStr};
+
+use crate::{types::{FPErr, FPResult}, FP_ALLOC, FP_DEALLOC};
+
+/**
+ * In-memory internal key representation.
+ */
+#[repr(C)]
+pub(crate) struct RowKeyMem {
+    layout: Layout,
+    ptr: *mut u8,
+    // offset: u32, /* Key offset in page */
+}
+
+impl Drop for RowKeyMem {
+    fn drop(&mut self) {
+        FP_DEALLOC!(self.ptr, self.layout);
+    }
+}
+
+impl FromStr for RowKeyMem {
+    type Err = FPErr;
+
+    fn from_str(s: &str) -> FPResult<Self> {
+        let (layout, ptr) = FP_ALLOC!(s.len())?;
+        unsafe {
+            ptr::copy_nonoverlapping(s.as_ptr(), ptr, s.len());
+        }
+        Ok(RowKeyMem{layout, ptr})
+    }
+}

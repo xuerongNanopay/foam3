@@ -156,3 +156,5 @@ pub fn convert_std_io_err_to_fp_err(ioe: std::io::Error) -> FPErr {
         _ => FP_IO_UNKNOWN_ERR,
     }
 }
+
+pub const FP_BT_ROW_KEY_INIT:    FPErr = 301;

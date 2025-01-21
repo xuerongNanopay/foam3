@@ -1,8 +1,10 @@
 #![allow(unused)]
 
-use std::{mem::ManuallyDrop, ptr, sync::{atomic::{AtomicUsize, Ordering}, Arc, Weak}, task::Context};
+use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
 use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+
+use super::row::RowKeyMem;
 
 #[derive(Copy, Clone, Debug)]
 enum BTreeStoreOriented {
@@ -128,20 +130,29 @@ enum BTreePageRefType {
  */
 
  #[repr(usize)]
- enum BTreePageRefState {
+enum BTreePageRefState {
     Disk = 0,    /* Page is on disk. */
     Deleted = 1, /* Page is on disk, but deleted */
     Locked = 2,  /* Page locked for exclusive access */
     Mem = 3,     /* Page is in cache and memory */
     Split = 4,   /* Parent page split */
- }
+}
  
+/**
+ * Representation for b-tree key.
+ */
+#[repr(C)]
+enum BTreePageKey {
+    Row(*mut ()), /* row store */
+    RowMem(RowKeyMem), /* In-memory row key */
+    Col(u64),     /* column */
+}
 
 /**
  * A wrapper for BtreePage, store/keep the metadate for b-tree page.
  */
 #[repr(C)]
- struct BTreePageRef {
+struct BTreePageRef {
     page: Option<LayoutPtr<BtreePage>>,
     home: *const BtreePage,
     addr: *const (),
@@ -149,6 +160,7 @@ enum BTreePageRefType {
     r#type: BTreePageRefType,
     state: AtomicUsize,
     
+    key: BTreePageKey,
     // page_status: BtreePageStatus, /* prefetch/reading */
 }
 
@@ -215,19 +227,19 @@ impl BTree {
                     (*first_ref).addr = ptr::null();
                     (*first_ref).r#type = BTreePageRefType::Leaf;
                     (*first_ref).state.store(BTreePageRefState::Deleted as usize, Ordering::SeqCst);
+                    (*first_ref).key = BTreePageKey::RowMem(Self::init_mem_row_key("")?);
 
                 }
             },
             _ => panic!("BTreeType does not support")
         };
-        btree
+        Ok(())
     }
 
-    /**
-     * 
-     */
-    fn init_row_key() {
 
+    fn init_mem_row_key(key: &str) -> FPResult<RowKeyMem>{
+        //TODO: memory metric
+        RowKeyMem::from_str(key)
     }
 
     /*
