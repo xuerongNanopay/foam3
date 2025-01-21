@@ -15,6 +15,7 @@ impl <T> LayoutPtr<T> {
             ptr,
         }
     }
+
 }
 
 impl<T> Deref for LayoutPtr<T> {
