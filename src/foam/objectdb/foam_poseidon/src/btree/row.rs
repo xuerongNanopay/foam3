@@ -2,7 +2,28 @@
 
 use std::{alloc::Layout, ptr, str::FromStr};
 
-use crate::{types::{FPErr, FPResult}, FP_ALLOC, FP_DEALLOC};
+use crate::{types::{FPErr, FPResult}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_DEALLOC};
+
+use super::page::{PageIndex, PageRef};
+
+
+/**
+ * Row store leaf page.
+ */
+#[repr(C)]
+pub(super) struct RowLeaf {
+    key: *mut (), /* key in the row store leaf page. */
+}
+
+/**
+ * Row store Internal page.
+ */
+#[repr(C)]
+pub(super) struct RowIntl {
+    parent: *const PageRef,
+    split_generation: u64,
+    page_index: LayoutPtr<PageIndex>,
+}
 
 /**
  * In-memory internal key representation.

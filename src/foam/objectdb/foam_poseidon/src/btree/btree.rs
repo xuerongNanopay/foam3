@@ -61,7 +61,7 @@ struct BtreePageIntl {
  * Row store leaf page.
  */
 #[repr(C)]
-struct BtreePageRow {
+struct RowLeaf {
     key: *mut (), /* key in the row store leaf page. */
 }
 
@@ -85,7 +85,7 @@ struct BtreePageRow {
 union BtreePageContent {
     row_intl: ManuallyDrop<BtreePageIntl>,
     /* no need to clean it */
-    row_leaf: *mut BtreePageRow,
+    row_leaf: *mut RowLeaf,
 }
 
 
@@ -141,7 +141,7 @@ enum BTreePageRefState {
  * Representation for b-tree key.
  */
 #[repr(C)]
-enum BTreeKey {
+pub(super) enum BTreeKey {
     Row(*mut ()), /* row store */
     RowMem(RowKeyMem), /* In-memory row key */
     Col(u64),     /* column */
@@ -163,7 +163,12 @@ struct BTreePageRef {
     // page_status: BtreePageStatus, /* prefetch/reading */
 }
 
-pub const BTREE_BULK: u32 = 1 << 12;
+pub type BTreeFlag = u32;
+pub const BTREE_BULK:      BTreeFlag = 1 << 12;  /* Bulk-load */
+pub const BTREE_CLOSED:    BTreeFlag = 1 << 13;  /* Closed */
+pub const BTREE_IN_MEMORY: BTreeFlag = 1 << 14;  /* In-Memory */
+pub const BTREE_RECOVER:   BTreeFlag = 1 << 15;  /* Recover */
+pub const BTREE_VERIFY:    BTreeFlag = 1 << 16;  /* Verify */
 
 #[repr(C)]
 struct BTree {
@@ -175,7 +180,7 @@ struct BTree {
     /* Root page reference. */
     root: BTreePageRef,
 
-    flag: u32,
+    flag: BTreeFlag,
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,
@@ -208,7 +213,17 @@ enum BTreeType {
     Row,
 }
 
+/**
+ * meta data.
+ */
 impl BTree {
+
+    /*
+    * Create or reopen a btree.
+    */
+    fn new(ctx: &mut Context, flag: BTreeFlag) -> FPResult<()> {
+        Ok(())
+    }
 
     /*
     * Initial an empty in-memory B-tree.
@@ -297,13 +312,6 @@ impl BTree {
         RowKeyMem::from_str(key)
     }
 
-    /*
-    * Open an existed B-tree.
-    */
-    fn open(ctx: &mut Context) {
-
-    }
-
 }
 /**
  * __wt_btree_open -> (__wt_blkcache_open,__wti_btree_tree_open)
@@ -325,7 +333,7 @@ struct BtreePage {
     read_gen: EvictRule,
     entries: usize, /* Leaf page entries */
     content: BtreePageContent,
-    // row_leaf_page: BtreePageRow,
+    // row_leaf_page: RowLeaf,
     // col_fix_leaf_page: BtreePageColFix,
     // col_var_leaf_page: BtreePageColVar,
 
@@ -416,7 +424,7 @@ impl BtreePage {
             BTreePageType::RowLeaf => {
                 let (l1, p_tree_page, p_page_row) = FP_ALLOC!{
                     BtreePage: 1,
-                    BtreePageRow: alloc_entries,
+                    RowLeaf: alloc_entries,
                 }?;
                 let mut tree_page = LayoutPtr::new(l1, p_tree_page);
                 mem_size += FP_SIZE_OF!(BtreePage);

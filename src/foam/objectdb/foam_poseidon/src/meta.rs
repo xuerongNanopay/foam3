@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 mod table;
+mod checkpoint;
 
 pub(crate) static FP_METAFILE: &str = "FoamPoseidon.fp";
 
