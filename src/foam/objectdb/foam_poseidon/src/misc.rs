@@ -50,25 +50,25 @@ macro_rules! FP_BIT_OP {
 #[macro_export]
 macro_rules! FP_BIT_SET {
     ($value:expr, $mask:expr) => {
-        FP_BIT_OP!(SET, $value, $mask)
+        crate::FP_BIT_OP!(SET, $value, $mask)
     };
 }
 #[macro_export]
 macro_rules! FP_BIT_CLR {
     ($value:expr, $mask:expr) => {
-        FP_BIT_OP!(CLEAR, $value, $mask)
+        crate::FP_BIT_OP!(CLEAR, $value, $mask)
     };
 }
 #[macro_export]
 macro_rules! FP_BIT_TLG {
     ($value:expr, $mask:expr) => {
-        FP_BIT_OP!(TOGGLE, $value, $mask)
+        crate::FP_BIT_OP!(TOGGLE, $value, $mask)
     };
 }
 #[macro_export]
 macro_rules! FP_BIT_IS_SET {
     ($value:expr, $mask:expr) => {
-        FP_BIT_OP!(IS_SET, $value, $mask)
+        crate::FP_BIT_OP!(IS_SET, $value, $mask)
     };
 }
 

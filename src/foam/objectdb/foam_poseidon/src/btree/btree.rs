@@ -2,11 +2,10 @@
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
 use super::row::RowKeyMem;
 
-#[derive(Copy, Clone, Debug)]
 enum BTreeStoreOriented {
     ColumnFix,
     ColumnVar,
@@ -119,10 +118,10 @@ impl Drop for BTreePageIndex {
  * BTreePageRef type.
  */
 
-#[repr(C)]
+ #[repr(usize)]
 enum BTreePageRefType {
-    Internal,
-    Leaf,
+    Internal = 0,
+    Leaf = 1,
 }
 
 /**
@@ -137,7 +136,7 @@ enum BTreePageRefState {
     Mem = 3,     /* Page is in cache and memory */
     Split = 4,   /* Parent page split */
 }
- 
+
 /**
  * Representation for b-tree key.
  */
@@ -164,6 +163,8 @@ struct BTreePageRef {
     // page_status: BtreePageStatus, /* prefetch/reading */
 }
 
+pub const BTREE_BULK: u32 = 1 << 12;
+
 #[repr(C)]
 struct BTree {
     store_oriented: BTreeStoreOriented,
@@ -174,6 +175,7 @@ struct BTree {
     /* Root page reference. */
     root: BTreePageRef,
 
+    flag: u32,
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,
@@ -217,7 +219,7 @@ impl BTree {
                 // First b-tree page(Internal).
                 let mut root = BtreePage::new(BTreePageType::RowIntl, 1, true)?;
                 unsafe {
-                    // Wired root ref to page.
+                    // root page parent is root page ref.
                     (*root.content.row_intl).parent = &btree.root as *const BTreePageRef;
 
                     // Initial leaf page ref.
@@ -228,6 +230,10 @@ impl BTree {
                     (*first_ref).r#type = BTreePageRefType::Leaf;
                     (*first_ref).state.store(BTreePageRefState::Deleted as usize, Ordering::SeqCst);
                     (*first_ref).key = BTreePageKey::RowMem(Self::init_mem_row_key("")?);
+
+                }
+
+                if FP_BIT_IS_SET!(btree.flag, BTREE_BULK) {
 
                 }
 
