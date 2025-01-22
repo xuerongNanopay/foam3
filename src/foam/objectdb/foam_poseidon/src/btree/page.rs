@@ -127,7 +127,7 @@ impl Page {
     /**
      * Create or read a page.
      */
-    pub(crate) fn new(
+    pub(super) fn new(
         page_type: PageType,
         alloc_entries: usize,
         is_alloc_page_refs: bool,
@@ -203,4 +203,20 @@ impl Page {
         Ok(tree_page)
     }
 
+
+    /**
+     * Mark the page dirty.
+     */
+    pub(super) fn set_modify(&mut self) -> FPResult<()> {
+        Ok(())
+    }
+}
+
+#[repr(C)]
+pub(super) struct PageModify {
+    pub(super) first_dirty_txn_id: u64,
+
+    pub(super) last_eviction_echo: u64,
+    pub(super) last_eviction_id: u64,
+    pub(super) last_eviction_timestamp: u64,
 }
