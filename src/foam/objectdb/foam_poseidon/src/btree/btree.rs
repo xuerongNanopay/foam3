@@ -253,10 +253,17 @@ impl BTree {
     /**
      * Initial Btree root page ref.
      */
-    fn root_ref_init(btree: &mut LayoutPtr<BTree>, root: LayoutPtr<BtreePage>, is_col_store: bool) {
+    fn root_ref_init(btree: &mut LayoutPtr<BTree>, mut root: LayoutPtr<BtreePage>, is_col_store: bool) {
+
+        unsafe {
+            /* root internal page parent point to root ref in btree, another word root parent is root. */
+            (*root.content.row_intl).parent = &btree.root as *const BTreePageRef;   
+        }
+
         btree.root.page = Some(root);
         btree.root.r#type = BTreePageRefType::Internal;
         btree.root.state.store(BTreePageRefState::Mem as usize, Ordering::SeqCst);
+
 
         if is_col_store {
             btree.root.key = BTreeKey::Col(1);
