@@ -20,9 +20,9 @@ pub(super) struct RowLeaf {
  */
 #[repr(C)]
 pub(super) struct RowIntl {
-    parent: *const PageRef,
-    split_generation: u64,
-    page_index: LayoutPtr<PageIndex>,
+    pub(super) parent: *const PageRef,
+    pub(super) split_generation: u64,
+    pub(super) page_index: LayoutPtr<PageIndex>,
 }
 
 /**
