@@ -238,6 +238,7 @@ impl BTree {
                         Self::new_leaf_page(btree, &mut *first_page_ref)?;
                         (*first_page_ref).r#type = BTreePageRefType::Leaf;
                         (*first_page_ref).state.store(BTreePageRefState::Mem as usize, Ordering::SeqCst);
+                        //TODO: BtreePageModify.
                     }
 
                 }
@@ -249,6 +250,9 @@ impl BTree {
         Ok(())
     }
 
+    /**
+     * Create a leaf page for both row and column store.
+     */
     fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<BTreePageRef>) -> FPResult<()> {
 
         let page = match btree.r#type {
