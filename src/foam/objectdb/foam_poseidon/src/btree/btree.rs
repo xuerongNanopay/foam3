@@ -217,14 +217,14 @@ impl BTree {
         match btree.r#type {
             BTreeType::Row => {
                 // First b-tree page(Internal).
-                let mut root: LayoutPtr<BtreePage> = BtreePage::new(BTreePageType::RowIntl, 1, true)?;
+                let mut root_page: LayoutPtr<BtreePage> = BtreePage::new(BTreePageType::RowIntl, 1, true)?;
                 unsafe {
                     // root page parent is root page ref.
-                    (*root.content.row_intl).parent = &btree.root as *const BTreePageRef;
+                    (*root_page.content.row_intl).parent = &btree.root as *const BTreePageRef;
 
                     // Initial leaf page ref.
-                    let first_page_ref: *mut LayoutPtr<BTreePageRef> = root.content.row_intl.page_index.page_refs;
-                    (*first_page_ref).home = &*root;
+                    let first_page_ref: *mut LayoutPtr<BTreePageRef> = root_page.content.row_intl.page_index.page_refs;
+                    (*first_page_ref).home = &*root_page;
                     (*first_page_ref).page = None;
                     (*first_page_ref).addr = ptr::null();
                     (*first_page_ref).r#type = BTreePageRefType::Leaf;
@@ -243,7 +243,7 @@ impl BTree {
 
                 }
 
-                btree.root.page = Some(root);
+                Self::root_ref_init(btree, root_page, !matches!(btree.r#type,BTreeType::Row));
             },
             _ => return Err(FP_NO_SUPPORT)
         };
@@ -253,14 +253,14 @@ impl BTree {
     /**
      * Initial Btree root page ref.
      */
-    fn root_ref_init(btree: &mut LayoutPtr<BTree>, mut root: LayoutPtr<BtreePage>, is_col_store: bool) {
+    fn root_ref_init(btree: &mut LayoutPtr<BTree>, mut root_page: LayoutPtr<BtreePage>, is_col_store: bool) {
 
         unsafe {
             /* root internal page parent point to root ref in btree, another word root parent is root. */
-            (*root.content.row_intl).parent = &btree.root as *const BTreePageRef;   
+            (*root_page.content.row_intl).parent = &btree.root as *const BTreePageRef;   
         }
 
-        btree.root.page = Some(root);
+        btree.root.page = Some(root_page);
         btree.root.r#type = BTreePageRefType::Internal;
         btree.root.state.store(BTreePageRefState::Mem as usize, Ordering::SeqCst);
 
