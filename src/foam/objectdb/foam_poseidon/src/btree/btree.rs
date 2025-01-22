@@ -141,7 +141,7 @@ enum BTreePageRefState {
  * Representation for b-tree key.
  */
 #[repr(C)]
-enum BTreePageKey {
+enum BTreeKey {
     Row(*mut ()), /* row store */
     RowMem(RowKeyMem), /* In-memory row key */
     Col(u64),     /* column */
@@ -159,7 +159,7 @@ struct BTreePageRef {
     r#type: BTreePageRefType,
     state: AtomicUsize,
     
-    key: BTreePageKey,
+    key: BTreeKey,
     // page_status: BtreePageStatus, /* prefetch/reading */
 }
 
@@ -217,7 +217,7 @@ impl BTree {
         match btree.r#type {
             BTreeType::Row => {
                 // First b-tree page(Internal).
-                let mut root = BtreePage::new(BTreePageType::RowIntl, 1, true)?;
+                let mut root: LayoutPtr<BtreePage> = BtreePage::new(BTreePageType::RowIntl, 1, true)?;
                 unsafe {
                     // root page parent is root page ref.
                     (*root.content.row_intl).parent = &btree.root as *const BTreePageRef;
@@ -230,7 +230,7 @@ impl BTree {
                     (*first_page_ref).r#type = BTreePageRefType::Leaf;
                     (*first_page_ref).state.store(BTreePageRefState::Deleted as usize, Ordering::SeqCst);
                     // Give the a initial key `""`
-                    (*first_page_ref).key = BTreePageKey::RowMem(Self::init_mem_row_key("")?);
+                    (*first_page_ref).key = BTreeKey::RowMem(Self::init_mem_row_key("")?);
 
 
                     // Initial first leaf page if bulk load on.
@@ -248,6 +248,19 @@ impl BTree {
             _ => return Err(FP_NO_SUPPORT)
         };
         Ok(())
+    }
+
+    /**
+     * Initial Btree root page ref.
+     */
+    fn root_ref_init(btree: &mut LayoutPtr<BTree>, root: LayoutPtr<BtreePage>, is_col_store: bool) {
+        btree.root.page = Some(root);
+        btree.root.r#type = BTreePageRefType::Internal;
+        btree.root.state.store(BTreePageRefState::Mem as usize, Ordering::SeqCst);
+
+        if is_col_store {
+            btree.root.key = BTreeKey::Col(1);
+        }
     }
 
     /**
