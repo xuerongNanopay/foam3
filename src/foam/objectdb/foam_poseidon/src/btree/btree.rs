@@ -230,7 +230,7 @@ impl BTree {
                     (*first_page_ref).r#type = BTreePageRefType::Leaf;
                     (*first_page_ref).state.store(BTreePageRefState::Deleted as usize, Ordering::SeqCst);
                     // Give the a initial key `""`
-                    (*first_page_ref).key = BTreeKey::RowMem(Self::init_mem_row_key("")?);
+                    (*first_page_ref).key = BTreeKey::RowMem(Self::row_mem_key_init("")?);
 
 
                     // Initial first leaf page if bulk load on.
@@ -271,7 +271,7 @@ impl BTree {
     }
 
     /**
-     * Create a leaf page for both row and column store.
+     * Create a new leaf page for both row and column store.
      */
     fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<BTreePageRef>) -> FPResult<()> {
 
@@ -289,7 +289,10 @@ impl BTree {
         Ok(())
     }
 
-    fn init_mem_row_key(key: &str) -> FPResult<RowKeyMem>{
+    /**
+     * Initial a b-tree memory key.
+     */
+    fn row_mem_key_init(key: &str) -> FPResult<RowKeyMem>{
         //TODO: memory metric
         RowKeyMem::from_str(key)
     }
