@@ -4,7 +4,9 @@ use crate::types::FPErr;
 
 // Common
 pub const FP_NO_IMPL: FPErr           = -1;
-pub const FP_ILLEGAL_ARGUMENT: FPErr  = -2;
+pub const FP_NO_SUPPORT: FPErr        = -2;
+pub const FP_NO_FOUND: FPErr          = -3;
+pub const FP_ILLEGAL_ARGUMENT: FPErr  = -4;
 
 // Mem.
 pub const FP_ALLOC_FAIL: FPErr           = 1;

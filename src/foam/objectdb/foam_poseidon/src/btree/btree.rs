@@ -2,7 +2,7 @@
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, error::FP_NO_SUPPORT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
 use super::row::RowKeyMem;
 
@@ -223,27 +223,47 @@ impl BTree {
                     (*root.content.row_intl).parent = &btree.root as *const BTreePageRef;
 
                     // Initial leaf page ref.
-                    let first_ref = root.content.row_intl.page_index.page_refs;
-                    (*first_ref).home = &*root;
-                    (*first_ref).page = None;
-                    (*first_ref).addr = ptr::null();
-                    (*first_ref).r#type = BTreePageRefType::Leaf;
-                    (*first_ref).state.store(BTreePageRefState::Deleted as usize, Ordering::SeqCst);
-                    (*first_ref).key = BTreePageKey::RowMem(Self::init_mem_row_key("")?);
+                    let first_page_ref: *mut LayoutPtr<BTreePageRef> = root.content.row_intl.page_index.page_refs;
+                    (*first_page_ref).home = &*root;
+                    (*first_page_ref).page = None;
+                    (*first_page_ref).addr = ptr::null();
+                    (*first_page_ref).r#type = BTreePageRefType::Leaf;
+                    (*first_page_ref).state.store(BTreePageRefState::Deleted as usize, Ordering::SeqCst);
+                    // Give the a initial key `""`
+                    (*first_page_ref).key = BTreePageKey::RowMem(Self::init_mem_row_key("")?);
 
-                }
 
-                if FP_BIT_IS_SET!(btree.flag, BTREE_BULK) {
+                    // Initial first leaf page if bulk load on.
+                    if FP_BIT_IS_SET!(btree.flag, BTREE_BULK) {
+                        Self::new_leaf_page(btree, &mut *first_page_ref)?;
+                        (*first_page_ref).r#type = BTreePageRefType::Leaf;
+                        (*first_page_ref).state.store(BTreePageRefState::Mem as usize, Ordering::SeqCst);
+                    }
 
                 }
 
                 btree.root.page = Some(root);
             },
-            _ => panic!("BTreeType does not support")
+            _ => return Err(FP_NO_SUPPORT)
         };
         Ok(())
     }
 
+    fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<BTreePageRef>) -> FPResult<()> {
+
+        let page = match btree.r#type {
+            BTreeType::Row => {
+                BtreePage::new(BTreePageType::RowLeaf, 0, false)
+            },
+            _ => {
+                return Err(FP_NO_SUPPORT)
+            }
+        }?;
+        page_ref.page = Some(page);
+        page_ref.r#type = BTreePageRefType::Leaf;
+
+        Ok(())
+    }
 
     fn init_mem_row_key(key: &str) -> FPResult<RowKeyMem>{
         //TODO: memory metric
