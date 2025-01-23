@@ -29,7 +29,7 @@ struct CursorQueue {
  * Raw representation of the data.
  */
  pub(super) struct Item {
-    pub(super) data: Option<LayoutPtr<u8>>,
+    pub(super) data: Option<Vec<u8>>,
     pub(super) flags: u32,
 }
 
@@ -93,7 +93,7 @@ impl Cursor {
      * Set key to cursor.
      */
     pub(super) fn set_key(&mut self, keys: &[&dyn Any]) -> FPResult<()> {
-        let a = &self.key;
+        let mut buf = Item::default();
 
         /* Handle existing keys. */ 
         if self.is_key_set() {
@@ -109,11 +109,16 @@ impl Cursor {
             // only support raw bytes, string and long.
             if self.key_scheme == "b" {
                 // Only raw binary key.
-                
+                let key: &&[u8] = keys[0].downcast_ref::<&[u8]>().unwrap();
+                let mut key = (*key).to_owned();
+                key.shrink_to_fit();
+                buf.data = Some(key);
             } else if self.key_scheme == "S" {
                 // Only string key.
-                let k = keys[0];
-                let key: &&str = k.downcast_ref::<&str>().unwrap();
+                let key: &&str = keys[0].downcast_ref::<&str>().unwrap();
+                let mut key = (*key).to_owned().into_bytes();
+                key.shrink_to_fit();
+                buf.data = Some(key);
                 
             } else {
                 // Composite key.
@@ -127,5 +132,19 @@ impl Cursor {
 
     pub fn is_key_set(&self) -> bool {
         FP_BIT_IS_SET!(self.flags, CURSOR_KEY_SET)
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_string() {
+        let a = "aaa";
+        let b = a.to_owned();
+        println!("{}", b.len());
+        let c = b.into_bytes();
+        println!("{}", c.len())
     }
 }
