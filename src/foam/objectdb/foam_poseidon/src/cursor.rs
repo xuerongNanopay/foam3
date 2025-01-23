@@ -93,7 +93,6 @@ impl Cursor {
      * Set key to cursor.
      */
     pub(super) fn set_key(&mut self, keys: &[&dyn Any]) -> FPResult<()> {
-        let mut buf = Item::default();
 
         /* Handle existing keys. */ 
         if self.is_key_set() {
@@ -112,19 +111,48 @@ impl Cursor {
                 let key: &&[u8] = keys[0].downcast_ref::<&[u8]>().unwrap();
                 let mut key = (*key).to_owned();
                 key.shrink_to_fit();
-                buf.data = Some(key);
+                self.key.data = Some(key);
             } else if self.key_scheme == "S" {
                 // Only string key.
                 let key: &&str = keys[0].downcast_ref::<&str>().unwrap();
                 let mut key = (*key).to_owned().into_bytes();
                 key.shrink_to_fit();
-                buf.data = Some(key);
+                self.key.data = Some(key);
                 
             } else {
                 // Composite key.
                 //TODO: support.
                 return Err(FP_NO_SUPPORT)
             }
+        }
+
+        Ok(())
+    }
+
+    /**
+     * Set value to cursor.
+     */
+    pub(super) fn set_value(&mut self, values: &[&dyn Any]) -> FPResult<()> {
+
+        self.flags = FP_BIT_CLR!(self.flags, CURSOR_VALUE_SET);
+
+        if self.value_scheme == "b" {
+            // Only raw binary key.
+            let value: &&[u8] = values[0].downcast_ref::<&[u8]>().unwrap();
+            let mut value = (*value).to_owned();
+            value.shrink_to_fit();
+            self.value.data = Some(value);
+        } else if self.value_scheme == "S" {
+            // Only string value.
+            let value: &&str = values[0].downcast_ref::<&str>().unwrap();
+            let mut value = (*value).to_owned().into_bytes();
+            value.shrink_to_fit();
+            self.value.data = Some(value);
+            
+        } else {
+            // Composite key.
+            //TODO: support.
+            return Err(FP_NO_SUPPORT)
         }
 
         Ok(())
