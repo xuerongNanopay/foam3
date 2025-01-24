@@ -1,16 +1,20 @@
 #![allow(unused)]
 
+mod table_cursor;
+
 use std::{any::Any, ptr};
 
 use crate::{error::{FP_NO_ERR, FP_NO_IMPL, FP_NO_SUPPORT}, types::{FPErr, FPResult}, util::ptr::layout_ptr::LayoutPtr};
 
-trait CursorA {
+pub(super) trait Cursor {
     fn get_uri(&self) -> &str;
     fn get_key_scheme(&self) -> &str;
     fn get_value_scheme(&self) -> &str;
     fn get_key(&self);
     fn get_value(&self);
-    fn set_key(&self);
+    fn set_key(&self, keys: &[&dyn Any]) -> FPResult<()> {
+        Err(FP_NO_IMPL)
+    }
     fn set_value(&self);
     fn next(&self);
     fn prev(&self);
@@ -21,8 +25,8 @@ trait CursorA {
 }
 
 struct CursorQueue {
-    pub(super) prev: *mut Cursor,
-    pub(super) next: *mut Cursor,
+    pub(super) prev: *mut BaseCursor,
+    pub(super) next: *mut BaseCursor,
 }
 
 /**
@@ -40,6 +44,13 @@ impl Item {
             flags: 0,
         }
     }
+
+    pub(super) fn len(&self) -> usize {
+        if let Some(d) = &self.data {
+            d.len();
+        }
+        0
+    }
 }
 
 pub(crate) type CursorFlag = u64;
@@ -54,7 +65,7 @@ pub(crate) const CURSOR_KEY_SET:CursorFlag = CURSOR_KEY_IN | CURSOR_KEY_OUT;
 /* Value is persisted in the datasource/btree */
 pub(crate) const CURSOR_VALUE_SET:CursorFlag = CURSOR_VALUE_IN | CURSOR_VALUE_OUT;
 
-struct Cursor {
+struct BaseCursor {
     pub(super) uri: String,
     pub(super) uri_hash: u64,
     pub(super) key_scheme: String,
@@ -70,9 +81,9 @@ struct Cursor {
 
 }
 
-impl Cursor {
-    pub(super) fn default() -> Cursor {
-        Cursor {
+impl BaseCursor {
+    pub(super) fn default() -> BaseCursor {
+        BaseCursor {
             uri: "".to_owned(),
             uri_hash: 0,
             key_scheme: "".to_owned(),

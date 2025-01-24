@@ -2,6 +2,9 @@
 
 use crate::{meta, types::FPResult};
 
+struct Table {
+    
+}
 /**
  * __create_table, scheme_create.c
  * key function:
