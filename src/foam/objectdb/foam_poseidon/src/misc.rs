@@ -1,14 +1,14 @@
 #![allow(unused)]
 
-static FP_KILOBYTE: u64 = 1024;
-static FP_MEGABYTE: u64 = 1048576;
-static FP_GIGABYTE: u64 = 1073741824;
-static FP_TERABYTE: u64 = 1099511627776;
-static FP_PETABYTE: u64 = 1125899906842624;
-static FP_EXABYTE:  u64 = 1152921504606846976;
+pub static FP_KILOBYTE: usize = 1024;
+pub static FP_MEGABYTE: usize = 1048576;
+pub static FP_GIGABYTE: usize = 1073741824;
+pub static FP_TERABYTE: usize = 1099511627776;
+pub static FP_PETABYTE: usize = 1125899906842624;
+pub static FP_EXABYTE:  usize = 1152921504606846976;
 
-static FP_DAY:    u64 = 86400;
-static FP_MINITE: u64 = 60;
+pub static FP_DAY:    usize = 86400;
+pub static FP_MINITE: usize = 60;
 
 #[macro_export]
 macro_rules! FP_MIN {

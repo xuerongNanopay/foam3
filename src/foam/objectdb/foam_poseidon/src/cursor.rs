@@ -65,7 +65,7 @@ pub(crate) const CURSOR_KEY_SET:CursorFlag = CURSOR_KEY_IN | CURSOR_KEY_OUT;
 /* Value is persisted in the datasource/btree */
 pub(crate) const CURSOR_VALUE_SET:CursorFlag = CURSOR_VALUE_IN | CURSOR_VALUE_OUT;
 
-struct BaseCursor {
+pub(super) struct BaseCursor {
     pub(super) uri: String,
     pub(super) uri_hash: u64,
     pub(super) key_scheme: String,

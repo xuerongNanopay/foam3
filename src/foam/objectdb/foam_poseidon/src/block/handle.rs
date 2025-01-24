@@ -10,6 +10,16 @@ use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
+struct BlockOpenCfg {
+    allocation_size: FPFileSize,
+    alloc_first: bool,
+    os_cache_max: usize,
+    os_cache_dirty_max: usize,
+    extend_len: FPFileSize,
+    access_mode: fil::AccessMode,
+}
+
+
 /**
  * Block; reference a single file.
  * Not physical representation of page.
@@ -39,17 +49,10 @@ pub(crate) struct BlockHandle {
 }
 
 impl BlockHandle {
+    fn write_size(&self, len: usize) {
+        
+    }
 }
-
-struct BlockOpenCfg {
-    allocation_size: FPFileSize,
-    alloc_first: bool,
-    os_cache_max: usize,
-    os_cache_dirty_max: usize,
-    extend_len: FPFileSize,
-    access_mode: fil::AccessMode,
-}
-
 
 
 /**

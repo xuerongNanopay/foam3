@@ -4,9 +4,10 @@ use std::any::Any;
 
 use crate::{error::FP_NO_IMPL, types::FPResult};
 
-use super::Cursor;
+use super::{BaseCursor, Cursor};
 
 struct TableCursor {
+    base: BaseCursor,
     //TODO: scheme table
     cfg: String,
 
@@ -27,7 +28,8 @@ impl TableCursor {
         Err(FP_NO_IMPL)
     }
 
-    fn insert(&self) -> FPResult<()> {
-        Err(FP_NO_IMPL)
-    }
+    // fn insert(&self) -> FPResult<()> {
+    //     let 
+    //     Err(FP_NO_IMPL)
+    // }
 }
