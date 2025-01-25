@@ -58,7 +58,9 @@ impl BtreeCursor<'_, '_, '_> {
 
         //TODO: save cursor state.
 
+        self.is_key_within_bounds()?;
 
+        
         Ok(())
     }
 
