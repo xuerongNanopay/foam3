@@ -62,6 +62,7 @@ pub(crate) struct BTree {
     root: PageRef,
 
     pub(crate) flags: BtreeFlag,
+    
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,

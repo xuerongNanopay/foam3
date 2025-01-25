@@ -32,24 +32,38 @@ pub(crate) struct CursorQueue {
 /**
  * Raw representation of the data.
  */
- pub(crate) struct Item {
-    pub(crate) data: Option<Vec<u8>>,
+pub(crate) struct Item {
+    pub(crate) data: Vec<u8>,
     pub(crate) flags: u32,
 }
 
 impl Item {
     pub(crate) fn default() -> Item {
         Item{
-            data: None,
+            data: Vec::with_capacity(0),
             flags: 0,
         }
     }
 
     pub(crate) fn len(&self) -> usize {
-        if let Some(d) = &self.data {
-            d.len();
-        }
-        0
+        self.data.len()
+    }
+}
+
+pub(crate) trait KeyOrd {
+    fn compare(&self, a: &Item, b: &Item) -> i32;
+}
+
+/**
+ * Compare key as string.
+ */
+pub(crate) struct StringKeyOrd {
+
+}
+
+impl KeyOrd for StringKeyOrd {
+    fn compare(&self, v1: &Item, v2: &Item) -> i32 {
+        1
     }
 }
 
@@ -125,13 +139,13 @@ impl BaseCursor {
                 let key: &&[u8] = keys[0].downcast_ref::<&[u8]>().unwrap();
                 let mut key = (*key).to_owned();
                 key.shrink_to_fit();
-                self.key.data = Some(key);
+                self.key.data = key;
             } else if self.key_scheme == "S" {
                 // Only string key.
                 let key: &&str = keys[0].downcast_ref::<&str>().unwrap();
                 let mut key = (*key).to_owned().into_bytes();
                 key.shrink_to_fit();
-                self.key.data = Some(key);
+                self.key.data = key;
                 
             } else {
                 // Composite key.
@@ -155,13 +169,13 @@ impl BaseCursor {
             let value: &&[u8] = values[0].downcast_ref::<&[u8]>().unwrap();
             let mut value = (*value).to_owned();
             value.shrink_to_fit();
-            self.value.data = Some(value);
+            self.value.data = value;
         } else if self.value_scheme == "S" {
             // Only string value.
             let value: &&str = values[0].downcast_ref::<&str>().unwrap();
             let mut value = (*value).to_owned().into_bytes();
             value.shrink_to_fit();
-            self.value.data = Some(value);
+            self.value.data = value;
             
         } else {
             // Composite key.
