@@ -91,22 +91,24 @@ impl BtreeCursor<'_, '_, '_> {
      */
     fn is_key_within_bounds(&self) -> FPResult<bool> {
 
+        let mut ret= false;
+
         /* Ignore if not config */
         if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER | CURSOR_BOUND_UPPER){
-            return Ok(false);
+            return Ok(true);
         }
 
         //TODO: unlikely assert.
 
         if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER) && false {
-
+            ret = self.compare_bounds(false)?;
         }
 
         if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_UPPER) {
-            
+            ret = self.compare_bounds(true)?;
         }
 
-        Ok(false)
+        Ok(ret)
     }
 
     fn compare_bounds(&self, upper: bool) -> FPResult<bool> {
