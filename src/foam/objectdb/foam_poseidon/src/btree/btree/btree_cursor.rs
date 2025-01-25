@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, CursorFlag, Item, CURSOR_BOUND_LOWER, CURSOR_BOUND_UPPER}, dao::DAO, error::FP_NO_SUPPORT, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
+use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, CursorFlag, Item, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 
@@ -89,7 +89,7 @@ impl BtreeCursor<'_, '_, '_> {
     /**
      * Verify if a given key is in within the bounds.
      */
-    fn is_key_in_bounds(&self) -> FPResult<bool> {
+    fn is_key_within_bounds(&self) -> FPResult<bool> {
 
         /* Ignore if not config */
         if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER | CURSOR_BOUND_UPPER){
@@ -106,6 +106,53 @@ impl BtreeCursor<'_, '_, '_> {
             
         }
 
+        Ok(false)
+    }
+
+    fn compare_bounds(&self, upper: bool) -> FPResult<bool> {
+        let mut record_number_bound: u64;
+
+        if upper {
+            if matches!(self.btree.r#type, BTreeType::Row) {
+
+            } else {
+                return Err(FP_NO_IMPL);
+            }
+
+            if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
+                if matches!(self.btree.r#type, BTreeType::Row) {
+
+                } else {
+                    return Err(FP_NO_IMPL);
+                }
+            } else {
+                if matches!(self.btree.r#type, BTreeType::Row) {
+
+                } else {
+                    return Err(FP_NO_IMPL);
+                }
+            }
+        } else {
+            if matches!(self.btree.r#type, BTreeType::Row) {
+
+            } else {
+                return Err(FP_NO_IMPL);
+            }
+
+            if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
+                if matches!(self.btree.r#type, BTreeType::Row) {
+
+                } else {
+                    return Err(FP_NO_IMPL);
+                }
+            } else {
+                if matches!(self.btree.r#type, BTreeType::Row) {
+
+                } else {
+                    return Err(FP_NO_IMPL);
+                }
+            }
+        }
         Ok(false)
     }
 
