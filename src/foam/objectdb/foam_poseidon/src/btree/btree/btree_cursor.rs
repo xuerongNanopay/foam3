@@ -28,6 +28,10 @@ impl BtreeCursor<'_, '_, '_> {
      * __wt_btcur_insert
      */
     pub(super) fn insert(&self) -> FPResult<()> {
+        struct CursorState {
+
+        };
+
         //TODO: stats
         let insert_len = self.base.key.len() + self.base.value.len();
 
@@ -39,6 +43,9 @@ impl BtreeCursor<'_, '_, '_> {
 
         // Bulk-load only available before the first insert.
         self.btree_dao.get_btree().disable_bulk_load();
+
+        //TODO: support append for column stored.
+
 
 
         Ok(())
