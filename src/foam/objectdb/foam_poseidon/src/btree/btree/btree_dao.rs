@@ -1,12 +1,20 @@
 #![allow(unused)]
 
-use crate::{dao::DAO, error::FP_NO_IMPL, types::FPResult};
+use crate::{btree, dao::DAO, error::FP_NO_IMPL, types::FPResult};
 
-pub(super) struct BTreeDAO {
+use super::BTree;
 
+pub(super) struct BTreeDAO<'b> {
+    btree: &'b BTree,
 }
 
-impl DAO for BTreeDAO {
+impl BTreeDAO<'_> {
+    pub(super) fn get_btree(&self) -> &BTree {
+        self.btree
+    }
+}
+
+impl DAO for BTreeDAO<'_> {
 
     fn write_size(&self, len: usize) -> FPResult<()> {
         //TODO: limit write?

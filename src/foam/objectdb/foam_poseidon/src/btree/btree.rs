@@ -3,7 +3,7 @@
 mod btree_cursor;
 mod btree_dao;
 
-use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicUsize, Ordering}, Arc, Weak}, task::Context};
+use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
 use crate::{block::manager::BlockManager, error::FP_NO_SUPPORT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
@@ -50,6 +50,8 @@ pub const BTREE_VERIFY:    BTreeFlag = 1 << 16;  /* Verify */
 
 #[repr(C)]
 struct BTree {
+    initial: AtomicBool,
+
     store_oriented: BTreeStoreOriented,
 
     /* Store oriented: row, var length column, fix length column */
@@ -159,7 +161,7 @@ impl BTree {
     /**
      * Create a new leaf page for both row and column store.
      */
-    fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<PageRef>) -> FPResult<()> {
+    pub(super) fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<PageRef>) -> FPResult<()> {
 
         let page = match btree.r#type {
             BTreeType::Row => {
@@ -181,6 +183,15 @@ impl BTree {
     fn row_mem_key_init(key: &str) -> FPResult<RowKeyMem>{
         //TODO: memory metric
         RowKeyMem::from_str(key)
+    }
+
+    pub(super) fn disable_bulk_load(&self) {
+        if !*&self.initial.load(Ordering::Relaxed) {
+            return;
+        }
+        &self.initial.store(false, Ordering::SeqCst);
+
+        
     }
 
 }

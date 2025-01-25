@@ -7,10 +7,10 @@ use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 /**
  * Btree cursor.
  */
-pub(super) struct BtreeCursor<'a, 'b, 'd> {
+pub(super) struct BtreeCursor<'a, 'b, 'c> {
     base: &'a BaseCursor,
     btree: &'b BTree,
-    btree_dao: &'d BTreeDAO,
+    btree_dao: &'c BTreeDAO<'c>,
 
     // Date Source.
     pub(super) data_source: *mut(),
@@ -24,13 +24,23 @@ pub(super) struct BtreeCursor<'a, 'b, 'd> {
 
 
 impl BtreeCursor<'_, '_, '_> {
+    /**
+     * __wt_btcur_insert
+     */
     pub(super) fn insert(&self) -> FPResult<()> {
         //TODO: stats
         let insert_len = self.base.key.len() + self.base.value.len();
 
+        // Verify KV length.
         if matches!(self.btree.r#type, BTreeType::Row) {
-
+            self.size_check(&self.base.key)?;
         }
+        self.size_check(&self.base.value)?;
+
+        // Bulk-load only available before the first insert.
+        self.btree_dao.get_btree().disable_bulk_load();
+
+
         Ok(())
     }
 
@@ -54,6 +64,7 @@ impl BtreeCursor<'_, '_, '_> {
 
         /* Check if block hanlder can wactually write. */
         self.btree_dao.write_size(item.len())?;
+
         Ok(())
     }
 }
