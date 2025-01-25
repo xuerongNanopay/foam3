@@ -5,7 +5,7 @@ pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, cursor::KeyOrd, error::FP_NO_SUPPORT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, cursor::{CursorItem, KeyOrd}, error::FP_NO_SUPPORT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
 use super::{page::{Page, PageRef, PageRefState, PageRefType, PageType}, row::RowKeyMem};
 
@@ -63,7 +63,9 @@ pub(crate) struct BTree {
 
     pub(crate) flags: BtreeFlag,
 
-    key_order: Box<dyn KeyOrd>,
+    pub(crate) key_order: Box<dyn KeyOrd>,
+    pub(crate) lower_bound: CursorItem,
+    pub(crate) upper_bound: CursorItem,
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,

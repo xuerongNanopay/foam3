@@ -32,14 +32,14 @@ pub(crate) struct CursorQueue {
 /**
  * Raw representation of the data.
  */
-pub(crate) struct Item {
+pub(crate) struct CursorItem {
     pub(crate) data: Vec<u8>,
     pub(crate) flags: u32,
 }
 
-impl Item {
-    pub(crate) fn default() -> Item {
-        Item{
+impl CursorItem {
+    pub(crate) fn default() -> CursorItem {
+        CursorItem{
             data: Vec::with_capacity(0),
             flags: 0,
         }
@@ -51,7 +51,7 @@ impl Item {
 }
 
 pub(crate) trait KeyOrd {
-    fn compare(&self, a: &Item, b: &Item) -> i32;
+    fn compare(&self, a: &CursorItem, b: &CursorItem) -> i32;
 }
 
 /**
@@ -62,7 +62,7 @@ pub(crate) struct StringKeyOrd {
 }
 
 impl KeyOrd for StringKeyOrd {
-    fn compare(&self, v1: &Item, v2: &Item) -> i32 {
+    fn compare(&self, v1: &CursorItem, v2: &CursorItem) -> i32 {
         let l1 = v1.data.len() as i32;
         let l2 = v1.data.len() as i32;
         if v1.data.len() == 0 || v2.data.len() == 0 {
@@ -104,8 +104,8 @@ pub(crate) struct BaseCursor {
     pub(crate) record_no: u64, /*  */
     /*TODO: real handle*/
 
-    pub(crate) key: Item,
-    pub(crate) value: Item,
+    pub(crate) key: CursorItem,
+    pub(crate) value: CursorItem,
     pub(crate) save_err: FPErr,
 
 }
@@ -123,8 +123,8 @@ impl BaseCursor {
                 next: ptr::null_mut(),
             },
             record_no: 0,
-            key: Item::default(),
-            value: Item::default(),
+            key: CursorItem::default(),
+            value: CursorItem::default(),
             save_err: FP_NO_ERR,
         }
     }

@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, CursorFlag, Item, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
+use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, CursorFlag, CursorItem, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 
@@ -65,7 +65,7 @@ impl BtreeCursor<'_, '_, '_> {
     /**
      * Check if a insert item is too large. 
      */
-    fn size_check(&self, item: &Item) -> FPResult<()> {
+    fn size_check(&self, item: &CursorItem) -> FPResult<()> {
 
         if !matches!(self.btree.r#type, BTreeType::ColumnFix) {
             //see: __cursor_size_chk
@@ -111,29 +111,31 @@ impl BtreeCursor<'_, '_, '_> {
 
     fn compare_bounds(&self, upper: bool) -> FPResult<bool> {
         let mut record_number_bound: u64;
-
+        let mut cmp: i32;
         if upper {
             if matches!(self.btree.r#type, BTreeType::Row) {
-
+                cmp = self.btree.key_order.compare(&self.base.key, &self.btree.upper_bound);
             } else {
+                //TODO: column.
                 return Err(FP_NO_IMPL);
             }
 
             if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
                 if matches!(self.btree.r#type, BTreeType::Row) {
-
+                    return Ok(cmp > 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
             } else {
                 if matches!(self.btree.r#type, BTreeType::Row) {
-
+                    return Ok(cmp >= 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
             }
         } else {
             if matches!(self.btree.r#type, BTreeType::Row) {
+                cmp = self.btree.key_order.compare(&self.base.key, &self.btree.lower_bound);
 
             } else {
                 return Err(FP_NO_IMPL);
@@ -141,13 +143,13 @@ impl BtreeCursor<'_, '_, '_> {
 
             if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
                 if matches!(self.btree.r#type, BTreeType::Row) {
-
+                    return Ok(cmp < 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
             } else {
                 if matches!(self.btree.r#type, BTreeType::Row) {
-
+                    return Ok(cmp <= 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
