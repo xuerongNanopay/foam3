@@ -8,7 +8,7 @@ use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
  * Btree cursor.
  */
 pub(crate) struct BtreeCursor<'a, 'b, 'c> {
-    base: &'a BaseCursor,
+    pub(crate) base: &'a BaseCursor,
     pub(crate) btree: &'b BTree,
     btree_dao: &'c BTreeDAO<'c>,
 
