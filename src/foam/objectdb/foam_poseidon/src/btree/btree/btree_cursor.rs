@@ -4,15 +4,21 @@ use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, CursorFlag, Cursor
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 
-#[derive(Default)]
 struct BtreeCursorState {
+    key: CursorItem,
+    value: CursorItem,
     record_number: u64,
     flags: CursorFlag
 }
 
 impl BtreeCursorState {
     fn from_cursor(cursor: &BaseCursor) -> BtreeCursorState {
-        BtreeCursorState::default()
+        BtreeCursorState {
+            record_number: cursor.record_number,
+            flags: cursor.flags,
+            key: cursor.key.clone(),
+            value: cursor.value.clone(),
+        }
     }
 }
 
@@ -40,7 +46,7 @@ impl BtreeCursor<'_, '_, '_> {
      */
     pub(crate) fn insert(&self) -> FPResult<()> {
 
-        let mut save_state: BtreeCursorState = BtreeCursorState::default();
+        let mut save_state: BtreeCursorState;
 
         //TODO: stats
         let insert_len = self.base.key.len() + self.base.value.len();
@@ -162,4 +168,7 @@ impl BtreeCursor<'_, '_, '_> {
         Ok(false)
     }
 
+    fn save_cursor_state(&self) -> BtreeCursorState {
+        BtreeCursorState::from_cursor(&self.base)
+    }
 }

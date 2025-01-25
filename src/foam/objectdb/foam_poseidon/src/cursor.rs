@@ -32,6 +32,7 @@ pub(crate) struct CursorQueue {
 /**
  * Raw representation of the data.
  */
+#[derive(Clone)]
 pub(crate) struct CursorItem {
     pub(crate) data: Vec<u8>,
     pub(crate) flags: u32,
@@ -101,7 +102,7 @@ pub(crate) struct BaseCursor {
     pub(crate) value_scheme: String,
     pub(crate) flags: CursorFlag,
     pub(crate) queue: CursorQueue,
-    pub(crate) record_no: u64, /*  */
+    pub(crate) record_number: u64, /*  */
     /*TODO: real handle*/
 
     pub(crate) key: CursorItem,
@@ -122,7 +123,7 @@ impl BaseCursor {
                 prev: ptr::null_mut(),
                 next: ptr::null_mut(),
             },
-            record_no: 0,
+            record_number: 0,
             key: CursorItem::default(),
             value: CursorItem::default(),
             save_err: FP_NO_ERR,
