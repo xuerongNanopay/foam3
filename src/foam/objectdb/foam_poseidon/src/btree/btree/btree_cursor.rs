@@ -1,36 +1,46 @@
 #![allow(unused)]
 
-use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, Item}, dao::DAO, error::FP_NO_SUPPORT, misc::FP_GIGABYTE, types::FPResult};
+use crate::{btree::FP_BTREE_MAX_KV_SIZE, cursor::{BaseCursor, CursorFlag, Item, CURSOR_BOUND_LOWER, CURSOR_BOUND_UPPER}, dao::DAO, error::FP_NO_SUPPORT, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 
 /**
  * Btree cursor.
  */
-pub(super) struct BtreeCursor<'a, 'b, 'c> {
+pub(crate) struct BtreeCursor<'a, 'b, 'c> {
     base: &'a BaseCursor,
-    btree: &'b BTree,
+    pub(crate) btree: &'b BTree,
     btree_dao: &'c BTreeDAO<'c>,
 
     // Date Source.
-    pub(super) data_source: *mut(),
+    pub(crate) data_source: *mut(),
 
     /* Pointer may be better options */
-    pub(super) cur_page: *mut PageRef,
-    pub(super) slot: u32,
+    pub(crate) cur_page: *mut PageRef,
+    pub(crate) slot: u32,
     
-    flags: u32,
 }
 
+#[derive(Default)]
+struct CursorState {
+    record_number: u64,
+    flags: CursorFlag
+}
+
+impl CursorState {
+    fn from_cursor(cursor: &BaseCursor) -> CursorState {
+        CursorState::default()
+    }
+}
 
 impl BtreeCursor<'_, '_, '_> {
+
     /**
      * __wt_btcur_insert
      */
-    pub(super) fn insert(&self) -> FPResult<()> {
-        struct CursorState {
+    pub(crate) fn insert(&self) -> FPResult<()> {
 
-        };
+        let mut save_state: CursorState = CursorState::default();
 
         //TODO: stats
         let insert_len = self.base.key.len() + self.base.value.len();
@@ -46,6 +56,7 @@ impl BtreeCursor<'_, '_, '_> {
 
         //TODO: support append for column stored.
 
+        //TODO: save cursor state.
 
 
         Ok(())
@@ -74,4 +85,28 @@ impl BtreeCursor<'_, '_, '_> {
 
         Ok(())
     }
+
+    /**
+     * Verify if a given key is in within the bounds.
+     */
+    fn is_key_in_bounds(&self) -> FPResult<bool> {
+
+        /* Ignore if not config */
+        if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER | CURSOR_BOUND_UPPER){
+            return Ok(false);
+        }
+
+        //TODO: unlikely assert.
+
+        if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_LOWER) && false {
+
+        }
+
+        if FP_BIT_IS_SET!(self.base.flags, CURSOR_BOUND_UPPER) {
+            
+        }
+
+        Ok(false)
+    }
+
 }

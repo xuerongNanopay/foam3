@@ -1,7 +1,7 @@
 #![allow(unused)]
 
-mod btree_cursor;
-mod btree_dao;
+pub mod btree_cursor;
+pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
@@ -27,14 +27,14 @@ impl std::fmt::Display for BTreeStoreOriented {
 }
 
 #[repr(C)]
-enum BTreeType {
+pub(crate) enum BTreeType {
     ColumnFix,
     ColumnVar,
     Row,
 }
 
 #[repr(C)]
-pub(super) enum BTreeKey {
+pub(crate) enum BTreeKey {
     Row(*mut ()), /* row store */
     RowMem(RowKeyMem), /* In-memory row key */
     Col(u64),     /* column */
@@ -50,13 +50,13 @@ pub const BTREE_RECOVER:   BtreeFlag = 1 << 15;  /* Recover */
 pub const BTREE_VERIFY:    BtreeFlag = 1 << 16;  /* Verify */
 
 #[repr(C)]
-struct BTree {
+pub(crate) struct BTree {
     initial: AtomicBool,
 
     store_oriented: BTreeStoreOriented,
 
     /* Store oriented: row, var length column, fix length column */
-    r#type: BTreeType,
+    pub(crate) r#type: BTreeType,
 
     /* Root page reference. */
     root: PageRef,
@@ -162,7 +162,7 @@ impl BTree {
     /**
      * Create a new leaf page for both row and column store.
      */
-    pub(super) fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<PageRef>) -> FPResult<()> {
+    pub(crate) fn new_leaf_page(btree: & LayoutPtr<BTree>, page_ref: &mut LayoutPtr<PageRef>) -> FPResult<()> {
 
         let page = match btree.r#type {
             BTreeType::Row => {
@@ -186,7 +186,7 @@ impl BTree {
         RowKeyMem::from_str(key)
     }
 
-    pub(super) fn disable_bulk_load(&self) {
+    pub(crate) fn disable_bulk_load(&self) {
         if !*&self.initial.load(Ordering::Relaxed) {
             return;
         }

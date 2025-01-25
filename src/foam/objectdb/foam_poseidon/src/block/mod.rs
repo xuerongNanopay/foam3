@@ -9,7 +9,7 @@ pub mod cache;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
-pub(super) const FP_BLOCK_HEADER_LEN: usize = 30;
+pub(crate) const FP_BLOCK_HEADER_LEN: usize = 30;
 /**
  * Each .fp file has one FileHeader
  */

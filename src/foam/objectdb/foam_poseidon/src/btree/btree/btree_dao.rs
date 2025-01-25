@@ -4,12 +4,12 @@ use crate::{btree, dao::DAO, error::FP_NO_IMPL, types::FPResult};
 
 use super::BTree;
 
-pub(super) struct BTreeDAO<'b> {
+pub(crate) struct BTreeDAO<'b> {
     btree: &'b BTree,
 }
 
 impl BTreeDAO<'_> {
-    pub(super) fn get_btree(&self) -> &BTree {
+    pub(crate) fn get_btree(&self) -> &BTree {
         self.btree
     }
 }

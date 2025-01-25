@@ -11,7 +11,7 @@ use super::page::{PageIndex, PageRef};
  * Row store leaf page.
  */
 #[repr(C)]
-pub(super) struct RowLeaf {
+pub(crate) struct RowLeaf {
     key: *mut (), /* key in the row store leaf page. */
 }
 
@@ -19,10 +19,10 @@ pub(super) struct RowLeaf {
  * Row store Internal page.
  */
 #[repr(C)]
-pub(super) struct RowIntl {
-    pub(super) parent: *const PageRef,
-    pub(super) split_generation: u64,
-    pub(super) page_index: LayoutPtr<PageIndex>,
+pub(crate) struct RowIntl {
+    pub(crate) parent: *const PageRef,
+    pub(crate) split_generation: u64,
+    pub(crate) page_index: LayoutPtr<PageIndex>,
 }
 
 /**

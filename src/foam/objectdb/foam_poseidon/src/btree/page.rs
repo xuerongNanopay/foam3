@@ -11,13 +11,13 @@ use super::{btree::BTreeKey, row::{RowIntl, RowKeyMem, RowLeaf}};
  */
 
  #[repr(usize)]
-pub(super) enum PageRefType {
+pub(crate) enum PageRefType {
     Internal = 0,
     Leaf = 1,
 }
 
  #[repr(usize)]
- pub(super) enum PageRefState {
+ pub(crate) enum PageRefState {
     Disk = 0,    /* Page is on disk. */
     Deleted = 1, /* Page is on disk, but deleted */
     Locked = 2,  /* Page locked for exclusive access */
@@ -29,35 +29,35 @@ pub(super) enum PageRefType {
  * A wrapper for page, store/keep the metadate for b-tree page.
  */
 #[repr(C)]
-pub(super) struct PageRef {
-    pub(super) page: Option<LayoutPtr<Page>>,
-    pub(super) home: *const Page,
-    pub(super) addr: *const (),
-    pub(super) unused: u8,
-    pub(super) r#type: PageRefType,
-    pub(super) state: AtomicUsize,
+pub(crate) struct PageRef {
+    pub(crate) page: Option<LayoutPtr<Page>>,
+    pub(crate) home: *const Page,
+    pub(crate) addr: *const (),
+    pub(crate) unused: u8,
+    pub(crate) r#type: PageRefType,
+    pub(crate) state: AtomicUsize,
     
-    pub(super) key: BTreeKey,
+    pub(crate) key: BTreeKey,
     // page_status: pageStatus, /* prefetch/reading */
 }
 
 
 
 #[repr(C)]
-pub(super) union PageContent {
-    pub(super) row_intl: ManuallyDrop<RowIntl>,
+pub(crate) union PageContent {
+    pub(crate) row_intl: ManuallyDrop<RowIntl>,
     /* no need to clean it */
-    pub(super) row_leaf: *mut RowLeaf,
+    pub(crate) row_leaf: *mut RowLeaf,
 }
 
 /**
  * The page index held by each internal page.
  */
 #[repr(C)]
-pub(super) struct PageIndex {
-    pub(super) entries: usize,
-    pub(super) deleted_entries: usize,
-    pub(super) page_refs: *mut LayoutPtr<PageRef>,
+pub(crate) struct PageIndex {
+    pub(crate) entries: usize,
+    pub(crate) deleted_entries: usize,
+    pub(crate) page_refs: *mut LayoutPtr<PageRef>,
 }
 
 impl Drop for PageIndex {
@@ -77,7 +77,7 @@ impl Drop for PageIndex {
 
 
 #[repr(C)]
-pub(super) enum PageType {
+pub(crate) enum PageType {
     ColumnFix,
     ColumnVar,
     ColumnIntl,
@@ -87,11 +87,11 @@ pub(super) enum PageType {
 }
 
 #[repr(C)]
-pub(super) struct Page {
-    pub(super) r#type: PageType,
+pub(crate) struct Page {
+    pub(crate) r#type: PageType,
     // read_gen: EvictRule,
-    pub(super) entries: usize, /* Leaf page entries */
-    pub(super) content: PageContent,
+    pub(crate) entries: usize, /* Leaf page entries */
+    pub(crate) content: PageContent,
     // row_leaf_page: BtreePageRow,
     // col_fix_leaf_page: BtreePageColFix,
     // col_var_leaf_page: BtreePageColVar,
@@ -127,7 +127,7 @@ impl Page {
     /**
      * Create or read a page.
      */
-    pub(super) fn new(
+    pub(crate) fn new(
         page_type: PageType,
         alloc_entries: usize,
         is_alloc_page_refs: bool,
@@ -207,16 +207,16 @@ impl Page {
     /**
      * Mark the page dirty.
      */
-    pub(super) fn set_modify(&mut self) -> FPResult<()> {
+    pub(crate) fn set_modify(&mut self) -> FPResult<()> {
         Ok(())
     }
 }
 
 #[repr(C)]
-pub(super) struct PageModify {
-    pub(super) first_dirty_txn_id: u64,
+pub(crate) struct PageModify {
+    pub(crate) first_dirty_txn_id: u64,
 
-    pub(super) last_eviction_echo: u64,
-    pub(super) last_eviction_id: u64,
-    pub(super) last_eviction_timestamp: u64,
+    pub(crate) last_eviction_echo: u64,
+    pub(crate) last_eviction_id: u64,
+    pub(crate) last_eviction_timestamp: u64,
 }
