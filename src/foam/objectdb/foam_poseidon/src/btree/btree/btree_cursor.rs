@@ -2,7 +2,7 @@
 
 use std::ptr;
 
-use crate::{btree::{BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
+use crate::{btree::{BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_CLR, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 
@@ -220,6 +220,7 @@ impl BtreeCursor<'_, '_, '_> {
         self.cur_insert = ptr::null_mut();
         self.cur_insert_list = ptr::null_mut();
 
+        FP_BIT_CLR!(self.flags, BTREE_CURSOR_POSITION_MASK);
         Ok(())
     }
 

@@ -143,7 +143,7 @@ impl ICursor {
             //TODO: temp save existing key.
         }
 
-        self.flags = FP_BIT_CLR!(self.flags, CURSOR_KEY_SET);
+        FP_BIT_CLR!(self.flags, CURSOR_KEY_SET);
 
         if self.key_scheme.starts_with("r") {
             //TODO: column store.
@@ -178,7 +178,7 @@ impl ICursor {
      */
     pub(crate) fn set_value(&mut self, values: &[&dyn Any]) -> FPResult<()> {
 
-        self.flags = FP_BIT_CLR!(self.flags, CURSOR_VALUE_SET);
+        FP_BIT_CLR!(self.flags, CURSOR_VALUE_SET);
 
         if self.value_scheme == "b" {
             // Only raw binary key.

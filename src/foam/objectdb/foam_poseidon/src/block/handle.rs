@@ -50,7 +50,7 @@ pub(crate) struct BlockHandle {
 
 impl BlockHandle {
     fn write_size(&self, len: usize) {
-        
+
     }
 }
 
@@ -76,16 +76,16 @@ fn open(
     let mut flags = 0u32;
 
     match default_cfg.access_mode {
-        AccessMode::Random => flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
-        AccessMode::Sequential => flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
+        AccessMode::Random => FP_BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_RAND),
+        AccessMode::Sequential => FP_BIT_SET!(flags, fil::FP_FS_OPEN_ACCESS_SEQ)
     }
 
     if fixed {
-        flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
+        FP_BIT_SET!(flags, fil::FP_FS_OPEN_FIXED);
     }
 
     if readonly {
-        flags = FP_BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
+        FP_BIT_SET!(flags, fil::FP_FS_OPEN_READONLY);
     }
 
     let file_handle = file_system.open(filename, FileType::Data, flags)?;
