@@ -1,6 +1,8 @@
 #![allow(unused)]
 
-use crate::{btree::{FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
+use std::ptr;
+
+use crate::{btree::{BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
 
@@ -38,6 +40,9 @@ pub(crate) struct BtreeCursor<'a, 'b, 'c> {
     pub(crate) slot: u32,
     
     pub(crate) record_number: u64,
+
+    pub(crate) cur_insert_list: *mut BtreeInsertList,
+    pub(crate) cur_insert: *mut BtreeInsert,
 }
 
 impl BtreeCursor<'_, '_, '_> {
@@ -192,7 +197,11 @@ impl BtreeCursor<'_, '_, '_> {
      */
     fn clear_position(&mut self) -> FPResult<()> {
         self.record_number = FP_RECORD_NUMBER_OOB;
-        Err(FP_NO_IMPL)
+
+        self.cur_insert = ptr::null_mut();
+        self.cur_insert_list = ptr::null_mut();
+
+        Ok(())
     }
 
     fn save_cursor_state(&self) -> BtreeCursorState {
