@@ -2,9 +2,9 @@
 
 use std::{mem::ManuallyDrop, ptr, sync::atomic::AtomicUsize};
 
-use crate::{types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+use crate::{error::FP_ILLEGAL_ARGUMENT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
-use super::{btree::BTreeKey, row::{RowIntl, RowKeyMem, RowLeaf}};
+use super::{btree::BTreeKey, row::{RowKeyMem, RowLeaf}};
 
 /**
  * PageRef type.
@@ -41,17 +41,26 @@ pub(crate) struct PageRef {
     // page_status: pageStatus, /* prefetch/reading */
 }
 
+/**
+ * Row store Internal page.
+ */
+#[repr(C)]
+pub(crate) struct BtreeInternal {
+    pub(crate) parent: *const PageRef,
+    pub(crate) split_generation: u64,
+    pub(crate) page_index: LayoutPtr<PageIndex>,
+}
 
 
 #[repr(C)]
 pub(crate) union PageContent {
-    pub(crate) row_intl: ManuallyDrop<RowIntl>,
+    pub(crate) internal: ManuallyDrop<BtreeInternal>,
     /* no need to clean it */
     pub(crate) row_leaf: *mut RowLeaf,
 }
 
 /**
- * The page index held by each internal page.
+ * The page index held by each BtreeInternal page.
  */
 #[repr(C)]
 pub(crate) struct PageIndex {
@@ -81,7 +90,7 @@ pub(crate) enum PageType {
     ColumnFix,
     ColumnVar,
     ColumnIntl,
-    RowIntl,
+    Internal,
     RowLeaf,
     Overflow,
 }
@@ -102,9 +111,9 @@ pub(crate) struct Page {
 
 impl Drop for Page {
     fn drop(&mut self) {
-        if let PageType::RowIntl = self.r#type {
+        if let PageType::Internal = self.r#type {
             unsafe {
-                ManuallyDrop::drop(&mut self.content.row_intl);
+                ManuallyDrop::drop(&mut self.content.internal);
             }
         }
         if let PageType::RowLeaf = self.r#type {
@@ -136,8 +145,8 @@ impl Page {
         let mut mem_size: usize = 0;
     
         let tree_page: LayoutPtr<Page> = match page_type {
-            // Create tree page for row internal page.
-            PageType::RowIntl => {
+            // Create tree page for row BtreeInternal page.
+            PageType::Internal => {
                 // Create tree page.
                 let (l1, p_tree_page) = FP_ALLOC!{
                     Page: 1,
@@ -145,7 +154,7 @@ impl Page {
                 let mut tree_page = LayoutPtr::new(l1, p_tree_page);
                 mem_size += FP_SIZE_OF!(Page);
 
-                // Create index for row store internal page.
+                // Create index for row store BtreeInternal page.
                 let (l2, p_page_index, page_refs) = FP_ALLOC!{
                     PageIndex: 1,
                     LayoutPtr<PageRef>: alloc_entries,
@@ -158,7 +167,7 @@ impl Page {
                     page_index.entries = alloc_entries;
                     page_index.page_refs = page_refs;
                     tree_page.content = PageContent {
-                        row_intl:  ManuallyDrop::new(RowIntl{
+                        internal:  ManuallyDrop::new(BtreeInternal{
                             parent: ptr::null_mut(),
                             split_generation: 0,
                             page_index,
@@ -203,6 +212,13 @@ impl Page {
         Ok(tree_page)
     }
 
+    pub(crate) fn get_page_index(&self) -> FPResult<()> {
+        if !matches!(self.r#type, PageType::ColumnIntl) || !matches!(self.r#type, PageType::Internal) {
+            return Err(FP_ILLEGAL_ARGUMENT);
+        }
+        // self.content.BtreeInternal
+        Ok(())
+    }
 
     /**
      * Mark the page dirty.

@@ -2,9 +2,9 @@
 
 use std::ptr;
 
-use crate::{btree::{BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, FP_BIT_CLR, FP_BIT_IS_SET};
+use crate::{btree::{page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_BTREE_PRIMITIVE_KEY_MAX_LEN, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET};
 
-use super::{btree_dao::BTreeDAO, BTree, BTreeType, PageRef};
+use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
 
 struct BtreeCursorState {
     key: CursorItem,
@@ -45,7 +45,7 @@ pub const BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag =
  */
 pub(crate) struct BtreeCursor<'a, 'b, 'c> {
     pub(crate) icur: &'a ICursor,
-    pub(crate) btree: &'b BTree,
+    pub(crate) btree: &'b mut BTree,
     btree_dao: &'c BTreeDAO<'c>,
 
     // Date Source.
@@ -61,6 +61,8 @@ pub(crate) struct BtreeCursor<'a, 'b, 'c> {
     pub(crate) cur_insert: *mut BtreeInsert,
 
     pub(crate) flags: BtreeCursorFlag,
+
+    pub(crate) page_ref: *mut PageRef,
 }
 
 impl BtreeCursor<'_, '_, '_> {
@@ -68,7 +70,7 @@ impl BtreeCursor<'_, '_, '_> {
     /**
      * __wt_btcur_insert
      */
-    pub(crate) fn insert(&self) -> FPResult<()> {
+    pub(crate) fn insert(&mut self) -> FPResult<()> {
 
         let mut save_state: BtreeCursorState;
 
@@ -93,6 +95,18 @@ impl BtreeCursor<'_, '_, '_> {
 
         save_state = self.save_cursor_state();
 
+        self.init(true);
+
+        match self.btree.r#type {
+            BTreeType::Row => {
+                //1. search row.
+                //2. fail if duplicate if duplicate not allow.
+                //3. modify row.
+            },
+            _ => {
+                return Err(FP_NO_IMPL)
+            }
+        }
 
         Ok(())
     }
@@ -198,17 +212,35 @@ impl BtreeCursor<'_, '_, '_> {
     /**
      * Initial cursor.
      */
-    fn init(&self, reenter: bool) -> FPResult<()> {
+    fn init(&mut self, reenter: bool) -> FPResult<()> {
+
+        if reenter {
+            self.reset()?;
+        }
+
+
         Ok(())
+        
     }
 
     /**
      * Reset cursor.
+     * __cursor_reset
      */
     fn reset(&mut self) -> FPResult<()> {
         self.clear_position()?;
 
-        Err(FP_NO_IMPL)
+        /* Deactive the cursor. */
+        if FP_BIT_IS_SET!(self.flags, BTREE_CURSOR_ACTIVE) {
+            FP_BIT_CLR!(self.flags, BTREE_CURSOR_ACTIVE)
+        }
+
+        if self.page_ref.is_null() {
+            return Ok(())
+        }
+
+        //TODO: more
+        Ok(())
     }
 
     /**
@@ -221,7 +253,57 @@ impl BtreeCursor<'_, '_, '_> {
         self.cur_insert_list = ptr::null_mut();
 
         FP_BIT_CLR!(self.flags, BTREE_CURSOR_POSITION_MASK);
+
         Ok(())
+    }
+
+    /**
+     * Row-store search from a cursor.
+     * __cursor_row_search, __wt_row_search
+     */
+    fn row_search(&mut self, insert: bool, leaf_safe: bool) -> FPResult<Option<*mut PageRef>> {
+        //TODO: page lock/resource generation manage.
+
+        // let mut current: *mut PageRef = ptr::null_mut();
+
+        self.clear_position();
+
+        //TODO: support column append.
+
+        /* Search b-tree from the root */
+        let current: Option<&PageRef> = Some(&self.btree.root);
+        let current: &PageRef = &self.btree.root;
+        let mut pindex: Option<&PageIndex> = None;
+        let mut parent_pindex: Option<&PageIndex> = None;
+        let mut page: &LayoutPtr<Page>;
+        // let current = &mut self.btree.root as *mut PageRef;
+        // let mut pindex: *mut PageIndex = ptr::null_mut();
+        // let mut parent_pindex: *mut PageIndex = ptr::null_mut();
+        let depth: i32 = 2;
+
+        let key = &self.icur.key;
+
+        loop {
+            parent_pindex = pindex;
+            page = current.page.as_ref().unwrap();
+
+            if !matches!(page.r#type, PageType::Internal) {
+                break;
+            }
+
+            //TODO: append.
+
+            /**
+             * Binary search on internal page.
+             *  1. primitive key order.
+             *  2. custom key order.
+             */
+            if key.len() <= FP_BTREE_PRIMITIVE_KEY_MAX_LEN {
+
+            }
+        }
+
+        Ok(None)
     }
 
     fn save_cursor_state(&self) -> BtreeCursorState {

@@ -110,13 +110,13 @@ impl BTree {
         match btree.r#type {
             BTreeType::Row => {
                 // First b-tree page(Internal).
-                let mut root_page: LayoutPtr<Page> = Page::new(PageType::RowIntl, 1, true)?;
+                let mut root_page: LayoutPtr<Page> = Page::new(PageType::Internal, 1, true)?;
                 unsafe {
                     // root page parent is root page ref.
-                    (*root_page.content.row_intl).parent = &btree.root as *const PageRef;
+                    (*root_page.content.internal).parent = &btree.root as *const PageRef;
 
                     // Initial leaf page ref.
-                    let first_page_ref: *mut LayoutPtr<PageRef> = root_page.content.row_intl.page_index.page_refs;
+                    let first_page_ref: *mut LayoutPtr<PageRef> = root_page.content.internal.page_index.page_refs;
                     (*first_page_ref).home = &*root_page;
                     (*first_page_ref).page = None;
                     (*first_page_ref).addr = ptr::null();
@@ -150,7 +150,7 @@ impl BTree {
 
         unsafe {
             /* root internal page parent point to root ref in btree, another word root parent is root. */
-            (*root_page.content.row_intl).parent = &btree.root as *const PageRef;   
+            (*root_page.content.internal).parent = &btree.root as *const PageRef;   
         }
 
         btree.root.page = Some(root_page);
