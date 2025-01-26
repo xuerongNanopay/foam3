@@ -74,10 +74,6 @@ impl BtreeCursor<'_, '_, '_> {
         Ok(())
     }
 
-    fn init(&self) -> FPResult<()> {
-        Ok(())
-    }
-
     /**
      * Check if a insert item is too large. 
      */
@@ -177,11 +173,25 @@ impl BtreeCursor<'_, '_, '_> {
     }
 
     /**
+     * Initial cursor.
+     */
+    fn init(&self, reenter: bool) -> FPResult<()> {
+        Ok(())
+    }
+
+    /**
      * Reset cursor.
      */
     fn reset(&mut self) -> FPResult<()> {
-        self.record_number = FP_RECORD_NUMBER_OOB;
 
+        Err(FP_NO_IMPL)
+    }
+
+    /**
+     * Clear position.
+     */
+    fn clear_position(&mut self) -> FPResult<()> {
+        self.record_number = FP_RECORD_NUMBER_OOB;
         Err(FP_NO_IMPL)
     }
 

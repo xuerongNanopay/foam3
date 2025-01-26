@@ -12,3 +12,19 @@ const FP_RESERVE_HEADER_LEN: usize = FP_PAGE_HEADER_LEN + FP_BLOCK_HEADER_LEN;
 
 const FP_RECORD_NUMBER_OOB: u64 = 0; /* Illegal record number */
 
+const FP_BTREE_INSERT_SKIP_MAX_DEPTH: usize = 10;
+const FP_BTREE_INSERT_SKIP_PROBABILITY: u32 = u32::MAX >> 2;
+
+struct BtreeInsert {
+    record_number: u64,
+    offset: u32, /* row-store key data start */
+    size: u32, /* row-store key data size */
+}
+
+/**
+ * The skiplist of BtreeInsert.
+ */
+struct BtreeInsertList {
+    head: [*mut BtreeInsert; FP_BTREE_INSERT_SKIP_MAX_DEPTH],
+    tail: [*mut BtreeInsert; FP_BTREE_INSERT_SKIP_MAX_DEPTH],
+}
