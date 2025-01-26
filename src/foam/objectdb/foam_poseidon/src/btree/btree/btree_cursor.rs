@@ -24,6 +24,22 @@ impl BtreeCursorState {
     }
 }
 
+pub(crate) type BtreeCursorFlag = u32;
+pub const BTREE_CURSOR_ACTIVE:               BtreeCursorFlag = 1 << 0;
+pub const BTREE_CURSOR_ITER_APPEND:          BtreeCursorFlag = 1 << 2;  /* Column store: iterating append list. */
+pub const BTREE_CURSOR_ITER_NEXT:            BtreeCursorFlag = 1 << 3; 
+pub const BTREE_CURSOR_ITER_PREV:            BtreeCursorFlag = 1 << 4; 
+pub const BTREE_CURSOR_ITER_RETRY_NEXT:      BtreeCursorFlag = 1 << 5;
+pub const BTREE_CURSOR_ITER_RETRY_PREV:      BtreeCursorFlag = 1 << 6;
+
+
+pub const BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag = 
+    BTREE_CURSOR_ITER_APPEND | 
+    BTREE_CURSOR_ITER_NEXT |
+    BTREE_CURSOR_ITER_PREV |
+    BTREE_CURSOR_ITER_RETRY_NEXT | 
+    BTREE_CURSOR_ITER_RETRY_PREV;
+
 /**
  * Btree cursor.
  */
@@ -43,6 +59,8 @@ pub(crate) struct BtreeCursor<'a, 'b, 'c> {
 
     pub(crate) cur_insert_list: *mut BtreeInsertList,
     pub(crate) cur_insert: *mut BtreeInsert,
+
+    pub(crate) flags: BtreeCursorFlag,
 }
 
 impl BtreeCursor<'_, '_, '_> {
@@ -188,6 +206,7 @@ impl BtreeCursor<'_, '_, '_> {
      * Reset cursor.
      */
     fn reset(&mut self) -> FPResult<()> {
+        self.clear_position()?;
 
         Err(FP_NO_IMPL)
     }
