@@ -4,10 +4,10 @@ use std::any::Any;
 
 use crate::{error::FP_NO_IMPL, types::FPResult};
 
-use super::{BaseCursor, Cursor};
+use super::{ICursor, Cursor};
 
 struct TableCursor {
-    base: BaseCursor,
+    icur: ICursor,
     //TODO: scheme table
     cfg: String,
 

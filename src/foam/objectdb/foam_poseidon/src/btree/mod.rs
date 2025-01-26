@@ -10,3 +10,5 @@ pub static FP_BTREE_MAX_KV_SIZE: usize = i32::MAX as usize - 1024;
 const FP_PAGE_HEADER_LEN: usize = 30;
 const FP_RESERVE_HEADER_LEN: usize = FP_PAGE_HEADER_LEN + FP_BLOCK_HEADER_LEN;
 
+const FP_RECORD_NUMBER_OOB: u64 = 0; /* Illegal record number */
+

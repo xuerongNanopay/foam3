@@ -25,8 +25,8 @@ pub(crate) trait Cursor {
 }
 
 pub(crate) struct CursorQueue {
-    pub(crate) prev: *mut BaseCursor,
-    pub(crate) next: *mut BaseCursor,
+    pub(crate) prev: *mut ICursor,
+    pub(crate) next: *mut ICursor,
 }
 
 /**
@@ -95,7 +95,10 @@ pub(crate) const CURSOR_KEY_SET:CursorFlag = CURSOR_KEY_IN | CURSOR_KEY_OUT;
 /* Value is persisted in the datasource/btree */
 pub(crate) const CURSOR_VALUE_SET:CursorFlag = CURSOR_VALUE_IN | CURSOR_VALUE_OUT;
 
-pub(crate) struct BaseCursor {
+/**
+ * Basic Cursor Interface.
+ */
+pub(crate) struct ICursor {
     pub(crate) uri: String,
     pub(crate) uri_hash: u64,
     pub(crate) key_scheme: String,
@@ -111,9 +114,9 @@ pub(crate) struct BaseCursor {
 
 }
 
-impl BaseCursor {
-    pub(crate) fn default() -> BaseCursor {
-        BaseCursor {
+impl ICursor {
+    pub(crate) fn default() -> ICursor {
+        ICursor {
             uri: "".to_owned(),
             uri_hash: 0,
             key_scheme: "".to_owned(),
