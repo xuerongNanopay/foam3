@@ -2,7 +2,7 @@
 
 use std::ptr;
 
-use crate::{btree::{lex_compare_short, page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_BTREE_PRIMITIVE_KEY_MAX_LEN, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET};
+use crate::{btree::{lex_compare_short, page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_BTREE_LEX_SHORT_MAX_LEN, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
 
@@ -304,7 +304,9 @@ impl BtreeCursor<'_, '_, '_> {
              */
             let mut base = 1u32;
             let mut limit = page_index.entries - 1;
-            if search_key.len() <= FP_BTREE_PRIMITIVE_KEY_MAX_LEN {
+
+            /* Lexicographic order for short search key. */
+            if self.btree.key_cmp_fn.is_none() && search_key.len() <= FP_BTREE_LEX_SHORT_MAX_LEN {
                 while limit != 0 {
                     let item: CursorItem;
                     let idx = base + (limit>>1);
