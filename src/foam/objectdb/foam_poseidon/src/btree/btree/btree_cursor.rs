@@ -317,7 +317,7 @@ impl BtreeCursor<'_, '_, '_> {
                     let (pkey, skey) = cur_ref.get_ref_key()?;
 
                     //TODO: impl
-                    let cmp = lex_prefix_cmp(search_key.data.as_ptr(), search_key.len(), pkey as * const u8, skey);
+                    let cmp = lex_prefix_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey));
                     if cmp > 0 {
                         base = idx + 1;
                         limit -= 1;

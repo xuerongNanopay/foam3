@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::block::FP_BLOCK_HEADER_LEN;
+use crate::{block::FP_BLOCK_HEADER_LEN, FP_MIN};
 
 mod btree;
 mod row;
@@ -31,6 +31,31 @@ pub(crate) struct BtreeInsertList {
     tail: [*mut BtreeInsert; FP_BTREE_INSERT_SKIP_MAX_DEPTH],
 }
 
-fn lex_prefix_cmp(s_p: *const u8, s_s: usize, d_p: *const u8, d_s: usize) -> i32 {
-    1
+/**
+ * Lexicographic comparison for prefix.
+ * Expect prefix length is less than FP_BTREE_LEX_PREFIX_CMP_MAX_LEN.
+ * search_key > tree_key => positive
+ * search_key = tree_key => 0
+ * search_key < tree_key => negative
+ */
+fn lex_prefix_cmp(search_key: (*const u8, usize), tree_key: (*const u8, usize)) -> i32 {
+    let len = FP_MIN!(search_key.1, tree_key.1);
+
+    let mut s_key = search_key.0;
+    let mut t_key = tree_key.0;
+
+    unsafe {
+        for _ in 0..len {
+            if *s_key != *t_key {
+                return (*s_key - *t_key) as i32
+            }
+            s_key = s_key.add(1);
+            t_key = t_key.add(1);
+        }
+    }
+    if search_key.1 == tree_key.1 {
+        0
+    } else {
+        (search_key.1 - tree_key.1) as i32
+    }
 }
