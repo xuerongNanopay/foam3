@@ -305,7 +305,8 @@ impl BtreeCursor<'_, '_, '_> {
                 let mut r = page_index.entries - 1;
 
                 while r != 0 {
-                    let idx = l + r>>1;
+                    let item: CursorItem;
+                    let idx = l + (r>>1);
                     let cur_ref = unsafe {
                         &**page_index.indexes.add(idx as usize)
                     };

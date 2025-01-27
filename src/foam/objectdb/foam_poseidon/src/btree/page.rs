@@ -4,7 +4,7 @@ use std::{mem::ManuallyDrop, ptr, sync::atomic::AtomicUsize};
 
 use crate::{error::FP_ILLEGAL_ARGUMENT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
-use super::{btree::BTreeKey, row::{RowKeyMem, RowLeaf}};
+use super::{row::{RowKeyMem, RowLeaf}};
 
 /**
  * PageRef type.
@@ -25,6 +25,13 @@ pub(crate) enum PageRefType {
     Split = 4,   /* Parent page split */
 }
 
+#[repr(C)]
+pub(crate) enum PageRefKey {
+    Row(*mut ()), /* row store */
+    RowMem(RowKeyMem), /* In-memory row key */
+    Col(u64),     /* column */
+}
+
 /**
  * A wrapper for page, store/keep the metadate for b-tree page.
  */
@@ -37,7 +44,7 @@ pub(crate) struct PageRef {
     pub(crate) r#type: PageRefType,
     pub(crate) state: AtomicUsize,
     
-    pub(crate) key: BTreeKey,
+    pub(crate) key: PageRefKey,
     // page_status: pageStatus, /* prefetch/reading */
 }
 

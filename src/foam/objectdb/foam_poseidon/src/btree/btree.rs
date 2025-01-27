@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{block::manager::BlockManager, cursor::{CursorItem, KeyOrd}, error::FP_NO_SUPPORT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageRef, PageRefState, PageRefType, PageType}, row::RowKeyMem};
+use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem};
 
 
 enum BTreeStoreOriented {
@@ -31,13 +31,6 @@ pub(crate) enum BTreeType {
     ColumnFix,
     ColumnVar,
     Row,
-}
-
-#[repr(C)]
-pub(crate) enum BTreeKey {
-    Row(*mut ()), /* row store */
-    RowMem(RowKeyMem), /* In-memory row key */
-    Col(u64),     /* column */
 }
 
 
@@ -123,7 +116,7 @@ impl BTree {
                     (*first_page_ref).r#type = PageRefType::Leaf;
                     (*first_page_ref).state.store(PageRefState::Deleted as usize, Ordering::SeqCst);
                     // Give the a initial key `""`
-                    (*first_page_ref).key = BTreeKey::RowMem(Self::row_mem_key_init("")?);
+                    (*first_page_ref).key = PageRefKey::RowMem(Self::row_mem_key_init("")?);
 
 
                     // Initial first leaf page if bulk load on.
@@ -159,7 +152,7 @@ impl BTree {
 
 
         if is_col_store {
-            btree.root.key = BTreeKey::Col(1);
+            btree.root.key = PageRefKey::Col(1);
         }
     }
 
