@@ -284,7 +284,7 @@ impl BtreeCursor<'_, '_, '_> {
         let search_key = &self.icur.key;
 
         loop {
-            parent_pindex = pindex;
+            // parent_pindex = pindex;
             page = current.page.as_ref().unwrap();
 
             if !matches!(page.r#type, PageType::Internal) {
@@ -300,13 +300,12 @@ impl BtreeCursor<'_, '_, '_> {
              *  1. primitive key order.
              *  2. custom key order.
              */
+            let mut base = 1u32;
+            let mut limit = page_index.entries - 1;
             if search_key.len() <= FP_BTREE_PRIMITIVE_KEY_MAX_LEN {
-                let mut l = 1u32;
-                let mut r = page_index.entries - 1;
-
-                while r != 0 {
+                while limit != 0 {
                     let item: CursorItem;
-                    let idx = l + (r>>1);
+                    let idx = base + (limit>>1);
                     let cur_ref = unsafe {
                         &**page_index.indexes.add(idx as usize)
                     };
@@ -314,8 +313,15 @@ impl BtreeCursor<'_, '_, '_> {
                     let (pkey, skey) = cur_ref.get_ref_key()?;
 
                     //TODO: impl
-                    lex_compare_short(search_key.data.as_ptr(), search_key.len(), pkey as * const u8, skey);
-                    r >>= 1;
+                    let cmp = lex_compare_short(search_key.data.as_ptr(), search_key.len(), pkey as * const u8, skey);
+                    if cmp > 0 {
+                        base = idx + 1;
+                        limit -= 1;
+                    } else if cmp == 0 {
+                        //TODO: find the key.
+                    }
+
+                    limit >>= 1;
                 }
             }
         }

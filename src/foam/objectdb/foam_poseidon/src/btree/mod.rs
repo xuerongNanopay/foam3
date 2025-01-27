@@ -31,6 +31,6 @@ pub(crate) struct BtreeInsertList {
     tail: [*mut BtreeInsert; FP_BTREE_INSERT_SKIP_MAX_DEPTH],
 }
 
-fn lex_compare_short(s_p: *const u8, s_s: usize, d_p: *const u8, d_s: usize) {
-
+fn lex_compare_short(s_p: *const u8, s_s: usize, d_p: *const u8, d_s: usize) -> i32 {
+    1
 }
