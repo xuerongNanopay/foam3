@@ -2,7 +2,7 @@
 
 use std::{mem::ManuallyDrop, ptr, sync::atomic::AtomicUsize};
 
-use crate::{error::FP_ILLEGAL_ARGUMENT, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
 use super::{row::{RowKeyMem, RowLeaf}};
 
@@ -27,9 +27,9 @@ pub(crate) enum PageRefType {
 
 #[repr(C)]
 pub(crate) enum PageRefKey {
-    Row(*mut ()), /* row store */
-    RowMem(RowKeyMem), /* In-memory row key */
-    Col(u64),     /* column */
+    Row(u64),           /* On-page row key: page offset(32 bits) | key length(32 bits)*/
+    RowMem(RowKeyMem),  /* In-memory row key */
+    Col(u64),           /* column */
 }
 
 /**
@@ -48,6 +48,19 @@ pub(crate) struct PageRef {
     // page_status: pageStatus, /* prefetch/reading */
 }
 
+impl PageRef {
+    pub(crate) fn get_ref_key(&self) -> FPResult<()> {
+        match &self.key {
+            PageRefKey::Row(k) => {
+                Err(FP_NO_SUPPORT)
+            },
+            PageRefKey::RowMem(k) => {
+                Err(FP_NO_SUPPORT)
+            },
+            _ => Err(FP_NO_SUPPORT)
+        }
+    }
+}
 
 #[repr(C)]
 pub(crate) union PageContent {
