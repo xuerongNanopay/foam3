@@ -15,7 +15,7 @@ const FP_RECORD_NUMBER_OOB: u64 = 0; /* Illegal record number */
 const FP_BTREE_INSERT_SKIP_MAX_DEPTH: usize = 10;
 const FP_BTREE_INSERT_SKIP_PROBABILITY: u32 = u32::MAX >> 2;
 
-const FP_BTREE_LEX_SHORT_MAX_LEN: usize = 9;
+const FP_BTREE_LEX_PREFIX_CMP_MAX_LEN: usize = 9;
 
 pub(crate) struct BtreeInsert {
     record_number: u64,
@@ -31,6 +31,6 @@ pub(crate) struct BtreeInsertList {
     tail: [*mut BtreeInsert; FP_BTREE_INSERT_SKIP_MAX_DEPTH],
 }
 
-fn lex_compare_short(s_p: *const u8, s_s: usize, d_p: *const u8, d_s: usize) -> i32 {
+fn lex_prefix_cmp(s_p: *const u8, s_s: usize, d_p: *const u8, d_s: usize) -> i32 {
     1
 }
