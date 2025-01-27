@@ -306,7 +306,9 @@ impl BtreeCursor<'_, '_, '_> {
 
                 while r != 0 {
                     let idx = l + r>>1;
-                    
+                    let cur_ref = unsafe {
+                        &**page_index.indexes.add(idx as usize)
+                    };
 
                     r >>= 1;
                 }

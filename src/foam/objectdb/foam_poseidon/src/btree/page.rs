@@ -41,22 +41,22 @@ pub(crate) struct PageRef {
     // page_status: pageStatus, /* prefetch/reading */
 }
 
-/**
- * Row store Internal page.
- */
-#[repr(C)]
-pub(crate) struct BtreeInternal {
-    pub(crate) parent: *const PageRef,
-    pub(crate) split_generation: u64,
-    pub(crate) page_index: LayoutPtr<PageIndex>,
-}
-
 
 #[repr(C)]
 pub(crate) union PageContent {
     pub(crate) internal: ManuallyDrop<BtreeInternal>,
     /* no need to clean it */
     pub(crate) row_leaf: *mut RowLeaf,
+}
+
+/**
+ * Btree Internal page(both row and cloumn store).
+ */
+#[repr(C)]
+pub(crate) struct BtreeInternal {
+    pub(crate) parent: *const PageRef,
+    pub(crate) split_generation: u64,
+    pub(crate) page_index: LayoutPtr<PageIndex>,
 }
 
 /**
@@ -70,20 +70,20 @@ pub(crate) struct PageIndex {
     pub(crate) indexes: *mut LayoutPtr<PageRef>,
 }
 
-// impl Drop for PageIndex {
-//     fn drop(&mut self) {
-//         unsafe {
-//             for i in 0..self.entries {
-//                 let mut p = self.indexes.add(i as usize);
-//                 if !p.is_null() {
-//                     ptr::drop_in_place(p);
-//                     p = ptr::null_mut();
-//                 }
+impl Drop for PageIndex {
+    fn drop(&mut self) {
+        unsafe {
+            for i in 0..self.entries {
+                let mut p = self.indexes.add(i as usize);
+                if !p.is_null() {
+                    ptr::drop_in_place(p);
+                    p = ptr::null_mut();
+                }
 
-//             }
-//         }
-//     }
-// }
+            }
+        }
+    }
+}
 
 
 #[repr(C)]
