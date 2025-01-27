@@ -64,25 +64,26 @@ pub(crate) union PageContent {
  */
 #[repr(C)]
 pub(crate) struct PageIndex {
-    pub(crate) entries: usize,
-    pub(crate) deleted_entries: usize,
-    pub(crate) page_refs: *mut LayoutPtr<PageRef>,
+    pub(crate) entries: u32,
+    pub(crate) deleted_entries: u32,
+    // pub(crate) indexes: *mut LayoutPtr<PageRef>,
+    pub(crate) indexes: *mut LayoutPtr<PageRef>,
 }
 
-impl Drop for PageIndex {
-    fn drop(&mut self) {
-        unsafe {
-            for i in 0..self.entries {
-                let mut p = self.page_refs.add(i);
-                if !p.is_null() {
-                    ptr::drop_in_place(p);
-                    p = ptr::null_mut();
-                }
+// impl Drop for PageIndex {
+//     fn drop(&mut self) {
+//         unsafe {
+//             for i in 0..self.entries {
+//                 let mut p = self.indexes.add(i as usize);
+//                 if !p.is_null() {
+//                     ptr::drop_in_place(p);
+//                     p = ptr::null_mut();
+//                 }
 
-            }
-        }
-    }
-}
+//             }
+//         }
+//     }
+// }
 
 
 #[repr(C)]
@@ -139,7 +140,7 @@ impl Page {
     pub(crate) fn new(
         page_type: PageType,
         alloc_entries: usize,
-        is_alloc_page_refs: bool,
+        is_alloc_indexes: bool,
     ) -> FPResult<(LayoutPtr<Page>)> {
 
         let mut mem_size: usize = 0;
@@ -155,7 +156,7 @@ impl Page {
                 mem_size += FP_SIZE_OF!(Page);
 
                 // Create index for row store BtreeInternal page.
-                let (l2, p_page_index, page_refs) = FP_ALLOC!{
+                let (l2, p_page_index, indexes) = FP_ALLOC!{
                     PageIndex: 1,
                     LayoutPtr<PageRef>: alloc_entries,
                 }?;
@@ -164,8 +165,8 @@ impl Page {
                 let mut page_index = LayoutPtr::new(l2, p_page_index);
 
                 unsafe {
-                    page_index.entries = alloc_entries;
-                    page_index.page_refs = page_refs;
+                    page_index.entries = alloc_entries as u32;
+                    page_index.indexes = indexes;
                     tree_page.content = PageContent {
                         internal:  ManuallyDrop::new(BtreeInternal{
                             parent: ptr::null_mut(),
@@ -174,9 +175,9 @@ impl Page {
                         })
                     };
 
-                    if is_alloc_page_refs {
+                    if is_alloc_indexes {
                         for i in 0..alloc_entries {
-                            let c_ptr: *mut LayoutPtr<PageRef> = (*p_page_index).page_refs.add(i);
+                            let c_ptr: *mut LayoutPtr<PageRef> = (*p_page_index).indexes.add(i);
                             let (l, p) = FP_ALLOC!{
                                 PageRef: 1,
                             }?;
@@ -212,12 +213,11 @@ impl Page {
         Ok(tree_page)
     }
 
-    pub(crate) fn get_page_index(&self) -> FPResult<()> {
+    pub(crate) fn get_page_index(&self) -> FPResult<&LayoutPtr<PageIndex>> {
         if !matches!(self.r#type, PageType::ColumnIntl) || !matches!(self.r#type, PageType::Internal) {
             return Err(FP_ILLEGAL_ARGUMENT);
         }
-        // self.content.BtreeInternal
-        Ok(())
+        Ok(unsafe { &self.content.internal.page_index })
     }
 
     /**

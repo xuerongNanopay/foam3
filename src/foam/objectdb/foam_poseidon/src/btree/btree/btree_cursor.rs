@@ -291,6 +291,8 @@ impl BtreeCursor<'_, '_, '_> {
                 break;
             }
 
+            let page_index = page.get_page_index()?;
+
             //TODO: append.
 
             /**
@@ -299,7 +301,15 @@ impl BtreeCursor<'_, '_, '_> {
              *  2. custom key order.
              */
             if key.len() <= FP_BTREE_PRIMITIVE_KEY_MAX_LEN {
+                let mut l = 1u32;
+                let mut r = page_index.entries - 1;
 
+                while r != 0 {
+                    let idx = l + r>>1;
+                    
+
+                    r >>= 1;
+                }
             }
         }
 

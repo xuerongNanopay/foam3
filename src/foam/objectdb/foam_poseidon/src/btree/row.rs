@@ -16,16 +16,6 @@ pub(crate) struct RowLeaf {
 }
 
 /**
- * Row store Internal page.
- */
-#[repr(C)]
-pub(crate) struct BtreeInternal {
-    pub(crate) parent: *const PageRef,
-    pub(crate) split_generation: u64,
-    pub(crate) page_index: LayoutPtr<PageIndex>,
-}
-
-/**
  * In-memory internal key representation.
  */
 #[repr(C)]
