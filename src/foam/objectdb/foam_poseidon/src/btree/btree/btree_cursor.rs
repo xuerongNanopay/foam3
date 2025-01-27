@@ -2,7 +2,7 @@
 
 use std::ptr;
 
-use crate::{btree::{page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_BTREE_PRIMITIVE_KEY_MAX_LEN, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET};
+use crate::{btree::{lex_compare_short, page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_MAX_KV_SIZE, FP_BTREE_PRIMITIVE_KEY_MAX_LEN, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
 
@@ -281,7 +281,7 @@ impl BtreeCursor<'_, '_, '_> {
         // let mut parent_pindex: *mut PageIndex = ptr::null_mut();
         let depth: i32 = 2;
 
-        let key = &self.icur.key;
+        let search_key = &self.icur.key;
 
         loop {
             parent_pindex = pindex;
@@ -300,7 +300,7 @@ impl BtreeCursor<'_, '_, '_> {
              *  1. primitive key order.
              *  2. custom key order.
              */
-            if key.len() <= FP_BTREE_PRIMITIVE_KEY_MAX_LEN {
+            if search_key.len() <= FP_BTREE_PRIMITIVE_KEY_MAX_LEN {
                 let mut l = 1u32;
                 let mut r = page_index.entries - 1;
 
@@ -313,6 +313,8 @@ impl BtreeCursor<'_, '_, '_> {
 
                     let (pkey, skey) = cur_ref.get_ref_key()?;
 
+                    //TODO: impl
+                    lex_compare_short(search_key.data.as_ptr(), search_key.len(), pkey as * const u8, skey);
                     r >>= 1;
                 }
             }
