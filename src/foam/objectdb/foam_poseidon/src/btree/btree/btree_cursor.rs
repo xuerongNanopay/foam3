@@ -165,7 +165,8 @@ impl BtreeCursor<'_, '_, '_> {
         let mut cmp: i32;
         if upper {
             if matches!(self.btree.r#type, BTreeType::Row) {
-                cmp = self.btree.key_order.compare(&self.icur.key, &self.btree.upper_bound);
+                //TODO: investigate key_cmp_fn.
+                cmp = self.btree.key_cmp_fn.as_ref().unwrap().as_ref().compare(&self.icur.key, &self.btree.upper_bound);
             } else {
                 //TODO: column.
                 return Err(FP_NO_IMPL);
@@ -186,7 +187,8 @@ impl BtreeCursor<'_, '_, '_> {
             }
         } else {
             if matches!(self.btree.r#type, BTreeType::Row) {
-                cmp = self.btree.key_order.compare(&self.icur.key, &self.btree.lower_bound);
+                //TODO: investigate key_cmp_fn.
+                cmp = self.btree.key_cmp_fn.as_ref().unwrap().compare(&self.icur.key, &self.btree.lower_bound);
 
             } else {
                 return Err(FP_NO_IMPL);

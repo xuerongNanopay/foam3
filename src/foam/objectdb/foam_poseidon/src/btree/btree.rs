@@ -56,7 +56,7 @@ pub(crate) struct BTree {
 
     pub(crate) flags: BtreeFlag,
 
-    pub(crate) key_order: Box<dyn KeyOrd>,
+    pub(crate) key_cmp_fn: Option<Box<dyn KeyOrd>>,
     pub(crate) lower_bound: CursorItem,
     pub(crate) upper_bound: CursorItem,
     // k_format: String,
