@@ -311,6 +311,8 @@ impl BtreeCursor<'_, '_, '_> {
                         &**page_index.indexes.add(idx as usize)
                     };
 
+                    let (pkey, skey) = cur_ref.get_ref_key()?;
+
                     r >>= 1;
                 }
             }

@@ -21,8 +21,14 @@ pub(crate) struct RowLeaf {
 #[repr(C)]
 pub(crate) struct RowKeyMem {
     layout: Layout,
-    ptr: *mut u8,
+    pub(crate) ptr: *mut u8,
     // offset: u32, /* Key offset in page */
+}
+
+impl RowKeyMem {
+    pub(crate) fn len(&self) -> usize {
+        return self.layout.size()
+    }
 }
 
 impl Drop for RowKeyMem {
@@ -30,6 +36,7 @@ impl Drop for RowKeyMem {
         FP_DEALLOC!(self.ptr, self.layout);
     }
 }
+
 
 impl FromStr for RowKeyMem {
     type Err = FPErr;

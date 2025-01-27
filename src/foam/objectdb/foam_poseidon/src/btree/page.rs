@@ -27,9 +27,9 @@ pub(crate) enum PageRefType {
 
 #[repr(C)]
 pub(crate) enum PageRefKey {
-    Row(u64),           /* On-page row key: page offset(32 bits) | key length(32 bits)*/
-    RowMem(RowKeyMem),  /* In-memory row key */
-    Col(u64),           /* column */
+    Row(*mut (), usize),  /* On-page row key*/
+    RowMem(RowKeyMem),    /* In-memory row key */
+    Col(u64),             /* column */
 }
 
 /**
@@ -45,17 +45,19 @@ pub(crate) struct PageRef {
     pub(crate) state: AtomicUsize,
     
     pub(crate) key: PageRefKey,
+    
+    pub(crate) dsk: *mut (),
     // page_status: pageStatus, /* prefetch/reading */
 }
 
 impl PageRef {
-    pub(crate) fn get_ref_key(&self) -> FPResult<()> {
+    pub(crate) fn get_ref_key(&self) -> FPResult<(*const (), usize)> {
         match &self.key {
-            PageRefKey::Row(k) => {
-                Err(FP_NO_SUPPORT)
+            PageRefKey::Row(p, s) => {
+                Ok((*p, *s))
             },
             PageRefKey::RowMem(k) => {
-                Err(FP_NO_SUPPORT)
+                Ok((k.ptr as *const (), k.len()))
             },
             _ => Err(FP_NO_SUPPORT)
         }
