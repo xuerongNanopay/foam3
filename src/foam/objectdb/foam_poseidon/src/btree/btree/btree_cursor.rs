@@ -25,20 +25,21 @@ impl BtreeCursorState {
 }
 
 pub(crate) type BtreeCursorFlag = u32;
-pub const BTREE_CURSOR_ACTIVE:               BtreeCursorFlag = 1 << 0;
-pub const BTREE_CURSOR_ITER_APPEND:          BtreeCursorFlag = 1 << 2;  /* Column store: iterating append list. */
-pub const BTREE_CURSOR_ITER_NEXT:            BtreeCursorFlag = 1 << 3; 
-pub const BTREE_CURSOR_ITER_PREV:            BtreeCursorFlag = 1 << 4; 
-pub const BTREE_CURSOR_ITER_RETRY_NEXT:      BtreeCursorFlag = 1 << 5;
-pub const BTREE_CURSOR_ITER_RETRY_PREV:      BtreeCursorFlag = 1 << 6;
+pub const FP_BTREE_CURSOR_ACTIVE:               BtreeCursorFlag = 1 << 0;
+pub const FP_BTREE_CURSOR_ITER_APPEND:          BtreeCursorFlag = 1 << 2;  /* Column store: iterating append list. */
+pub const FP_BTREE_CURSOR_ITER_NEXT:            BtreeCursorFlag = 1 << 3; 
+pub const FP_BTREE_CURSOR_ITER_PREV:            BtreeCursorFlag = 1 << 4; 
+pub const FP_BTREE_CURSOR_ITER_RETRY_NEXT:      BtreeCursorFlag = 1 << 5;
+pub const FP_BTREE_CURSOR_ITER_RETRY_PREV:      BtreeCursorFlag = 1 << 6;
+pub const FP_BTREE_CURSOR_READ_ONCE:            BtreeCursorFlag = 1 << 7;  /* control FP_BTEE_TRAV_ONCE */
 
 
-pub const BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag = 
-    BTREE_CURSOR_ITER_APPEND | 
-    BTREE_CURSOR_ITER_NEXT |
-    BTREE_CURSOR_ITER_PREV |
-    BTREE_CURSOR_ITER_RETRY_NEXT | 
-    BTREE_CURSOR_ITER_RETRY_PREV;
+pub const FP_BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag = 
+    FP_BTREE_CURSOR_ITER_APPEND | 
+    FP_BTREE_CURSOR_ITER_NEXT |
+    FP_BTREE_CURSOR_ITER_PREV |
+    FP_BTREE_CURSOR_ITER_RETRY_NEXT | 
+    FP_BTREE_CURSOR_ITER_RETRY_PREV;
 
 /**
  * Btree cursor.
@@ -233,8 +234,8 @@ impl BtreeCursor<'_, '_, '_> {
         self.clear_position()?;
 
         /* Deactive the cursor. */
-        if FP_BIT_IS_SET!(self.flags, BTREE_CURSOR_ACTIVE) {
-            FP_BIT_CLR!(self.flags, BTREE_CURSOR_ACTIVE)
+        if FP_BIT_IS_SET!(self.flags, FP_BTREE_CURSOR_ACTIVE) {
+            FP_BIT_CLR!(self.flags, FP_BTREE_CURSOR_ACTIVE)
         }
 
         if self.page_ref.is_null() {
@@ -254,7 +255,7 @@ impl BtreeCursor<'_, '_, '_> {
         self.cur_insert = ptr::null_mut();
         self.cur_insert_list = ptr::null_mut();
 
-        FP_BIT_CLR!(self.flags, BTREE_CURSOR_POSITION_MASK);
+        FP_BIT_CLR!(self.flags, FP_BTREE_CURSOR_POSITION_MASK);
 
         Ok(())
     }
@@ -433,6 +434,9 @@ impl BtreeCursor<'_, '_, '_> {
             if page_index.entries == base {
                 //TODO:
             }
+
+            /* descend */
+
         }
 
         Ok(None)
