@@ -35,12 +35,12 @@ pub(crate) enum BTreeType {
 
 
 pub type BtreeFlag = u32;
-pub const BTREE_APPEND:    BtreeFlag = 1 << 0;
-pub const BTREE_BULK:      BtreeFlag = 1 << 12;  /* Bulk-load */
-pub const BTREE_CLOSED:    BtreeFlag = 1 << 13;  /* Closed */
-pub const BTREE_IN_MEMORY: BtreeFlag = 1 << 14;  /* In-Memory */
-pub const BTREE_RECOVER:   BtreeFlag = 1 << 15;  /* Recover */
-pub const BTREE_VERIFY:    BtreeFlag = 1 << 16;  /* Verify */
+pub const FP_BTREE_APPEND:    BtreeFlag = 1 << 0;
+pub const FP_BTREE_BULK:      BtreeFlag = 1 << 12;  /* Bulk-load */
+pub const FP_BTREE_CLOSED:    BtreeFlag = 1 << 13;  /* Closed */
+pub const FP_BTREE_IN_MEMORY: BtreeFlag = 1 << 14;  /* In-Memory */
+pub const FP_BTREE_RECOVER:   BtreeFlag = 1 << 15;  /* Recover */
+pub const FP_BTREE_VERIFY:    BtreeFlag = 1 << 16;  /* Verify */
 
 #[repr(C)]
 pub(crate) struct BTree {
@@ -120,7 +120,7 @@ impl BTree {
 
 
                     // Initial first leaf page if bulk load on.
-                    if FP_BIT_IS_SET!(btree.flags, BTREE_BULK) {
+                    if FP_BIT_IS_SET!(btree.flags, FP_BTREE_BULK) {
                         Self::new_leaf_page(btree, &mut *first_page_ref)?;
                         (*first_page_ref).r#type = PageRefType::Leaf;
                         (*first_page_ref).state.store(PageRefState::Mem as usize, Ordering::SeqCst);
