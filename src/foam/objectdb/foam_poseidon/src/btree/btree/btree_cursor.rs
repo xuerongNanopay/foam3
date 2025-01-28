@@ -2,7 +2,7 @@
 
 use std::ptr;
 
-use crate::{btree::{lex_prefix_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET};
+use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET, FP_MIN};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
 
@@ -285,6 +285,8 @@ impl BtreeCursor<'_, '_, '_> {
 
         let search_key = &self.icur.key;
 
+        let mut descent: &PageRef;
+
         loop {
             // parent_pindex = pindex;
             page = current.page.as_ref().unwrap();
@@ -311,13 +313,12 @@ impl BtreeCursor<'_, '_, '_> {
                 while limit != 0 {
                     let item: CursorItem;
                     let idx = base + (limit>>1);
-                    let cur_ref = unsafe {
+                    let descent = unsafe {
                         &**page_index.indexes.add(idx as usize)
                     };
 
-                    let (pkey, skey) = cur_ref.get_ref_key()?;
+                    let (pkey, skey) = descent.get_ref_key()?;
 
-                    //TODO: impl
                     let cmp = lex_prefix_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey));
                     if cmp > 0 {
                         base = idx + 1;
@@ -354,8 +355,32 @@ impl BtreeCursor<'_, '_, '_> {
                  */
                 let mut skip_high = 0usize;
                 let mut skip_low = 0usize;
+                let mut common;
+
+                let mut base = 1u32;
+                let mut limit = page_index.entries - 1;
 
                 while limit != 0 {
+
+                    let item: CursorItem;
+                    let idx = base + (limit>>1);
+                    let descent = unsafe {
+                        &**page_index.indexes.add(idx as usize)
+                    };
+
+                    common = FP_MIN!(skip_high, skip_low);
+                    let (pkey, skey) = descent.get_ref_key()?;
+
+                    let cmp = lex_skip_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey), &mut common);
+                    if cmp > 0 {
+                        skip_low = common;
+                        base = idx + 1;
+                        limit -= 1;
+                    } else if cmp > 0 {
+                        skip_high = common;
+                    } else {
+                        //TODO: find the key.
+                    }
 
                     limit >>= 1;
                 }

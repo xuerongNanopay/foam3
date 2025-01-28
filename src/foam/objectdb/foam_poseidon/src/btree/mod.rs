@@ -65,6 +65,6 @@ fn lex_prefix_cmp(search_key: (*const u8, usize), tree_key: (*const u8, usize)) 
  * Allow compare start at skip_len offset in the array.
  * Use in compare large key duing btree traversing.
  */
-fn lex_skip_cmp(search_key: (*const u8, usize), tree_key: (*const u8, usize), skip_len: usize) -> i32 {
+fn lex_skip_cmp(search_key: (*const u8, usize), tree_key: (*const u8, usize), common: &mut usize) -> i32 {
     1
 }
