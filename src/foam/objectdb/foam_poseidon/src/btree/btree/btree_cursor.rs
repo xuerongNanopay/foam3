@@ -355,7 +355,7 @@ impl BtreeCursor<'_, '_, '_> {
                  */
                 let mut skip_high = 0usize;
                 let mut skip_low = 0usize;
-                let mut common;
+                let mut skip;
 
                 let mut base = 1u32;
                 let mut limit = page_index.entries - 1;
@@ -368,16 +368,16 @@ impl BtreeCursor<'_, '_, '_> {
                         &**page_index.indexes.add(idx as usize)
                     };
 
-                    common = FP_MIN!(skip_high, skip_low);
+                    skip = FP_MIN!(skip_high, skip_low);
                     let (pkey, skey) = descent.get_ref_key()?;
 
-                    let cmp = lex_skip_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey), &mut common);
+                    let cmp = lex_skip_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey), &mut skip);
                     if cmp > 0 {
-                        skip_low = common;
+                        skip_low = skip;
                         base = idx + 1;
                         limit -= 1;
                     } else if cmp > 0 {
-                        skip_high = common;
+                        skip_high = skip;
                     } else {
                         //TODO: find the key.
                     }
