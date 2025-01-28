@@ -166,7 +166,7 @@ impl BtreeCursor<'_, '_, '_> {
         if upper {
             if matches!(self.btree.r#type, BTreeType::Row) {
                 //TODO: investigate key_cmp_fn.
-                cmp = self.btree.key_cmp_fn.as_ref().unwrap().as_ref().compare(&self.icur.key, &self.btree.upper_bound);
+                cmp = self.btree.key_cmp_fn.as_ref().unwrap().compare((self.icur.key.data.as_ptr(), self.icur.key.len()), (self.btree.upper_bound.data.as_ptr(), self.btree.upper_bound.len()));
             } else {
                 //TODO: column.
                 return Err(FP_NO_IMPL);
@@ -188,7 +188,7 @@ impl BtreeCursor<'_, '_, '_> {
         } else {
             if matches!(self.btree.r#type, BTreeType::Row) {
                 //TODO: investigate key_cmp_fn.
-                cmp = self.btree.key_cmp_fn.as_ref().unwrap().compare(&self.icur.key, &self.btree.lower_bound);
+                cmp = self.btree.key_cmp_fn.as_ref().unwrap().compare((self.icur.key.data.as_ptr(), self.icur.key.len()), (self.btree.lower_bound.data.as_ptr(), self.btree.lower_bound.len()));
 
             } else {
                 return Err(FP_NO_IMPL);
@@ -379,6 +379,29 @@ impl BtreeCursor<'_, '_, '_> {
                     } else if cmp > 0 {
                         skip_high = skip;
                     } else {
+                        //TODO: find the key.
+                    }
+
+                    limit >>= 1;
+                }
+            } else {
+                while limit != 0 {
+                    let item: CursorItem;
+                    let idx = base + (limit>>1);
+                    let descent = unsafe {
+                        &**page_index.indexes.add(idx as usize)
+                    };
+
+                    let (pkey, skey) = descent.get_ref_key()?;
+
+                    let cmp_fn = self.btree.key_cmp_fn.as_ref().unwrap();
+                    
+
+                    let cmp = lex_prefix_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey));
+                    if cmp > 0 {
+                        base = idx + 1;
+                        limit -= 1;
+                    } else if cmp == 0 {
                         //TODO: find the key.
                     }
 

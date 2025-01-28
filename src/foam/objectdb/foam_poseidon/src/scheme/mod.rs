@@ -1,6 +1,7 @@
 #![allow(unused)]
 
-mod table;
+pub mod table;
+pub mod key;
 
 use crate::types::FPResult;
 

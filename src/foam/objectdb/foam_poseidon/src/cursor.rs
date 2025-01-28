@@ -51,34 +51,30 @@ impl CursorItem {
     }
 }
 
-pub(crate) trait KeyOrd {
-    fn compare(&self, a: &CursorItem, b: &CursorItem) -> i32;
-}
-
 /**
  * Compare key as string.
  */
-pub(crate) struct StringKeyOrd {
+// pub(crate) struct StringKeyOrd {
 
-}
+// }
 
-impl KeyOrd for StringKeyOrd {
-    fn compare(&self, v1: &CursorItem, v2: &CursorItem) -> i32 {
-        let l1 = v1.data.len() as i32;
-        let l2 = v1.data.len() as i32;
-        if v1.data.len() == 0 || v2.data.len() == 0 {
-            return l1 - l2;
-        }
+// impl KeyOrd for StringKeyOrd {
+//     fn compare(&self, v1: &CursorItem, v2: &CursorItem) -> i32 {
+//         let l1 = v1.data.len() as i32;
+//         let l2 = v1.data.len() as i32;
+//         if v1.data.len() == 0 || v2.data.len() == 0 {
+//             return l1 - l2;
+//         }
 
-        let min_idx = FP_MIN!(l1, l2) as usize;
-        for i in 0..min_idx {
-            if v1.data[i] != v2.data[i] {
-                return (v1.data[i] - v2.data[i]) as i32;
-            }
-        }
-        l2 - l1
-    }
-}
+//         let min_idx = FP_MIN!(l1, l2) as usize;
+//         for i in 0..min_idx {
+//             if v1.data[i] != v2.data[i] {
+//                 return (v1.data[i] - v2.data[i]) as i32;
+//             }
+//         }
+//         l2 - l1
+//     }
+// }
 
 pub(crate) type CursorFlag = u64;
 pub(crate) const CURSOR_BOUND_LOWER:            CursorFlag = 1 << 0;
