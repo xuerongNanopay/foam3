@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{block::manager::BlockManager, cursor::CursorItem, error::FP_NO_SUPPORT, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem};
+use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag};
 
 
 enum BTreeStoreOriented {
@@ -190,6 +190,31 @@ impl BTree {
         &self.initial.store(false, Ordering::SeqCst);
 
         
+    }
+
+    /**
+     * Release a page.
+     */
+    fn page_release(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) -> FPResult<()> {
+
+        /* Root should be keep in memory all the time. */
+        if release_ref.is_root() {
+            return Ok(())
+        }
+
+        if FP_BIT_IS_SET!(self.flags, FP_BTREE_IN_MEMORY) {
+            return Ok(())
+        }
+
+
+        Ok(())
+    }
+
+    /**
+     * Release a reference to a page, and attemppt to immediately evict it.
+     */
+    fn page_release_evict(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) {
+
     }
 
 }

@@ -17,9 +17,9 @@ const FP_BTREE_INSERT_SKIP_PROBABILITY: u32 = u32::MAX >> 2;
 
 const FP_BTREE_LEX_PREFIX_CMP_MAX_LEN: usize = 9;
 
-type BtreeTravFlag = u32;
-const FP_BTEE_TRAV_RETRY_OK: BtreeTravFlag = 1 << 8; /* caller can retry if node splitting. */
-const FP_BTEE_TRAV_ONCE:     BtreeTravFlag = 1 << 9; /* page may not need after the operation. */
+type BtreeReadFlag = u32;
+const FP_BTEE_READ_RETRY_OK: BtreeReadFlag = 1 << 8; /* caller can retry if node splitting. */
+const FP_BTEE_READ_ONCE:     BtreeReadFlag = 1 << 9; /* page may not need after the operation. */
 
 pub(crate) struct BtreeInsert {
     record_number: u64,
