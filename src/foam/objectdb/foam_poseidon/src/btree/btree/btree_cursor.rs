@@ -299,8 +299,9 @@ impl BtreeCursor<'_, '_, '_> {
 
             /**
              * Binary search on internal page.
-             *  1. primitive key order.
-             *  2. custom key order.
+             *  1. lexicograpohic order short/prefix.
+             *  2. lexicograpohic order.
+             *  3. custom key order.
              */
             let mut base = 1u32;
             let mut limit = page_index.entries - 1;
@@ -329,7 +330,35 @@ impl BtreeCursor<'_, '_, '_> {
                 }
             }
             else if self.btree.key_cmp_fn.is_none() {
-                /* Lexicographic order for regular search key. */
+                /**
+                 * Lexicographic order for regular search key.
+                 * Use skip_high and skip_low to skip common portion.
+                 * The algorithm will/may improve the performance after second looping for binary seach,
+                 * because the low, high boundary can only be determine after second loop.
+                 * Once the skip_low and skip_high are known, we can use is to skip common prefix in comparison.
+                 * However, if the search key are close to the low and high boundaries,
+                 * the idea will not improve the performance a lot.
+                 *  
+                 * eg: 
+                 *  idea scenario: improve key comparison performance, as boundaries will determine after second binary search loop):
+                 *  low(AAAA) |------------------------------------------| high(ZZZZZZZ)
+                 *                          ^[search key]
+                 * 
+                 *  zero-effect scenario: as skip_low will always be zero during binary search.
+                 *  low(AAAA) |------------------------------------------| high(ZZZZZZZ)
+                 *            ^[search key]
+                 * 
+                 *  zero-effect scenario: as skip_high will always be zero during binary search.
+                 *  low(AAAA) |------------------------------------------| high(ZZZZZZZ)
+                 *                                                       ^[search key]
+                 */
+                let mut skip_high = 0usize;
+                let mut skip_low = 0usize;
+
+                while limit != 0 {
+
+                    limit >>= 1;
+                }
             }
         }
 
