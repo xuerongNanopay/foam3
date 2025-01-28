@@ -62,6 +62,13 @@ impl PageRef {
             _ => Err(FP_NO_SUPPORT)
         }
     }
+
+    /**
+     * return true if it refers to the root.
+     */
+    pub(crate) fn is_root(&self) -> bool {
+        self.home.is_null()
+    }
 }
 
 #[repr(C)]

@@ -274,7 +274,6 @@ impl BtreeCursor<'_, '_, '_> {
         //TODO: support column append.
 
         /* Search b-tree from the root */
-        let current: Option<&PageRef> = Some(&self.btree.root);
         let current: &PageRef = &self.btree.root;
         let mut pindex: Option<&PageIndex> = None;
         let mut parent_pindex: Option<&PageIndex> = None;
