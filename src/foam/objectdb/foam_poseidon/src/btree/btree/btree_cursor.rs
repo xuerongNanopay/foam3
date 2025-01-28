@@ -304,9 +304,14 @@ impl BtreeCursor<'_, '_, '_> {
              *  1. lexicograpohic order short/prefix.
              *  2. lexicograpohic order.
              *  3. custom key order.
+             * 
+             * Internal indexex layout:
+             *              [index: 0]    [index: 1]      [index: 2]      [index: 3]
+             *       (-infinite, key1)    [key1, key2)    [key2, key3)    [key3, +infinite]
              */
             let mut base = 1u32;
             let mut limit = page_index.entries - 1;
+            let mut descent_key_match = false;
 
             if self.btree.key_cmp_fn.is_none() && search_key.len() <= FP_BTREE_LEX_PREFIX_CMP_MAX_LEN {
                 /* Lexicographic order for short search key. */
@@ -324,7 +329,8 @@ impl BtreeCursor<'_, '_, '_> {
                         base = idx + 1;
                         limit -= 1;
                     } else if cmp == 0 {
-                        //TODO: find the key.
+                        descent_key_match = true;
+                        break;
                     }
 
                     limit >>= 1;
@@ -379,7 +385,8 @@ impl BtreeCursor<'_, '_, '_> {
                     } else if cmp > 0 {
                         skip_high = skip;
                     } else {
-                        //TODO: find the key.
+                        descent_key_match = true;
+                        break;
                     }
 
                     limit >>= 1;
@@ -402,11 +409,29 @@ impl BtreeCursor<'_, '_, '_> {
                         base = idx + 1;
                         limit -= 1;
                     } else if cmp == 0 {
-                        //TODO: find the key.
-                    }
+                        descent_key_match = true;
+                        break;                    }
 
                     limit >>= 1;
                 }
+            }
+
+            /**
+             * If no found, the descend will be base-1;
+             */
+            if !descent_key_match {
+                descent = unsafe {
+                    &**page_index.indexes.add((base-1) as usize)
+                };
+            }
+
+            //TODO: right side decend.
+
+            /**
+             * key is greater than any key in the page.
+             */
+            if page_index.entries == base {
+                //TODO:
             }
         }
 
