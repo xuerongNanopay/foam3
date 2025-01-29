@@ -195,7 +195,7 @@ impl BTree {
     /**
      * Release a page.
      */
-    fn page_release(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) -> FPResult<()> {
+    pub(crate) fn page_release(&mut self, release_ref: &mut PageRef, flags: BtreeReadFlag) -> FPResult<()> {
 
         /* Root should be keep in memory all the time. */
         if release_ref.is_root() {

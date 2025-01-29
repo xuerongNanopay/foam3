@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::ptr;
+use std::{cell::UnsafeCell, ptr, sync::Arc};
 
 use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET, FP_BIT_SET, FP_MIN};
 
@@ -44,9 +44,9 @@ pub const FP_BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag =
 /**
  * Btree cursor.
  */
-pub(crate) struct BtreeCursor<'a, 'b, 'c> {
+pub(crate) struct BtreeCursor<'a, 'c> {
     pub(crate) icur: &'a ICursor,
-    pub(crate) btree: &'b mut BTree,
+    pub(crate) btree: UnsafeCell<BTree>,
     btree_dao: &'c BTreeDAO<'c>,
 
     // Date Source.
@@ -66,7 +66,17 @@ pub(crate) struct BtreeCursor<'a, 'b, 'c> {
     pub(crate) page_ref: *mut PageRef,
 }
 
-impl BtreeCursor<'_, '_, '_> {
+impl BtreeCursor<'_, '_> {
+    pub fn get_tree(&self) -> &BTree {
+        unsafe {
+            &*self.btree.get()   
+        }
+    }
+    pub fn get_tree_mut(&self) -> &mut BTree {
+        unsafe {
+            &mut *self.btree.get()   
+        }
+    }
 
     /**
      * __wt_btcur_insert
@@ -79,7 +89,7 @@ impl BtreeCursor<'_, '_, '_> {
         let insert_len = self.icur.key.len() + self.icur.value.len();
 
         // Verify KV length.
-        if matches!(self.btree.r#type, BTreeType::Row) {
+        if matches!(self.get_tree().r#type, BTreeType::Row) {
             self.size_check(&self.icur.key)?;
         }
         self.size_check(&self.icur.value)?;
@@ -98,7 +108,7 @@ impl BtreeCursor<'_, '_, '_> {
 
         self.init(true);
 
-        match self.btree.r#type {
+        match self.get_tree().r#type {
             BTreeType::Row => {
                 //1. search row.
                 //2. fail if duplicate if duplicate not allow.
@@ -117,7 +127,7 @@ impl BtreeCursor<'_, '_, '_> {
      */
     fn size_check(&self, item: &CursorItem) -> FPResult<()> {
 
-        if !matches!(self.btree.r#type, BTreeType::ColumnFix) {
+        if !matches!(self.get_tree().r#type, BTreeType::ColumnFix) {
             //see: __cursor_size_chk
             panic!("Do not support")
         }
@@ -165,44 +175,44 @@ impl BtreeCursor<'_, '_, '_> {
         let mut record_number_bound: u64;
         let mut cmp: i32;
         if upper {
-            if matches!(self.btree.r#type, BTreeType::Row) {
+            if matches!(self.get_tree().r#type, BTreeType::Row) {
                 //TODO: investigate key_cmp_fn.
-                cmp = self.btree.key_cmp_fn.as_ref().unwrap().compare((self.icur.key.data.as_ptr(), self.icur.key.len()), (self.btree.upper_bound.data.as_ptr(), self.btree.upper_bound.len()));
+                cmp = self.get_tree().key_cmp_fn.as_ref().unwrap().compare((self.icur.key.data.as_ptr(), self.icur.key.len()), (self.get_tree().upper_bound.data.as_ptr(), self.get_tree().upper_bound.len()));
             } else {
                 //TODO: column.
                 return Err(FP_NO_IMPL);
             }
 
             if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
-                if matches!(self.btree.r#type, BTreeType::Row) {
+                if matches!(self.get_tree().r#type, BTreeType::Row) {
                     return Ok(cmp > 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
             } else {
-                if matches!(self.btree.r#type, BTreeType::Row) {
+                if matches!(self.get_tree().r#type, BTreeType::Row) {
                     return Ok(cmp >= 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
             }
         } else {
-            if matches!(self.btree.r#type, BTreeType::Row) {
+            if matches!(self.get_tree().r#type, BTreeType::Row) {
                 //TODO: investigate key_cmp_fn.
-                cmp = self.btree.key_cmp_fn.as_ref().unwrap().compare((self.icur.key.data.as_ptr(), self.icur.key.len()), (self.btree.lower_bound.data.as_ptr(), self.btree.lower_bound.len()));
+                cmp = self.get_tree().key_cmp_fn.as_ref().unwrap().compare((self.icur.key.data.as_ptr(), self.icur.key.len()), (self.get_tree().lower_bound.data.as_ptr(), self.get_tree().lower_bound.len()));
 
             } else {
                 return Err(FP_NO_IMPL);
             }
 
             if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
-                if matches!(self.btree.r#type, BTreeType::Row) {
+                if matches!(self.get_tree().r#type, BTreeType::Row) {
                     return Ok(cmp < 0);
                 } else {
                     return Err(FP_NO_IMPL);
                 }
             } else {
-                if matches!(self.btree.r#type, BTreeType::Row) {
+                if matches!(self.get_tree().r#type, BTreeType::Row) {
                     return Ok(cmp <= 0);
                 } else {
                     return Err(FP_NO_IMPL);
@@ -274,11 +284,12 @@ impl BtreeCursor<'_, '_, '_> {
         //TODO: support column append.
 
         /* Search b-tree from the root */
-        let current: &PageRef = &self.btree.root;
+        let btree = self.get_tree_mut();
+        let mut current = &mut self.get_tree_mut().root;
         let mut pindex: Option<&PageIndex> = None;
         let mut parent_pindex: Option<&PageIndex> = None;
         let mut page: &LayoutPtr<Page>;
-        // let current = &mut self.btree.root as *mut PageRef;
+        // let current = &mut self.get_tree().root as *mut PageRef;
         // let mut pindex: *mut PageIndex = ptr::null_mut();
         // let mut parent_pindex: *mut PageIndex = ptr::null_mut();
         let depth: i32 = 2;
@@ -289,6 +300,8 @@ impl BtreeCursor<'_, '_, '_> {
         let mut traverse_flags: BtreeReadFlag;
 
         loop {
+            //TODO: release current page.
+            btree.page_release( current, 0);
             // parent_pindex = pindex;
             page = current.page.as_ref().unwrap();
 
@@ -314,7 +327,7 @@ impl BtreeCursor<'_, '_, '_> {
             let mut limit = page_index.entries - 1;
             let mut descent_key_match = false;
 
-            if self.btree.key_cmp_fn.is_none() && search_key.len() <= FP_BTREE_LEX_PREFIX_CMP_MAX_LEN {
+            if btree.key_cmp_fn.is_none() && search_key.len() <= FP_BTREE_LEX_PREFIX_CMP_MAX_LEN {
                 /* Lexicographic order for short search key. */
                 while limit != 0 {
                     let item: CursorItem;
@@ -337,7 +350,7 @@ impl BtreeCursor<'_, '_, '_> {
                     limit >>= 1;
                 }
             }
-            else if self.btree.key_cmp_fn.is_none() {
+            else if btree.key_cmp_fn.is_none() {
                 /**
                  * Lexicographic order for regular search key.
                  * Use skip_high and skip_low to skip common portion.
@@ -402,7 +415,7 @@ impl BtreeCursor<'_, '_, '_> {
 
                     let (pkey, skey) = descent.get_ref_key()?;
 
-                    let cmp_fn = self.btree.key_cmp_fn.as_ref().unwrap();
+                    let cmp_fn = btree.key_cmp_fn.as_ref().unwrap();
                     
 
                     let cmp = lex_prefix_cmp((search_key.data.as_ptr(), search_key.len()), (pkey as * const u8, skey));
