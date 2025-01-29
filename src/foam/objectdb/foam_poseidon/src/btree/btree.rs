@@ -5,7 +5,7 @@ pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, cursor::CursorItem, error::FP_NO_SUPPORT, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
 use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag};
 
@@ -212,16 +212,30 @@ impl BTree {
 
     /**
      * Release a reference to a page, and attemppt to immediately evict it.
+     * __wt_page_release_evict
      */
-    fn page_release_and_evict(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) {
+    fn page_release_and_evict(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) -> FPResult<()> {
 
         let prev_page_ref_state = release_ref.get_state();
-        /* Require page_ref lock. */
+        /* Try require page_ref lock. */
         let locked = if matches!(prev_page_ref_state, PageRefState::InMemory) && release_ref.cas_state(prev_page_ref_state, PageRefState::Locked){
             true
         } else {
             false
         };
+
+        //TODO: release hazard pointer(reference manage for a pageref).
+        //check hazard pointer in the system: __wt_evict > __evict_exclusive > __wt_hazard_check > __wt_session_array_walk
+        if !locked {
+            //TODO: return busy, 
+        }
+
+        /**
+         * Evict the page.
+         */
+        let evict_flages = 0u32;
+        //TODO: 
+        Err(FP_NO_IMPL)
     }
 
 }

@@ -20,6 +20,8 @@ mod context;
 mod scheme;
 mod cursor;
 mod dao;
+mod support;
+mod evict;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
