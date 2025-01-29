@@ -114,7 +114,7 @@ impl BTree {
                     (*first_page_ref).page = None;
                     (*first_page_ref).addr = ptr::null();
                     (*first_page_ref).r#type = PageRefType::Leaf;
-                    (*first_page_ref).state.store(PageRefState::Deleted as usize, Ordering::SeqCst);
+                    (*first_page_ref).set_state(PageRefState::Deleted);
                     // Give the a initial key `""`
                     (*first_page_ref).key = PageRefKey::RowMem(Self::row_mem_key_init("")?);
 
@@ -123,7 +123,7 @@ impl BTree {
                     if FP_BIT_IS_SET!(btree.flags, FP_BTREE_BULK) {
                         Self::new_leaf_page(btree, &mut *first_page_ref)?;
                         (*first_page_ref).r#type = PageRefType::Leaf;
-                        (*first_page_ref).state.store(PageRefState::Mem as usize, Ordering::SeqCst);
+                        (*first_page_ref).set_state(PageRefState::InMemory);
                         //TODO: PageModify.
                     }
 
@@ -148,7 +148,7 @@ impl BTree {
 
         btree.root.page = Some(root_page);
         btree.root.r#type = PageRefType::Internal;
-        btree.root.state.store(PageRefState::Mem as usize, Ordering::SeqCst);
+        btree.root.set_state(PageRefState::InMemory);
 
 
         if is_col_store {

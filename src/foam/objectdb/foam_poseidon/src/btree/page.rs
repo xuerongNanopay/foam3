@@ -21,7 +21,7 @@ pub(crate) enum PageRefType {
     Disk = 0,    /* Page is on disk. */
     Deleted = 1, /* Page is on disk, but deleted */
     Locked = 2,  /* Page locked for exclusive access */
-    Mem = 3,     /* Page is in cache and memory */
+    InMemory = 3,     /* Page is in cache and memory */
     Split = 4,   /* Parent page split */
 }
 
@@ -42,7 +42,7 @@ pub(crate) struct PageRef {
     pub(crate) addr: *const (),
     pub(crate) unused: u8,
     pub(crate) r#type: PageRefType,
-    pub(crate) state: AtomicUsize,
+    state: PageRefState,
     
     pub(crate) key: PageRefKey,
     
@@ -68,6 +68,22 @@ impl PageRef {
      */
     pub(crate) fn is_root(&self) -> bool {
         self.home.is_null()
+    }
+
+    /**
+     * Get status in volatile.
+     */
+    pub(crate) fn get_state(&self) -> PageRefState {
+        let p: *const PageRefState = &self.state as *const PageRefState;
+        unsafe { p.read_volatile() }
+    }
+
+    /**
+     * Get status in volatile.
+     */
+    pub(crate) fn set_state(&mut self, state: PageRefState) {
+        let p: *mut PageRefState = &mut self.state as *mut PageRefState;
+        unsafe { p.write_volatile(state); }
     }
 }
 
