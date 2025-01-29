@@ -213,8 +213,14 @@ impl BTree {
     /**
      * Release a reference to a page, and attemppt to immediately evict it.
      */
-    fn page_release_evict(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) {
+    fn page_release_and_evict(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) {
 
+        let prev_page_ref_state = release_ref.get_state();
+        let locked = if matches!(prev_page_ref_state, PageRefState::InMemory) {
+            true
+        } else {
+            false
+        };
     }
 
 }

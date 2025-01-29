@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::{mem::ManuallyDrop, ptr, sync::atomic::AtomicUsize};
+use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Ordering}};
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
@@ -18,11 +18,11 @@ pub(crate) enum PageRefType {
 
  #[repr(usize)]
  pub(crate) enum PageRefState {
-    Disk = 0,    /* Page is on disk. */
-    Deleted = 1, /* Page is on disk, but deleted */
-    Locked = 2,  /* Page locked for exclusive access */
+    Disk = 0,         /* Page is on disk. */
+    Deleted = 1,      /* Page is on disk, but deleted */
+    Locked = 2,       /* Page locked for exclusive access */
     InMemory = 3,     /* Page is in cache and memory */
-    Split = 4,   /* Parent page split */
+    Split = 4,        /* Parent page split */
 }
 
 #[repr(C)]
@@ -71,7 +71,7 @@ impl PageRef {
     }
 
     /**
-     * Get status in volatile.
+     * Get status volatile.
      */
     pub(crate) fn get_state(&self) -> PageRefState {
         let p: *const PageRefState = &self.state as *const PageRefState;
@@ -79,11 +79,27 @@ impl PageRef {
     }
 
     /**
-     * Get status in volatile.
+     * Get status volatilely.
      */
     pub(crate) fn set_state(&mut self, state: PageRefState) {
         let p: *mut PageRefState = &mut self.state as *mut PageRefState;
         unsafe { p.write_volatile(state); }
+    }
+
+    /**
+     * CAS status
+     * return true if set successfully.
+     */
+    pub(crate) fn cas_state(&mut self, mut old_state: PageRefState, mut new_state: PageRefState) -> bool {
+        let ptr: *mut PageRefState = &mut self.state as *mut PageRefState;
+        let a_ptr = AtomicPtr::new(ptr);
+
+        unsafe {
+            match a_ptr.compare_exchange(&mut old_state, &mut new_state, Ordering::SeqCst, Ordering::SeqCst) {
+                Ok(_) => true,
+                Err(_) => false,
+            }
+        }
     }
 }
 
