@@ -216,7 +216,8 @@ impl BTree {
     fn page_release_and_evict(&self, release_ref: &mut PageRef, flags: BtreeReadFlag) {
 
         let prev_page_ref_state = release_ref.get_state();
-        let locked = if matches!(prev_page_ref_state, PageRefState::InMemory) {
+        /* Require page_ref lock. */
+        let locked = if matches!(prev_page_ref_state, PageRefState::InMemory) && release_ref.cas_state(prev_page_ref_state, PageRefState::Locked){
             true
         } else {
             false
