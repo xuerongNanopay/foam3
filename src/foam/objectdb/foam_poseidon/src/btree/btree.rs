@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_SKIP_DELETED};
+use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
 
 enum BTreeStoreOriented {
@@ -192,10 +192,15 @@ impl BTree {
         
     }
 
+    fn read_page(&mut self, ctx: &mut Context, read_ref: &mut PageRef, flags:BtreeReadFlag) -> FPResult<()>  {
+        Err(FP_NO_IMPL)
+    }
+
     /**
      * Read Page.
+     * __wt_page_in_func
      */
-    fn read(&mut self, ctx: &mut Context, read_ref: &mut PageRef, flags:BtreeReadFlag) -> FPResult<()> {
+    fn load_page_ref(&mut self, ctx: &mut Context, read_ref: &mut PageRef, flags:BtreeReadFlag) -> FPResult<()> {
         let mut evit_skip = false;
         let mut read_from_disk = false;
         let mut stalled = false;
@@ -206,7 +211,7 @@ impl BTree {
             current_status = read_ref.get_state();
             match current_status {
                 PageRefState::Deleted => {
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_WAIT | FP_BTEE_READ_NO_WAIT) {
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_CACHE_ONLY | FP_BTEE_READ_NO_WAIT) {
                         return Err(FP_BT_PAGE_READ_NOT_FOUND);
                     }
                     //TODO: Need to consider transaction/snapshot.
@@ -215,6 +220,24 @@ impl BTree {
                     }
                     //TODO: goto read.
                 },
+                PageRefState::Disk => {
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_CACHE_ONLY) {
+                        return Err(FP_BT_PAGE_READ_NOT_FOUND);
+                    }
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_OVER_CACHE) {
+                        //TODO: check the used cache size.
+                    }
+
+                    self.read_page(ctx, read_ref, flags)?;
+                    read_from_disk = true;
+                },
+                PageRefState::Locked => {
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_WAIT) {
+                        return Err(FP_BT_PAGE_READ_NOT_FOUND);
+                    }
+                    stalled = true;
+                    break;
+                }
                 _ => {},
             };
         }

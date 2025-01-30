@@ -163,3 +163,4 @@ pub fn convert_std_io_err_to_fp_err(ioe: std::io::Error) -> FPErr {
 
 pub const FP_BT_ROW_KEY_MEM_INIT:        FPErr = 301;
 pub const FP_BT_PAGE_READ_NOT_FOUND:     FPErr = 302;
+pub const FP_BT_PAGE_READ_RETRY:         FPErr = 302;

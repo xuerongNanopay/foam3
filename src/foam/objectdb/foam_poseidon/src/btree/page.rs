@@ -17,13 +17,32 @@ pub(crate) enum PageRefType {
 }
 
  #[repr(usize)]
- pub(crate) enum PageRefState {
+pub(crate) enum PageRefState {
     Disk = 0,         /* Page is on disk. */
     Deleted = 1,      /* Page is on disk, but deleted */
     Locked = 2,       /* Page locked for exclusive access */
     InMemory = 3,     /* Page is in cache and memory */
     Split = 4,        /* Parent page split */
 }
+
+#[repr(usize)]
+pub(crate) enum PageReadingState {
+    Prefetch = 0, /* Page is in the pre-fetch queue. */
+    Reading = 1,  /* Page is reading. */
+}
+
+impl TryFrom<usize> for PageReadingState {
+    type Error = ();
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(PageReadingState::Prefetch),
+            1 => Ok(PageReadingState::Reading),
+            _ => Err(()), // Invalid value handling
+        }
+    }
+}
+
 
 #[repr(C)]
 pub(crate) enum PageRefKey {
@@ -43,6 +62,7 @@ pub(crate) struct PageRef {
     pub(crate) unused: u8,
     pub(crate) r#type: PageRefType,
     state: PageRefState,
+    read_state: AtomicUsize,
     
     pub(crate) key: PageRefKey,
     
@@ -84,6 +104,18 @@ impl PageRef {
     pub(crate) fn set_state(&mut self, state: PageRefState) {
         let p: *mut PageRefState = &mut self.state as *mut PageRefState;
         unsafe { p.write_volatile(state); }
+    }
+
+    pub(crate) fn set_read_state(&mut self, read_state: PageReadingState) {
+        self.read_state.store(read_state as usize, Ordering::SeqCst);
+    }
+
+    
+    pub(crate) fn get_read_state(&mut self, read_state: PageReadingState) -> PageReadingState {
+        match PageReadingState::try_from(self.read_state.load(Ordering::SeqCst)) {
+            Ok(e) => e,
+            Err(_) => panic!("get_read_state")
+        }
     }
 
     /**
