@@ -258,12 +258,11 @@ impl BTree {
                     return Err(FP_BT_PAGE_READ_RETRY);
                 },
                 PageRefState::InMemory => {
-                    //TODO:
                     'evict: loop {
                         if FP_BIT_IS_SET!(self.flags, FP_BTREE_IN_MEMORY) {
                             break;
                         }
-                        
+                        //MUST TODO: register harzard pointer.
                         //TODO: check busy.
                         if busy {
                             continue 'load_page;
@@ -273,11 +272,17 @@ impl BTree {
                             break;
                         }
 
-                        //TODO: trigger evict/page_split if a page is to large.
+                        //MUST TODO: trigger evict/page_split if a page is to large.
                         break;
                     }
 
                     let page = read_ref.page.as_ref().unwrap();
+
+                    //TODO: prefetch optimization.
+                    //TODO: eviction strategy.
+                    //TODO: transaction consideration.
+
+
                 },
             };
         }
