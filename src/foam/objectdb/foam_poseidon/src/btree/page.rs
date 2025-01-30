@@ -111,7 +111,7 @@ impl PageRef {
     }
 
     
-    pub(crate) fn get_read_state(&mut self, read_state: PageReadingState) -> PageReadingState {
+    pub(crate) fn get_read_state(&mut self) -> PageReadingState {
         match PageReadingState::try_from(self.read_state.load(Ordering::SeqCst)) {
             Ok(e) => e,
             Err(_) => panic!("get_read_state")

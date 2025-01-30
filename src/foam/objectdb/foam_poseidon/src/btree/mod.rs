@@ -26,6 +26,7 @@ const FP_BTEE_READ_RETRY_OK:         BtreeReadFlag = 1 << 8; /* caller can retry
 const FP_BTEE_READ_ONCE:             BtreeReadFlag = 1 << 9; /* page may not need after the operation. */
 const FP_BTEE_READ_SEE_DELETED:      BtreeReadFlag = 1 << 10;
 const FP_BTEE_READ_SKIP_DELETED:     BtreeReadFlag = 1 << 11;
+const FP_BTEE_READ_WONT_NEED:        BtreeReadFlag = 1 << 12;
 
 pub(crate) struct BtreeInsert {
     record_number: u64,

@@ -5,9 +5,9 @@ pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
+use super::{page::{Page, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED, FP_BTEE_READ_WONT_NEED};
 
 
 enum BTreeStoreOriented {
@@ -206,6 +206,9 @@ impl BTree {
         let mut stalled = false;
         let mut wont_need = false;
         let mut current_status: PageRefState;
+        let read = || {
+
+        };
 
         loop {
             current_status = read_ref.get_state();
@@ -230,15 +233,32 @@ impl BTree {
 
                     self.read_page(ctx, read_ref, flags)?;
                     read_from_disk = true;
+                    evit_skip = true;
+
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_WONT_NEED) {
+                        wont_need = true
+                    }
+                    continue;
                 },
                 PageRefState::Locked => {
                     if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_WAIT) {
                         return Err(FP_BT_PAGE_READ_NOT_FOUND);
                     }
+
+                    if matches!(read_ref.get_read_state(), PageReadingState::Reading) {
+                        if FP_BIT_IS_SET!(flags, FP_BTEE_READ_CACHE_ONLY) {
+                            return Err(FP_BT_PAGE_READ_NOT_FOUND);
+                        }
+                    }
                     stalled = true;
                     break;
-                }
-                _ => {},
+                },
+                PageRefState::Split => {
+                    return Err(FP_BT_PAGE_READ_RETRY);
+                },
+                PageRefState::InMemory => {
+                    //TODO: 
+                },
             };
         }
 
