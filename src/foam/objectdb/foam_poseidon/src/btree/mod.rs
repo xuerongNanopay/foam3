@@ -18,9 +18,13 @@ const FP_BTREE_INSERT_SKIP_PROBABILITY: u32 = u32::MAX >> 2;
 const FP_BTREE_LEX_PREFIX_CMP_MAX_LEN: usize = 9;
 
 type BtreeReadFlag = u32;
-const FP_BTEE_READ_NO_SPLIT: BtreeReadFlag = 1 << 4; /* do not try to split when read. */
-const FP_BTEE_READ_RETRY_OK: BtreeReadFlag = 1 << 8; /* caller can retry if node splitting. */
-const FP_BTEE_READ_ONCE:     BtreeReadFlag = 1 << 9; /* page may not need after the operation. */
+const FP_BTEE_READ_CACHE:            BtreeReadFlag = 1 << 0; /* Only try to read from cache */
+const FP_BTEE_READ_NO_WAIT:          BtreeReadFlag = 1 << 1; /* If the page is locked by other thread, return busy. */
+const FP_BTEE_READ_NO_SPLIT:         BtreeReadFlag = 1 << 4; /* do not try to split when read. */
+const FP_BTEE_READ_RETRY_OK:         BtreeReadFlag = 1 << 8; /* caller can retry if node splitting. */
+const FP_BTEE_READ_ONCE:             BtreeReadFlag = 1 << 9; /* page may not need after the operation. */
+const FP_BTEE_READ_SEE_DELETED:      BtreeReadFlag = 1 << 10;
+const FP_BTEE_READ_SKIP_DELETED:     BtreeReadFlag = 1 << 11;
 
 pub(crate) struct BtreeInsert {
     record_number: u64,

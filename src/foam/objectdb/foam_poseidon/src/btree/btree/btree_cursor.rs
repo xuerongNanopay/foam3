@@ -46,7 +46,7 @@ pub const FP_BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag =
  */
 pub(crate) struct BtreeCursor<'a, 'c> {
     pub(crate) icur: &'a ICursor,
-    pub(crate) btree: UnsafeCell<BTree>,
+    btree: UnsafeCell<BTree>,
     btree_dao: &'c BTreeDAO<'c>,
 
     // Date Source.
@@ -297,7 +297,7 @@ impl BtreeCursor<'_, '_> {
         let search_key = &self.icur.key;
 
         let mut descent: &PageRef;
-        let mut traverse_flags: BtreeReadFlag;
+        let mut read_flags: BtreeReadFlag;
 
         loop {
             //TODO: release current page.
@@ -450,9 +450,9 @@ impl BtreeCursor<'_, '_> {
 
             /* descend */
 
-            traverse_flags = FP_BTEE_READ_RETRY_OK;
+            read_flags = FP_BTEE_READ_RETRY_OK;
             if FP_BIT_IS_SET!(self.flags, FP_BTREE_CURSOR_READ_ONCE) {
-                FP_BIT_SET!(traverse_flags, FP_BTEE_READ_ONCE)
+                FP_BIT_SET!(read_flags, FP_BTEE_READ_ONCE)
             }
 
         }

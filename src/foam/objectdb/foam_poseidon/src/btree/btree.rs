@@ -5,9 +5,9 @@ pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag};
+use super::{page::{Page, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_SKIP_DELETED};
 
 
 enum BTreeStoreOriented {
@@ -191,6 +191,37 @@ impl BTree {
 
         
     }
+
+    /**
+     * Read Page.
+     */
+    fn read(&mut self, ctx: &mut Context, read_ref: &mut PageRef, flags:BtreeReadFlag) -> FPResult<()> {
+        let mut evit_skip = false;
+        let mut read_from_disk = false;
+        let mut stalled = false;
+        let mut wont_need = false;
+        let mut current_status: PageRefState;
+
+        loop {
+            current_status = read_ref.get_state();
+            match current_status {
+                PageRefState::Deleted => {
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_WAIT | FP_BTEE_READ_NO_WAIT) {
+                        return Err(FP_BT_PAGE_READ_NOT_FOUND);
+                    }
+                    //TODO: Need to consider transaction/snapshot.
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_SKIP_DELETED) {
+                        return Err(FP_BT_PAGE_READ_NOT_FOUND);
+                    }
+                    //TODO: goto read.
+                },
+                _ => {},
+            };
+        }
+
+        Err(FP_NO_IMPL)
+    }
+
 
     /**
      * Release a page.
