@@ -2,7 +2,7 @@
 
 use std::{cell::UnsafeCell, ptr, sync::Arc};
 
-use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET, FP_BIT_SET, FP_MIN};
+use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET, FP_BIT_SET, FP_MIN};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
 
@@ -31,7 +31,7 @@ pub const FP_BTREE_CURSOR_ITER_NEXT:            BtreeCursorFlag = 1 << 3;
 pub const FP_BTREE_CURSOR_ITER_PREV:            BtreeCursorFlag = 1 << 4; 
 pub const FP_BTREE_CURSOR_ITER_RETRY_NEXT:      BtreeCursorFlag = 1 << 5;
 pub const FP_BTREE_CURSOR_ITER_RETRY_PREV:      BtreeCursorFlag = 1 << 6;
-pub const FP_BTREE_CURSOR_READ_ONCE:            BtreeCursorFlag = 1 << 7;  /* control FP_BTEE_TRAV_ONCE */
+pub const FP_BTREE_CURSOR_READ_NEED_ONCE:            BtreeCursorFlag = 1 << 7;  /* control FP_BTEE_TRAV_ONCE */
 
 
 pub const FP_BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag = 
@@ -451,8 +451,8 @@ impl BtreeCursor<'_, '_> {
             /* descend */
 
             read_flags = FP_BTEE_READ_RETRY_OK;
-            if FP_BIT_IS_SET!(self.flags, FP_BTREE_CURSOR_READ_ONCE) {
-                FP_BIT_SET!(read_flags, FP_BTEE_READ_ONCE)
+            if FP_BIT_IS_SET!(self.flags, FP_BTREE_CURSOR_READ_NEED_ONCE) {
+                FP_BIT_SET!(read_flags, FP_BTEE_READ_NEED_ONCE)
             }
 
         }

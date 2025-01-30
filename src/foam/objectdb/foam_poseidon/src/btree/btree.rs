@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED, FP_BTEE_READ_WONT_NEED};
+use super::{page::{Page, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED, FP_BTEE_READ_NEED_ONCE};
 
 
 enum BTreeStoreOriented {
@@ -206,11 +206,12 @@ impl BTree {
         let mut stalled = false;
         let mut wont_need = false;
         let mut current_status: PageRefState;
+        let mut busy = false;
         let read = || {
 
         };
 
-        loop {
+        'load_page: loop {
             current_status = read_ref.get_state();
             match current_status {
                 PageRefState::Deleted => {
@@ -235,7 +236,7 @@ impl BTree {
                     read_from_disk = true;
                     evit_skip = true;
 
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_WONT_NEED) {
+                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NEED_ONCE) {
                         wont_need = true
                     }
                     continue;
@@ -257,7 +258,26 @@ impl BTree {
                     return Err(FP_BT_PAGE_READ_RETRY);
                 },
                 PageRefState::InMemory => {
-                    //TODO: 
+                    //TODO:
+                    'evict: loop {
+                        if FP_BIT_IS_SET!(self.flags, FP_BTREE_IN_MEMORY) {
+                            break;
+                        }
+                        
+                        //TODO: check busy.
+                        if busy {
+                            continue 'load_page;
+                        }
+
+                        if evit_skip || FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_SPLIT) {
+                            break;
+                        }
+
+                        //TODO: trigger evict/page_split if a page is to large.
+                        break;
+                    }
+
+                    let page = read_ref.page.as_ref().unwrap();
                 },
             };
         }
