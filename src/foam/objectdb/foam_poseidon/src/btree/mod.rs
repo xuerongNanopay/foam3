@@ -5,7 +5,7 @@ use crate::{block::FP_BLOCK_HEADER_LEN, FP_MIN};
 mod btree;
 mod row;
 mod page;
-mod cell;
+mod tuple;
 
 pub static FP_BTREE_MAX_KV_SIZE: usize = i32::MAX as usize - 1024;
 const FP_PAGE_HEADER_LEN: usize = 30;
