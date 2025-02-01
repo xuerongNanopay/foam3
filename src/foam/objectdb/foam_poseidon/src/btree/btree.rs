@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED, FP_BTEE_READ_NEED_ONCE};
+use super::{page::{Page, PageAddr, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
 
 enum BTreeStoreOriented {
@@ -112,7 +112,7 @@ impl BTree {
                     let first_page_ref: *mut LayoutPtr<PageRef> = root_page.content.internal.page_index.indexes;
                     (*first_page_ref).home = &*root_page;
                     (*first_page_ref).page = None;
-                    (*first_page_ref).addr = ptr::null();
+                    (*first_page_ref).addr = PageAddr::None;
                     (*first_page_ref).r#type = PageRefType::Leaf;
                     (*first_page_ref).set_state(PageRefState::Deleted);
                     // Give the a initial key `""`
@@ -193,7 +193,48 @@ impl BTree {
     }
 
     fn read_page(&mut self, ctx: &mut Context, read_ref: &mut PageRef, flags:BtreeReadFlag) -> FPResult<()>  {
+        //1.lock
+        //2.check/classify.
+
+        /* Lock the PageRef. */
+        let previous_state = read_ref.get_state();
+        match previous_state {
+            PageRefState::Deleted | PageRefState::Disk => {
+                if !read_ref.cas_state(previous_state, PageRefState::Locked) {
+                    return Ok(())
+                }
+            },
+            _ => {
+                return Ok(())
+            },
+        };
+
+        if matches!(previous_state, PageRefState::Disk) {
+            read_ref.set_read_state(PageReadingState::Reading);
+        };
+
+        //NEED TODO: consider delete page.
+        if matches!(previous_state, PageRefState::Deleted) {
+
+        }
+
+        //Read from store.
+
         Err(FP_NO_IMPL)
+    }
+
+    fn page_blk_addr(&self, read_ref: &mut PageRef) -> bool {
+
+        let addr = &read_ref.addr;
+
+
+        if let PageAddr::None = addr {
+            return false;
+        }
+
+        
+
+        return false;
     }
 
     /**
@@ -263,6 +304,7 @@ impl BTree {
                             break;
                         }
                         //MUST TODO: register harzard pointer.
+                        //__wt_hazard_set_func
                         //TODO: check busy.
                         if busy {
                             continue 'load_page;

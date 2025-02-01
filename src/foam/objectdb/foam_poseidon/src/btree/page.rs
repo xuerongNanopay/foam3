@@ -17,6 +17,7 @@ pub(crate) enum PageRefType {
 }
 
  #[repr(usize)]
+ #[derive(Clone, Copy)]
 pub(crate) enum PageRefState {
     Disk = 0,         /* Page is on disk. */
     Deleted = 1,      /* Page is on disk, but deleted */
@@ -51,6 +52,27 @@ pub(crate) enum PageRefKey {
     Col(u64),             /* column */
 }
 
+#[repr(usize)]
+#[derive(Clone, Copy)]
+pub(crate) enum PageBlkAddrType {
+    None = 0,
+    Internal = 1,     /* Internal page */
+    Leaf = 2,         /* Leaf page */
+    OverflowLeaf = 3, /* Leaf page with overflow */
+}
+
+#[repr(C)]
+pub(crate) struct PageBlkAddr {
+    pub(crate) addr: Vec<u8>,      /* raw byte representation of phycial address. */
+    pub(crate) r#type: PageBlkAddrType,
+}
+
+#[repr(C)]
+pub(crate) enum PageAddr {
+    None,
+    BlkAddr(PageBlkAddr),
+}
+
 /**
  * A wrapper for page, store/keep the metadate for b-tree page.
  */
@@ -58,7 +80,7 @@ pub(crate) enum PageRefKey {
 pub(crate) struct PageRef {
     pub(crate) page: Option<LayoutPtr<Page>>,
     pub(crate) home: *const Page,
-    pub(crate) addr: *const (),
+    pub(crate) addr: PageAddr,
     pub(crate) unused: u8,
     pub(crate) r#type: PageRefType,
     state: PageRefState,
@@ -132,6 +154,14 @@ impl PageRef {
                 Err(_) => false,
             }
         }
+    }
+
+    /**
+     * Return Page physical address.
+     */
+    pub(crate) fn page_phy_addr(&self) {
+
+
     }
 }
 
