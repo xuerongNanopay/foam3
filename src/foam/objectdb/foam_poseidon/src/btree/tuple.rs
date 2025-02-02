@@ -10,6 +10,7 @@ pub(crate) struct TupleHeader(&'static [u8]);
 
 /**
  * Tuple for internal page.
+ * The value of the tuple is the address of children page.
  */
 #[repr(C)]
 pub(crate) struct TupleAddr {
@@ -27,6 +28,7 @@ pub(crate) struct TupleAddr {
 
 /**
  * Tuple for leaf page.
+ * The value of the tuple it the actual value that store in b-tree.
  */
 #[repr(C)]
 pub(crate) struct TupleKV {

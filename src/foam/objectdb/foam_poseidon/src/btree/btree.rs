@@ -110,7 +110,7 @@ impl BTree {
 
                     // Initial leaf page ref.
                     let first_page_ref: *mut LayoutPtr<PageRef> = root_page.content.internal.page_index.indexes;
-                    (*first_page_ref).home = &*root_page;
+                    (*first_page_ref).home = Some(root_page.as_ref());
                     (*first_page_ref).page = None;
                     (*first_page_ref).addr = PageAddrOption::None;
                     (*first_page_ref).r#type = PageRefType::Leaf;

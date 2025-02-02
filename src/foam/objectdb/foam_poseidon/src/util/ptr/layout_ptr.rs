@@ -16,6 +16,10 @@ impl <T> LayoutPtr<T> {
         }
     }
 
+    pub fn as_ref<'a>(&self) -> &'a T {
+        unsafe { &*(self.ptr as *const T) }
+    }
+
 }
 
 impl<T> Deref for LayoutPtr<T> {

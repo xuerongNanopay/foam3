@@ -99,7 +99,7 @@ pub(crate) struct PageAddr {
 #[repr(C)]
 pub(crate) struct PageRef {
     pub(crate) page: Option<LayoutPtr<Page>>,
-    pub(crate) home: *const Page,
+    pub(crate) home: Option<&'static Page>,
     pub(crate) unused: u8,
     pub(crate) r#type: PageRefType,
     state: PageRefState,
@@ -109,7 +109,7 @@ pub(crate) struct PageRef {
 
     pub(crate) addr: PageAddrOption, /* page address info. */
     
-    pub(crate) dsk: *mut (),
+    pub(crate) page_header: Option<PageHeader>,
     // page_status: pageStatus, /* prefetch/reading */
 }
 
@@ -130,7 +130,10 @@ impl PageRef {
      * return true if it refers to the root.
      */
     pub(crate) fn is_root(&self) -> bool {
-        self.home.is_null()
+        match self.home {
+            None => true,
+            _ => false,
+        }
     }
 
     /**
@@ -262,7 +265,7 @@ pub(crate) enum PageType {
 }
 
 #[repr(C)]
-pub(crate) union PageHeaderC {
+pub(crate) union PageHeaderV {
     entries: u32,
     datalen: u32,
 }
@@ -272,8 +275,12 @@ pub(crate) struct PageHeader {
     record_number: u64, /* column-store */
     write_epoch: u64,
     memory_size: u32,
-    c : PageHeaderC,
+    v: PageHeaderV,
     r#type: u8,
+    
+    flags: u8,
+    unused: u8,
+    version: u8,
 }
 
 #[repr(C)]
