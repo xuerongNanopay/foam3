@@ -19,6 +19,8 @@ const FP_BTREE_INSERT_SKIP_PROBABILITY: u32 = u32::MAX >> 2;
 
 const FP_BTREE_LEX_PREFIX_CMP_MAX_LEN: usize = 9;
 
+const FP_BTREE_PAGE_ADDR_MAX_LENGTH: usize = 255;
+
 type BtreeReadFlag = u32;
 const FP_BTEE_READ_CACHE_ONLY:       BtreeReadFlag = 1 << 0; /* Only try to read from cache */
 const FP_BTEE_READ_OVER_CACHE:       BtreeReadFlag = 1 << 1; /* Allow read page into memory, even if it exceeds the total cache size.*/

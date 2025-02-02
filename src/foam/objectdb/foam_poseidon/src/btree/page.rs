@@ -4,7 +4,7 @@ use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Orderin
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
-use super::{row::{RowKeyMem, RowLeaf}, tuple::TupleHeader, zone_map::ZMPage};
+use super::{row::{RowKeyMem, RowLeaf}, tuple::TupleHeader, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
 /**
  * PageRef type.
@@ -75,12 +75,22 @@ pub(crate) enum PageAddrOption {
     In(TupleHeader),  /* in-page page address */
 }
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub(crate) struct PageDeleted {
+    pub(crate) txn_id: u64,
+    pub(crate) timestamp: u64,
+}
 
-// #[repr(C)]
-// pub(crate) struct PageAddr {
-//     // pub(crate) r#type: PageAddrType,
-//     pub(crate) addr: [u8; 3],
-// }
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub(crate) struct PageAddr {
+    pub(crate) r#type: PageAddrType,
+    pub(crate) addr: [u8; FP_BTREE_PAGE_ADDR_MAX_LENGTH],
+    pub(crate) zm: ZMPage,
+
+    pub(crate) del: PageDeleted,
+}
 
 /**
  * A wrapper for page, store/keep the metadate for b-tree page.
