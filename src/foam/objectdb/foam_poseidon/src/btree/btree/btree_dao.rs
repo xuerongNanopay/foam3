@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{btree, dao::DAO, error::FP_NO_IMPL, types::FPResult};
+use crate::{btree, dao::DAO, error::FP_NO_IMPL, internal::FPResult};
 
 use super::BTree;
 

@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
-use crate::{error::*, types::*, util::hash_city, FP_IO_ERR_RET};
+use crate::{error::*, internal::*, util::hash_city, FP_IO_ERR_RET};
 
 use super::*;
 

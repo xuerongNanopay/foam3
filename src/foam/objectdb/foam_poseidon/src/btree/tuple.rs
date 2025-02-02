@@ -6,12 +6,30 @@ pub(crate) const FP_BTREE_TUPLE_KEY_INLINE: u8 = 0x01;
 pub(crate) const FP_BTREE_TUPLE_KEY_PFX_INLINE: u8 = 0x02;
 pub(crate) const FP_BTREE_TUPLE_VALUE_INLINE: u8 = 0x03;
 
+pub(crate) const FP_BTREE_TUPLE_INLINE_MASK: u8 = 0x03;
+pub(crate) const FP_BTREE_TUPLE_INLINE_SHIFT: u8 = 2;
+
+#[repr(usize)]
+pub(crate) enum TupleType {
+    KeyInline = 0x01,
+}
+
+impl TryFrom<usize> for TupleType {
+    type Error = ();
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        match value {
+            _ => Err(()),
+        }
+    }
+}
+
 /**
  * On-disk tuple representation.
  * Each tuple represent an in-line key/value, or address info to get key/value.
- * Three types of tuple:
+ * Three types of tuple store:
  *      1. Inline: key/value is embedded inside the tuple header(only for short size key/value).
- *      2. Regular: key/value is follow the tuple header.
+ *      2. Normal: key/value is follow the tuple header.
  *      3. Overflow: key/value is store in seperate page.
  */
 #[repr(C)]

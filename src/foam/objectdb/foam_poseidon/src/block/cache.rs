@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::types::FPResult;
+use crate::internal::FPResult;
 
 struct BlockCache {
 

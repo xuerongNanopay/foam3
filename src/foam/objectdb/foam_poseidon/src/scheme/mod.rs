@@ -3,7 +3,7 @@
 pub mod table;
 pub mod key;
 
-use crate::types::FPResult;
+use crate::internal::FPResult;
 
 /**
  * __schema_create, scheme_create.c

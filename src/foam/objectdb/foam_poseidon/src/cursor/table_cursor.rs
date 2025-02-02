@@ -2,7 +2,7 @@
 
 use std::any::Any;
 
-use crate::{error::FP_NO_IMPL, types::FPResult};
+use crate::{error::FP_NO_IMPL, internal::FPResult};
 
 use super::{ICursor, Cursor};
 

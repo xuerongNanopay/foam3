@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{meta::FP_METAFILE, types::{FPFileSize}};
+use crate::{meta::FP_METAFILE, internal::{FPFileSize}};
 
 pub mod manager;
 pub mod handle;

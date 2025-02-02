@@ -2,7 +2,7 @@
 
 use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Ordering}};
 
-use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
 use super::{row::{RowKeyMem, RowLeaf}, tuple::TupleHeader, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
@@ -129,6 +129,7 @@ impl PageRef {
     /**
      * return true if it refers to the root.
      */
+    #[inline(always)]
     pub(crate) fn is_root(&self) -> bool {
         match self.home {
             None => true,
@@ -139,6 +140,7 @@ impl PageRef {
     /**
      * Get status volatile.
      */
+    #[inline(always)]
     pub(crate) fn get_state(&self) -> PageRefState {
         let p: *const PageRefState = &self.state as *const PageRefState;
         unsafe { p.read_volatile() }
@@ -147,16 +149,18 @@ impl PageRef {
     /**
      * Get status volatilely.
      */
+    #[inline(always)]
     pub(crate) fn set_state(&mut self, state: PageRefState) {
         let p: *mut PageRefState = &mut self.state as *mut PageRefState;
         unsafe { p.write_volatile(state); }
     }
 
+    #[inline(always)]
     pub(crate) fn set_read_state(&mut self, read_state: PageReadingState) {
         self.read_state.store(read_state as usize, Ordering::SeqCst);
     }
 
-    
+    #[inline(always)]
     pub(crate) fn get_read_state(&mut self) -> PageReadingState {
         match PageReadingState::try_from(self.read_state.load(Ordering::SeqCst)) {
             Ok(e) => e,
@@ -168,6 +172,7 @@ impl PageRef {
      * CAS status
      * return true if set successfully.
      */
+    #[inline(always)]
     pub(crate) fn cas_state(&mut self, mut old_state: PageRefState, mut new_state: PageRefState) -> bool {
         let ptr: *mut PageRefState = &mut self.state as *mut PageRefState;
         let a_ptr = AtomicPtr::new(ptr);
@@ -277,7 +282,7 @@ pub(crate) struct PageHeader {
     memory_size: u32,
     v: PageHeaderV,
     r#type: u8,
-    
+
     flags: u8,
     unused: u8,
     version: u8,

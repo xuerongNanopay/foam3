@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::types::FPErr;
+use crate::internal::FPErr;
 
 // Common
 pub const FP_NO_IMPL:          FPErr  = -1;

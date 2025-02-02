@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{error::*, types::FPResult, util::compaction::varint::{self, VarintDecodeIterator}, FP_ASSERT_NOT_NONE};
+use crate::{error::*, internal::FPResult, util::compaction::varint::{self, VarintDecodeIterator}, FP_ASSERT_NOT_NONE};
 
 use super::{handle::BlockHandle, BlockRef};
 

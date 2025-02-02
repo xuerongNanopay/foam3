@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{meta, types::FPResult};
+use crate::{meta, internal::FPResult};
 
 struct Table {
     

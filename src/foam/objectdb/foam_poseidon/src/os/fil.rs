@@ -5,7 +5,7 @@ use std::{result, sync::Arc};
 
 use native::{DefaultFileHandle, DefaultFileSystem};
 
-use crate::{error::*, types::*};
+use crate::{error::*, internal::*};
 
 FP_OS_LINUX! {
     pub type FPFileSystem = DefaultFileSystem;

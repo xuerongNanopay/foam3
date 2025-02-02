@@ -2,7 +2,7 @@
 
 use std::{alloc::Layout, ptr, str::FromStr};
 
-use crate::{types::{FPErr, FPResult}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_DEALLOC};
+use crate::{internal::{FPErr, FPResult}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_DEALLOC};
 
 use super::page::{PageIndex, PageRef};
 

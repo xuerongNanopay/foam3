@@ -4,7 +4,7 @@ mod table_cursor;
 
 use std::{any::Any, ptr};
 
-use crate::{error::{FP_NO_ERR, FP_NO_IMPL, FP_NO_SUPPORT}, types::{FPErr, FPResult}, util::ptr::layout_ptr::LayoutPtr};
+use crate::{error::{FP_NO_ERR, FP_NO_IMPL, FP_NO_SUPPORT}, internal::{FPErr, FPResult}, util::ptr::layout_ptr::LayoutPtr};
 
 pub(crate) trait Cursor {
     fn get_uri(&self) -> &str;

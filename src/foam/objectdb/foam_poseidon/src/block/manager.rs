@@ -9,7 +9,7 @@ use crate::{
         FP_FS_OPEN_CREATE, 
         FP_FS_OPEN_DURABLE, 
         FP_FS_OPEN_EXCLUSIVE
-    }, types::{
+    }, internal::{
         FPConcurrentHashMap, 
         FPResult
     }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR

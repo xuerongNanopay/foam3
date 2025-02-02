@@ -1,7 +1,7 @@
 #![allow(unused)]
 // Variable-Length Encoding 
 
-use crate::{error::FP_ILLEGAL_ARGUMENT, types::FPResult};
+use crate::{error::FP_ILLEGAL_ARGUMENT, internal::FPResult};
 
 //TODO: untested code.
 pub fn decode_uint(b: &[u8]) -> FPResult<(u64, usize)> {

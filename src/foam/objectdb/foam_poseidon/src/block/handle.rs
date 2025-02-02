@@ -4,7 +4,7 @@ use super::*;
 use crate::error::*;
 use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
-use crate::types::{FPFileSize, FPResult};
+use crate::internal::{FPFileSize, FPResult};
 use crate::util::hash_city;
 use std::collections::LinkedList;
 use std::sync::{Mutex, Arc};
