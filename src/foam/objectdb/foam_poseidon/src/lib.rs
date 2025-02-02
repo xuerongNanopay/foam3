@@ -24,6 +24,7 @@ mod support;
 mod evict;
 mod blk_pool;
 mod gcc;
+mod internal;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
