@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
 
-use super::{page::{Page, PageAddr, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
+use super::{page::{Page, PageAddrOption, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
 
 enum BTreeStoreOriented {
@@ -112,7 +112,7 @@ impl BTree {
                     let first_page_ref: *mut LayoutPtr<PageRef> = root_page.content.internal.page_index.indexes;
                     (*first_page_ref).home = &*root_page;
                     (*first_page_ref).page = None;
-                    (*first_page_ref).addr = PageAddr::None;
+                    (*first_page_ref).addr = PageAddrOption::None;
                     (*first_page_ref).r#type = PageRefType::Leaf;
                     (*first_page_ref).set_state(PageRefState::Deleted);
                     // Give the a initial key `""`
@@ -228,7 +228,7 @@ impl BTree {
         let addr = &read_ref.addr;
 
 
-        if let PageAddr::None = addr {
+        if let PageAddrOption::None = addr {
             return false;
         }
 

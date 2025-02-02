@@ -4,7 +4,7 @@ use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Orderin
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, types::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
-use super::{row::{RowKeyMem, RowLeaf}};
+use super::{row::{RowKeyMem, RowLeaf}, tuple::TupleHeader, zone_map::ZMPage};
 
 /**
  * PageRef type.
@@ -54,7 +54,7 @@ pub(crate) enum PageRefKey {
 
 #[repr(usize)]
 #[derive(Clone, Copy)]
-pub(crate) enum PageBlkAddrType {
+pub(crate) enum PageAddrType {
     None = 0,
     Internal = 1,     /* Internal page */
     Leaf = 2,         /* Leaf page */
@@ -62,16 +62,25 @@ pub(crate) enum PageBlkAddrType {
 }
 
 #[repr(C)]
-pub(crate) struct PageBlkAddr {
-    pub(crate) addr: Vec<u8>,      /* raw byte representation of phycial address. */
-    pub(crate) r#type: PageBlkAddrType,
+pub(crate) struct PageOffAddr {
+    pub(crate) zm: ZMPage,
+    pub(crate) addr: Vec<u8>,
+    pub(crate) r#type: PageAddrType,
 }
 
 #[repr(C)]
-pub(crate) enum PageAddr {
+pub(crate) enum PageAddrOption {
     None,
-    BlkAddr(PageBlkAddr),
+    Off(PageOffAddr), /* off-page page address */
+    In(TupleHeader),  /* in-page page address */
 }
+
+
+// #[repr(C)]
+// pub(crate) struct PageAddr {
+//     // pub(crate) r#type: PageAddrType,
+//     pub(crate) addr: [u8; 3],
+// }
 
 /**
  * A wrapper for page, store/keep the metadate for b-tree page.
@@ -80,13 +89,14 @@ pub(crate) enum PageAddr {
 pub(crate) struct PageRef {
     pub(crate) page: Option<LayoutPtr<Page>>,
     pub(crate) home: *const Page,
-    pub(crate) addr: PageAddr,
     pub(crate) unused: u8,
     pub(crate) r#type: PageRefType,
     state: PageRefState,
     read_state: AtomicUsize,
     
     pub(crate) key: PageRefKey,
+
+    pub(crate) addr: PageAddrOption, /* page address info. */
     
     pub(crate) dsk: *mut (),
     // page_status: pageStatus, /* prefetch/reading */
@@ -157,11 +167,24 @@ impl PageRef {
     }
 
     /**
-     * Return Page physical address.
+     * Return address of the page.
      */
-    pub(crate) fn page_phy_addr(&self) {
+    pub(crate) fn page_address(&self) -> Option<()> {
+        
+        let addr = &self.addr;
 
+        match addr {
+            PageAddrOption::None => {
+                return None;
+            },
+            PageAddrOption::In(in_addr) => {
 
+            },
+            PageAddrOption::Off(off_addr) => {
+
+            },
+        }
+        None
     }
 }
 
@@ -244,6 +267,7 @@ pub(crate) struct Page {
     // col_fix_leaf_page: BtreePageColFix,
     // col_var_leaf_page: BtreePageColVar,
 
+    pub(crate) page_header: Option<&'static PageHeader>,
 
 
     // leaf_entries: u32,
@@ -365,6 +389,10 @@ impl Page {
     pub(crate) fn set_modify(&mut self) -> FPResult<()> {
         Ok(())
     }
+
+    // /**
+    //  * 
+    //  */
 }
 
 #[repr(C)]
