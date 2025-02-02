@@ -220,6 +220,21 @@ pub(crate) enum PageType {
 }
 
 #[repr(C)]
+pub(crate) union PageHeaderC {
+    entries: u32,
+    datalen: u32,
+}
+
+#[repr(C)]
+pub(crate) struct PageHeader {
+    record_number: u64, /* column-store */
+    write_epoch: u64,
+    memory_size: u32,
+    c : PageHeaderC,
+    r#type: u8,
+}
+
+#[repr(C)]
 pub(crate) struct Page {
     pub(crate) r#type: PageType,
     // read_gen: EvictRule,
@@ -228,6 +243,7 @@ pub(crate) struct Page {
     // row_leaf_page: BtreePageRow,
     // col_fix_leaf_page: BtreePageColFix,
     // col_var_leaf_page: BtreePageColVar,
+
 
 
     // leaf_entries: u32,
