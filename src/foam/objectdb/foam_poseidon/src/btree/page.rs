@@ -76,7 +76,7 @@ pub(crate) enum PageAddrOption {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub(crate) struct PageDeleted {
     pub(crate) txn_id: u64,
     pub(crate) timestamp: u64,
@@ -87,6 +87,7 @@ pub(crate) struct PageDeleted {
 pub(crate) struct PageAddr {
     pub(crate) r#type: PageAddrType,
     pub(crate) addr: [u8; FP_BTREE_PAGE_ADDR_MAX_LENGTH],
+    pub(crate) size: u8,
     pub(crate) zm: ZMPage,
 
     pub(crate) del: PageDeleted,
@@ -179,7 +180,7 @@ impl PageRef {
     /**
      * Return address of the page.
      */
-    pub(crate) fn page_address(&self) -> Option<()> {
+    pub(crate) fn page_address(&self) -> Option<PageAddr> {
         
         let addr = &self.addr;
 
@@ -187,10 +188,18 @@ impl PageRef {
             PageAddrOption::None => {
                 return None;
             },
-            PageAddrOption::In(in_addr) => {
-
-            },
             PageAddrOption::Off(off_addr) => {
+                let mut addr = [0u8; FP_BTREE_PAGE_ADDR_MAX_LENGTH];
+                addr.copy_from_slice(&off_addr.addr);
+                return Some(PageAddr{
+                    r#type: off_addr.r#type,
+                    addr,
+                    size: off_addr.addr.len() as u8,
+                    zm: off_addr.zm,
+                    del: PageDeleted::default(),
+                })
+            },
+            PageAddrOption::In(in_addr) => {
 
             },
         }
