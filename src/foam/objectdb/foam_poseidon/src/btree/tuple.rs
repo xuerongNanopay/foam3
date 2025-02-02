@@ -1,15 +1,24 @@
 #![allow(unused)]
 
+use super::zone_map::{ZMTimeAggregate, ZMTimeWindow};
+
+pub(crate) const FP_BTREE_TUPLE_KEY_INLINE: u8 = 0x01;
+pub(crate) const FP_BTREE_TUPLE_KEY_PFX_INLINE: u8 = 0x02;
+pub(crate) const FP_BTREE_TUPLE_VALUE_INLINE: u8 = 0x03;
 
 /**
  * On-disk tuple representation.
- * length is 98 bytes.
+ * Each tuple represent an in-line key/value, or address info to get key/value.
+ * Three types of tuple:
+ *      1. Inline: key/value is embedded inside the tuple header(only for short size key/value).
+ *      2. Regular: key/value is follow the tuple header.
+ *      3. Overflow: key/value is store in seperate page.
  */
 #[repr(C)]
 pub(crate) struct TupleHeader(&'static [u8]);
 
 impl TupleHeader {
-
+    
 }
 
 /**
@@ -36,6 +45,7 @@ pub(crate) struct TupleCommon {
 #[repr(C)]
 pub(crate) struct TupleIntl {
     common: TupleCommon,
+    zm_ta: ZMTimeAggregate,
 }
 
 /**
@@ -45,4 +55,5 @@ pub(crate) struct TupleIntl {
 #[repr(C)]
 pub(crate) struct TupleLeaf {
     common: TupleCommon,
+    zm_tw: ZMTimeWindow,
 }
