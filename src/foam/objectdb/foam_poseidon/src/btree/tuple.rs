@@ -2,16 +2,39 @@
 
 use super::zone_map::{ZMTimeAggregate, ZMTimeWindow};
 
-pub(crate) const FP_BTREE_TUPLE_KEY_INLINE: u8 = 0x01;
-pub(crate) const FP_BTREE_TUPLE_KEY_PFX_INLINE: u8 = 0x02;
-pub(crate) const FP_BTREE_TUPLE_VALUE_INLINE: u8 = 0x03;
-
-pub(crate) const FP_BTREE_TUPLE_INLINE_MASK: u8 = 0x03;
-pub(crate) const FP_BTREE_TUPLE_INLINE_SHIFT: u8 = 2;
+pub(crate) const FP_BTREE_TUPLE_INLINE_MASK:u8 = 0x03;
+pub(crate) const FP_BTREE_TUPLE_INLINE_SHIFT:u8 = 2;
+pub(crate) const FP_BTREE_TUPLE_INLINE_MAX:u64 = 63;
 
 #[repr(usize)]
 pub(crate) enum TupleType {
+    /**
+     * Key/Value is stored in the TupleHeader.
+     * The size of key or value should not be greater than FP_BTREE_TUPLE_INLINE_MAX.
+     */
     KeyInline = 0x01,
+    KeyPrefixInline = 0x02,
+    ValueInline = 0x03,
+    /**
+     * Tuple stores address to other page.
+     */
+    AddrDel = 0x0,
+    AddrInternal = 0x01 << 4,
+    AddrLeaf = 0x02 << 4,
+    AddrLeafOverflow = 0x03 << 4,
+    /**
+     * Tuple stores key/value.
+     */
+    KVDel = 0x04 << 4,
+    Key = 0x05 << 4,
+    KeyOverflow = 0x06 << 4,
+    KeyOverflowDel = 0x07 << 4,
+    KeyPrefix = 0x08 << 4,
+    Value = 0x09 << 4,
+    ValueCopy = 0x10 << 4,
+    ValueOverflow = 0x11 << 4,
+    ValueOverflowDel = 0x12 << 4,
+
 }
 
 impl TryFrom<usize> for TupleType {
@@ -19,6 +42,9 @@ impl TryFrom<usize> for TupleType {
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
         match value {
+            0x01 => Ok(TupleType::KeyInline),
+            0x02 => Ok(TupleType::KeyPrefixInline),
+            0x03 => Ok(TupleType::ValueInline),
             _ => Err(()),
         }
     }

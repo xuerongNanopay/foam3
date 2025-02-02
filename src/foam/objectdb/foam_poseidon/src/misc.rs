@@ -352,8 +352,6 @@ macro_rules! VEC_U8 {
     };
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
