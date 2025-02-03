@@ -10,7 +10,7 @@ pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_MAX:u64 = 63;
 pub(crate) const FP_BTREE_TUPLE_TYPE_MASK:u8 = 0x0f << 4;
 
 #[repr(usize)]
-#[derive(Clone)]
+#[derive(Debug, Clone, Copy, Default)]
 pub(crate) enum TupleType {
     /**
      * Key/Value is stored in the TupleHeader.
@@ -22,6 +22,7 @@ pub(crate) enum TupleType {
     /**
      * Tuple stores address to other page.
      */
+    #[default]
     AddrDel = 0x00,
     AddrInternal = 0x10,
     AddrLeaf = 0x20,
@@ -97,26 +98,81 @@ impl TryFrom<u8> for TupleType {
  *      3. Overflow: key/value is store in seperate page.
  */
 #[repr(C)]
+#[derive(Debug, Copy, Clone, Default)]
 pub(crate) struct TupleHeader(&'static [u8]);
 
 impl TupleHeader {
-    
+    #[inline(always)]
+    fn descriptor(&self) -> u8 {
+        self.0[0]
+    }
+
+    #[inline(always)]
+    fn prefix_len(&self) -> u8 {
+        self.0[1]
+    }
+
+    #[inline(always)]
+    fn inline_data_len(&self) -> usize {
+        (self.0[0] >> FP_BTREE_TUPLE_TYPE_INLINE_SHIFT) as usize
+    }
+
+    #[inline(always)]
+    fn secondary_descriptor(&self) -> u8 {
+        self.0[2]
+    }
+}
+
+
+#[repr(C)]
+pub(crate) enum Tuple {
+    Internal(TupleInternal),
+    Leaf(TupleLeaf)
+}
+
+impl Tuple {
+    #[inline(always)]
+    fn new(tuple_header: &TupleHeader) -> Tuple {
+        let descriptor = tuple_header.descriptor();
+        let raw_type = TupleType::try_from(descriptor).unwrap();
+        let r#type = raw_type.to_internal_type();
+
+        let mut tm = TupleCommon {
+            header: *tuple_header,
+            raw_type,
+            r#type,
+            flags: 0,
+            ..Default::default()
+        };
+
+        match tm.raw_type {
+            TupleType::KeyPrefixInline => {
+                tm.prefix = tuple_header.prefix_len();
+                tm.data = &tuple_header.0[2..tuple_header.inline_data_len()];
+                tm.len = 2 + tuple_header.inline_data_len();
+            },
+            _ => {},
+        };
+    }
 }
 
 /**
  * Common tuple fields.
  */
 #[repr(C)]
+#[derive(Debug, Copy, Clone, Default)]
 pub(crate) struct TupleCommon {
     header: TupleHeader,
     col_v: u64,      /* Run-Length Encoding or Record Number in column-store */
 
     data: &'static [u8], /* Data */
 
-    len: u32, /* header + data length */
+    len: usize, /* header + data length */
 
-    raw: u8,
-    r#type: u8,
+    prefix: u8,
+
+    raw_type: TupleType,
+    r#type: TupleType,
     flags: u8,
 }
 
@@ -125,7 +181,7 @@ pub(crate) struct TupleCommon {
  * The value of the tuple is the address of children page.
  */
 #[repr(C)]
-pub(crate) struct TupleIntl {
+pub(crate) struct TupleInternal {
     common: TupleCommon,
     zm_ta: ZMTimeAggregate,
 }
