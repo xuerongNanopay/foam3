@@ -43,6 +43,7 @@ pub(crate) enum TupleType {
 impl TryFrom<u8> for TupleType {
     type Error = ();
 
+    #[inline(always)]
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         if FP_BIT_IS_SET!(value, FP_BTREE_TUPLE_TYPE_INLINE_MASK) {
             return match value {
