@@ -10,6 +10,7 @@ pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_MAX:u64 = 63;
 pub(crate) const FP_BTREE_TUPLE_TYPE_MASK:u8 = 0x0f << 4;
 
 #[repr(usize)]
+#[derive(Clone)]
 pub(crate) enum TupleType {
     /**
      * Key/Value is stored in the TupleHeader.
@@ -38,6 +39,19 @@ pub(crate) enum TupleType {
     ValueOverflow = 0xB0,
     ValueOverflowDel = 0xC0,
 
+}
+
+impl TupleType {
+    #[inline(always)]
+    fn to_internal_type(&self) -> TupleType {
+        match self {
+            TupleType::KeyInline | TupleType::KeyPrefixInline | TupleType::KeyPrefix => TupleType::Key,
+            TupleType::ValueInline => TupleType::Value,
+            TupleType::KeyOverflowDel => TupleType::KeyOverflow,
+            TupleType::ValueOverflowDel => TupleType::ValueOverflow,
+            o => o.clone(),
+        }
+    }
 }
 
 impl TryFrom<u8> for TupleType {
