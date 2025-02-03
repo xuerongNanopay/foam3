@@ -1,13 +1,14 @@
 #![allow(unused)]
 
-use crate::{FP_BIT_IS_SET, FP_BIT_MASK};
+use crate::{error::FP_NO_IMPL, internal::FPResult, FP_BIT_IS_SET, FP_BIT_MASK};
 
 use super::zone_map::{ZMTimeAggregate, ZMTimeWindow};
 
-pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_MASK:u8 = 0x03;
-pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_SHIFT:u8 = 2;
-pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_MAX:u64 = 63;
-pub(crate) const FP_BTREE_TUPLE_TYPE_MASK:u8 = 0x0f << 4;
+pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK:u8 = 0x03;
+pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_SHIFT:u8 = 2;
+pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_LEN_MAX:u64 = 63;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TYPE_MASK:u8 = 0x0f << 4;
+pub(crate) const FP_BTREE_TUPLE_HEADER_SECOND_DESC_MASK:u8 = 0x08;
 
 #[repr(usize)]
 #[derive(Debug, Clone, Copy, Default)]
@@ -55,22 +56,21 @@ impl TupleType {
     }
 }
 
-impl TryFrom<u8> for TupleType {
+impl TryFrom<&TupleHeader> for TupleType {
     type Error = ();
 
     #[inline(always)]
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        if FP_BIT_IS_SET!(value, FP_BTREE_TUPLE_TYPE_INLINE_MASK) {
-            return match value {
+    fn try_from(tuple_header: &TupleHeader) -> Result<Self, Self::Error> {
+        if tuple_header.is_inline() {
+            return match tuple_header.descriptor() {
                 0x01 => Ok(TupleType::KeyInline),
                 0x02 => Ok(TupleType::KeyPrefixInline),
                 0x03 => Ok(TupleType::ValueInline),
                 _ => panic!("impossible tuple type"),
             };
         }
-        let mut v = value;
-        FP_BIT_MASK!(v, FP_BTREE_TUPLE_TYPE_MASK);
-        return match  v {
+
+        return match  tuple_header.raw_type() {
             0x00 => Ok(TupleType::AddrDel),
             0x10 => Ok(TupleType::AddrInternal),
             0x20 => Ok(TupleType::AddrLeaf),
@@ -103,6 +103,19 @@ pub(crate) struct TupleHeader(&'static [u8]);
 
 impl TupleHeader {
     #[inline(always)]
+    fn is_inline(&self) -> bool {
+        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK)
+    }
+
+    #[inline(always)]
+    fn raw_type(&self) -> u8 {
+        let mut ret = self.0[0];
+        FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_TYPE_MASK);
+        ret
+    }
+
+
+    #[inline(always)]
     fn descriptor(&self) -> u8 {
         self.0[0]
     }
@@ -114,7 +127,7 @@ impl TupleHeader {
 
     #[inline(always)]
     fn inline_data_len(&self) -> usize {
-        (self.0[0] >> FP_BTREE_TUPLE_TYPE_INLINE_SHIFT) as usize
+        (self.0[0] >> FP_BTREE_TUPLE_HEADER_INLINE_TYPE_SHIFT) as usize
     }
 
     #[inline(always)]
@@ -132,9 +145,9 @@ pub(crate) enum Tuple {
 
 impl Tuple {
     #[inline(always)]
-    fn new(tuple_header: &TupleHeader) -> Tuple {
+    fn new(tuple_header: &TupleHeader) -> FPResult<Tuple> {
         let descriptor = tuple_header.descriptor();
-        let raw_type = TupleType::try_from(descriptor).unwrap();
+        let raw_type = TupleType::try_from(tuple_header).unwrap();
         let r#type = raw_type.to_internal_type();
 
         let mut common = TupleCommon {
@@ -150,21 +163,35 @@ impl Tuple {
                 common.prefix = tuple_header.prefix_len();
                 common.data = &tuple_header.0[2..tuple_header.inline_data_len()];
                 common.len = 2 + tuple_header.inline_data_len();
-                return Tuple::Leaf(TupleLeaf{
+                return Ok(Tuple::Leaf(TupleLeaf{
                     common,
                     zm_tw: ZMTimeWindow::new(),
-                });
+                }));
             },
             TupleType::KeyInline | TupleType::ValueInline => {
                 common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
                 common.len = 1 + tuple_header.inline_data_len();
-                return Tuple::Leaf(TupleLeaf{
+                return Ok(Tuple::Leaf(TupleLeaf{
                     common,
                     zm_tw: ZMTimeWindow::new(),
-                });
+                }));
             }
             _ => {},
         };
+
+        if matches!(common.raw_type, TupleType::KeyPrefix) {
+            common.prefix = tuple_header.prefix_len();
+        };
+
+        match common.r#type {
+            TupleType::AddrDel | TupleType::AddrInternal | 
+            TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
+                
+            },
+            _ => {},
+        };
+
+        Err(FP_NO_IMPL)
     }
 }
 
