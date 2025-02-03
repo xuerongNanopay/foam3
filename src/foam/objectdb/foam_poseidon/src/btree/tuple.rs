@@ -103,15 +103,91 @@ pub(crate) struct TupleHeader(&'static [u8]);
 
 impl TupleHeader {
     #[inline(always)]
+    fn is_key_tuple(&self) -> bool {
+        if self.is_inline() {
+            let t = self.raw_type_inline();
+            t == TupleType::KeyPrefixInline as u8 ||
+            t == TupleType::KeyInline as u8
+        } else {
+            let t = self.raw_type();
+            t == TupleType::Key as u8 ||
+            t == TupleType::KeyOverflow as u8 ||
+            t == TupleType::KeyOverflowDel as u8 ||
+            t == TupleType::KeyPrefix as u8
+        }
+    }
+
+    #[inline(always)]
+    fn is_value_tuple(&self) -> bool {
+        if self.is_inline() {
+            let t = self.raw_type_inline();
+            t == TupleType::ValueInline as u8
+        } else {
+            let t = self.raw_type();
+            t == TupleType::Value as u8 ||
+            t == TupleType::ValueCopy as u8 ||
+            t == TupleType::ValueOverflow as u8 ||
+            t == TupleType::ValueOverflowDel as u8
+        }
+    }
+
+    #[inline(always)]
+    fn is_addr_tuple(&self) -> bool {
+        if self.is_inline() {
+            false
+        } else {
+            let t = self.raw_type();
+            t == TupleType::AddrDel as u8 ||
+            t == TupleType::AddrInternal as u8 ||
+            t == TupleType::AddrLeaf as u8 ||
+            t == TupleType::AddrLeafOverflow as u8
+        }
+    }
+
+    #[inline(always)]
     fn is_inline(&self) -> bool {
         FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK)
     }
 
     #[inline(always)]
+    fn raw_type_inline(&self) -> u8 {
+        assert!(self.is_inline());
+
+        let mut ret = self.0[0];
+        FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK);
+        ret
+    }
+
+    #[inline(always)]
     fn raw_type(&self) -> u8 {
+        assert!(!self.is_inline());
+
         let mut ret = self.0[0];
         FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_TYPE_MASK);
         ret
+    }
+
+
+
+    #[inline(always)]
+    fn enable_key_prefix_comp(&self) -> bool {
+        assert!(self.is_key_tuple());
+
+        if self.is_inline() {
+            self.raw_type_inline() == TupleType::KeyPrefixInline as u8
+        } else {
+            self.raw_type() == TupleType::KeyPrefix as u8
+        }
+    }
+
+    /**
+     * Inline tuple do not support second description.
+     */
+    #[inline(always)]
+    fn enable_second_desc(&self) -> bool {
+        assert!(!self.is_inline());
+
+        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_SECOND_DESC_MASK)
     }
 
 
@@ -122,17 +198,32 @@ impl TupleHeader {
 
     #[inline(always)]
     fn prefix_len(&self) -> u8 {
+        assert!(self.enable_key_prefix_comp());
+
         self.0[1]
     }
 
     #[inline(always)]
     fn inline_data_len(&self) -> usize {
+        assert!(self.is_inline());
+
         (self.0[0] >> FP_BTREE_TUPLE_HEADER_INLINE_TYPE_SHIFT) as usize
     }
 
     #[inline(always)]
-    fn secondary_descriptor(&self) -> u8 {
-        self.0[2]
+    fn second_descriptor(&self) -> u8 {
+        assert!(self.enable_second_desc());
+
+        if self.enable_key_prefix_comp() {
+            self.0[2]
+        } else {
+            self.0[1]
+        }
+    }
+
+    #[inline(always)]
+    fn as_slice(&self, start: usize, end: usize) -> &'static[u8] {
+        &self.0[start..end]
     }
 }
 
@@ -158,10 +249,12 @@ impl Tuple {
             ..Default::default()
         };
 
+        /* Inline tuple */
+
         match common.raw_type {
             TupleType::KeyPrefixInline => {
                 common.prefix = tuple_header.prefix_len();
-                common.data = &tuple_header.0[2..tuple_header.inline_data_len()];
+                common.data = tuple_header.as_slice(2, tuple_header.inline_data_len());
                 common.len = 2 + tuple_header.inline_data_len();
                 return Ok(Tuple::Leaf(TupleLeaf{
                     common,
@@ -169,7 +262,7 @@ impl Tuple {
                 }));
             },
             TupleType::KeyInline | TupleType::ValueInline => {
-                common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
+                common.data = tuple_header.as_slice(1, tuple_header.inline_data_len());
                 common.len = 1 + tuple_header.inline_data_len();
                 return Ok(Tuple::Leaf(TupleLeaf{
                     common,
@@ -179,17 +272,23 @@ impl Tuple {
             _ => {},
         };
 
-        if matches!(common.raw_type, TupleType::KeyPrefix) {
+        /* Non-Inline tuple */
+
+        if common.header.enable_key_prefix_comp() {
             common.prefix = tuple_header.prefix_len();
         };
 
-        match common.r#type {
-            TupleType::AddrDel | TupleType::AddrInternal | 
-            TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
-                
-            },
-            _ => {},
-        };
+        if common.header.enable_second_desc() {
+            let second_desc = common.header.second_descriptor();
+            
+            match common.r#type {
+                TupleType::AddrDel | TupleType::AddrInternal | 
+                TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
+                    
+                },
+                _ => {},
+            };
+        }
 
         Err(FP_NO_IMPL)
     }
