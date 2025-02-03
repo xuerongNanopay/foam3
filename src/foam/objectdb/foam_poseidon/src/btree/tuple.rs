@@ -137,7 +137,7 @@ impl Tuple {
         let raw_type = TupleType::try_from(descriptor).unwrap();
         let r#type = raw_type.to_internal_type();
 
-        let mut tm = TupleCommon {
+        let mut common = TupleCommon {
             header: *tuple_header,
             raw_type,
             r#type,
@@ -145,12 +145,24 @@ impl Tuple {
             ..Default::default()
         };
 
-        match tm.raw_type {
+        match common.raw_type {
             TupleType::KeyPrefixInline => {
-                tm.prefix = tuple_header.prefix_len();
-                tm.data = &tuple_header.0[2..tuple_header.inline_data_len()];
-                tm.len = 2 + tuple_header.inline_data_len();
+                common.prefix = tuple_header.prefix_len();
+                common.data = &tuple_header.0[2..tuple_header.inline_data_len()];
+                common.len = 2 + tuple_header.inline_data_len();
+                return Tuple::Leaf(TupleLeaf{
+                    common,
+                    zm_tw: ZMTimeWindow::new(),
+                });
             },
+            TupleType::KeyInline | TupleType::ValueInline => {
+                common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
+                common.len = 1 + tuple_header.inline_data_len();
+                return Tuple::Leaf(TupleLeaf{
+                    common,
+                    zm_tw: ZMTimeWindow::new(),
+                });
+            }
             _ => {},
         };
     }

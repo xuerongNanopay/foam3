@@ -3,7 +3,7 @@
 use crate::internal::*;
 
 #[repr(C)]
-#[derive(Default, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub(crate) struct ZMPage {
     pub(crate) start_ts: FPTimeStamp,
     pub(crate) stop_ts: FPTimeStamp,
@@ -22,7 +22,7 @@ pub(crate) struct ZMTimeWindow {
 }
 
 impl ZMTimeWindow {
-    fn new() -> ZMTimeWindow {
+    pub(crate) fn new() -> ZMTimeWindow {
         ZMTimeWindow {
             durable_start : FP_TIME_STAMP_MIN,
             start         : FP_TIME_STAMP_MIN,
@@ -48,7 +48,7 @@ pub(crate) struct ZMTimeAggregate {
 
 impl ZMTimeAggregate {
     #[inline(always)]
-    fn new() -> ZMTimeAggregate {
+    pub(crate) fn new() -> ZMTimeAggregate {
         ZMTimeAggregate {
             latest_durable_start  : FP_TIME_STAMP_MIN,
             latest_start          : FP_TIME_STAMP_MIN,
