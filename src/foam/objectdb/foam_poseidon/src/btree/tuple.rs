@@ -1,10 +1,13 @@
 #![allow(unused)]
 
+use crate::{FP_BIT_IS_SET, FP_BIT_MASK};
+
 use super::zone_map::{ZMTimeAggregate, ZMTimeWindow};
 
-pub(crate) const FP_BTREE_TUPLE_INLINE_MASK:u8 = 0x03;
-pub(crate) const FP_BTREE_TUPLE_INLINE_SHIFT:u8 = 2;
-pub(crate) const FP_BTREE_TUPLE_INLINE_MAX:u64 = 63;
+pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_MASK:u8 = 0x03;
+pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_SHIFT:u8 = 2;
+pub(crate) const FP_BTREE_TUPLE_TYPE_INLINE_MAX:u64 = 63;
+pub(crate) const FP_BTREE_TUPLE_TYPE_MASK:u8 = 0x0f << 4;
 
 #[repr(usize)]
 pub(crate) enum TupleType {
@@ -18,35 +21,55 @@ pub(crate) enum TupleType {
     /**
      * Tuple stores address to other page.
      */
-    AddrDel = 0x0,
-    AddrInternal = 0x01 << 4,
-    AddrLeaf = 0x02 << 4,
-    AddrLeafOverflow = 0x03 << 4,
+    AddrDel = 0x00,
+    AddrInternal = 0x10,
+    AddrLeaf = 0x20,
+    AddrLeafOverflow = 0x30,
     /**
      * Tuple stores key/value.
      */
-    KVDel = 0x04 << 4,
-    Key = 0x05 << 4,
-    KeyOverflow = 0x06 << 4,
-    KeyOverflowDel = 0x07 << 4,
-    KeyPrefix = 0x08 << 4,
-    Value = 0x09 << 4,
-    ValueCopy = 0x10 << 4,
-    ValueOverflow = 0x11 << 4,
-    ValueOverflowDel = 0x12 << 4,
+    KVDel = 0x40,
+    Key = 0x50,
+    KeyOverflow = 0x60,
+    KeyOverflowDel = 0x70,
+    KeyPrefix = 0x80,
+    Value = 0x90,
+    ValueCopy = 0xA0,
+    ValueOverflow = 0xB0,
+    ValueOverflowDel = 0xC0,
 
 }
 
-impl TryFrom<usize> for TupleType {
+impl TryFrom<u8> for TupleType {
     type Error = ();
 
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        match value {
-            0x01 => Ok(TupleType::KeyInline),
-            0x02 => Ok(TupleType::KeyPrefixInline),
-            0x03 => Ok(TupleType::ValueInline),
-            _ => Err(()),
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        if FP_BIT_IS_SET!(value, FP_BTREE_TUPLE_TYPE_INLINE_MASK) {
+            return match value {
+                0x01 => Ok(TupleType::KeyInline),
+                0x02 => Ok(TupleType::KeyPrefixInline),
+                0x03 => Ok(TupleType::ValueInline),
+                _ => panic!("impossible tuple type"),
+            };
         }
+        let mut v = value;
+        FP_BIT_MASK!(v, FP_BTREE_TUPLE_TYPE_MASK);
+        return match  v {
+            0x00 => Ok(TupleType::AddrDel),
+            0x10 => Ok(TupleType::AddrInternal),
+            0x20 => Ok(TupleType::AddrLeaf),
+            0x30 => Ok(TupleType::AddrLeafOverflow),
+            0x40 => Ok(TupleType::KVDel),
+            0x50 => Ok(TupleType::Key),
+            0x60 => Ok(TupleType::KeyOverflow),
+            0x70 => Ok(TupleType::KeyOverflowDel),
+            0x80 => Ok(TupleType::KeyPrefix),
+            0x90 => Ok(TupleType::Value),
+            0xA0 => Ok(TupleType::ValueCopy),
+            0xB0 => Ok(TupleType::ValueOverflow),
+            0xC0 => Ok(TupleType::ValueOverflowDel),
+            _ => panic!("impossible tuple type"),
+        };
     }
 }
 

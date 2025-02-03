@@ -39,6 +39,9 @@ macro_rules! FP_BIT_OP {
     (CLEAR, $value:expr, $mask:expr) => {
         $value &= !($mask)
     };
+    (MASK, $value:expr, $mask:expr) => {
+        $value &= $mask
+    };
     (TOGGLE, $value:expr, $mask:expr) => {
         $value ^= ($mask)
     };
@@ -57,6 +60,12 @@ macro_rules! FP_BIT_SET {
 macro_rules! FP_BIT_CLR {
     ($value:expr, $mask:expr) => {
         crate::FP_BIT_OP!(CLEAR, $value, $mask)
+    };
+}
+#[macro_export]
+macro_rules! FP_BIT_MASK {
+    ($value:expr, $mask:expr) => {
+        crate::FP_BIT_OP!(MASK, $value, $mask)
     };
 }
 #[macro_export]
