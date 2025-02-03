@@ -2,13 +2,18 @@
 
 use crate::{error::FP_NO_IMPL, internal::FPResult, FP_BIT_IS_SET, FP_BIT_MASK};
 
-use super::zone_map::{ZMTimeAggregate, ZMTimeWindow};
+use super::zone_map::{ZMTxnAddr, ZMTxnValue};
 
-pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK:u8 = 0x03;
-pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_SHIFT:u8 = 2;
+/* Descriptor/raw type */
+pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK:u8 = 0x03;
+pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_ST:u8 = 2;
 pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_LEN_MAX:u64 = 63;
 pub(crate) const FP_BTREE_TUPLE_HEADER_TYPE_MASK:u8 = 0x0f << 4;
-pub(crate) const FP_BTREE_TUPLE_HEADER_SECOND_DESC_MASK:u8 = 0x08;
+
+
+/* Second Descriptor  */
+pub(crate) const FP_BTREE_TUPLE_HEADER_SECOND_DESC_MK:u8 = 0x08;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK:u8 = 0x01;
 
 #[repr(usize)]
 #[derive(Debug, Clone, Copy, Default)]
@@ -146,7 +151,7 @@ impl TupleHeader {
 
     #[inline(always)]
     fn is_inline(&self) -> bool {
-        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK)
+        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK)
     }
 
     #[inline(always)]
@@ -154,7 +159,7 @@ impl TupleHeader {
         assert!(self.is_inline());
 
         let mut ret = self.0[0];
-        FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MASK);
+        FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK);
         ret
     }
 
@@ -172,22 +177,17 @@ impl TupleHeader {
     #[inline(always)]
     fn enable_key_prefix_comp(&self) -> bool {
         assert!(self.is_key_tuple());
-
-        if self.is_inline() {
-            self.raw_type_inline() == TupleType::KeyPrefixInline as u8
-        } else {
-            self.raw_type() == TupleType::KeyPrefix as u8
-        }
-    }
-
-    /**
-     * Inline tuple do not support second description.
-     */
-    #[inline(always)]
-    fn enable_second_desc(&self) -> bool {
         assert!(!self.is_inline());
 
-        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_SECOND_DESC_MASK)
+        self.raw_type() == TupleType::KeyPrefix as u8
+    }
+
+    #[inline(always)]
+    fn enable_key_prefix_comp_inline(&self) -> bool {
+        assert!(self.is_key_tuple());
+        assert!(self.is_inline());
+
+        self.raw_type_inline() == TupleType::KeyPrefixInline as u8
     }
 
 
@@ -207,7 +207,17 @@ impl TupleHeader {
     fn inline_data_len(&self) -> usize {
         assert!(self.is_inline());
 
-        (self.0[0] >> FP_BTREE_TUPLE_HEADER_INLINE_TYPE_SHIFT) as usize
+        (self.0[0] >> FP_BTREE_TUPLE_HEADER_INLINE_TYPE_ST) as usize
+    }
+
+    /**
+     * Inline tuple do not support second description.
+     */
+    #[inline(always)]
+    fn enable_second_desc(&self) -> bool {
+        assert!(!self.is_inline());
+
+        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_SECOND_DESC_MK)
     }
 
     #[inline(always)]
@@ -230,8 +240,9 @@ impl TupleHeader {
 
 #[repr(C)]
 pub(crate) enum Tuple {
-    Internal(TupleInternal),
-    Leaf(TupleLeaf)
+    Addr(TupleAddr),
+    Value(TupleValue),
+    Key(TupleKey)
 }
 
 impl Tuple {
@@ -256,19 +267,25 @@ impl Tuple {
                 common.prefix = tuple_header.prefix_len();
                 common.data = tuple_header.as_slice(2, tuple_header.inline_data_len());
                 common.len = 2 + tuple_header.inline_data_len();
-                return Ok(Tuple::Leaf(TupleLeaf{
+                return Ok(Tuple::Key(TupleKey{
                     common,
-                    zm_tw: ZMTimeWindow::new(),
                 }));
             },
-            TupleType::KeyInline | TupleType::ValueInline => {
+            TupleType::KeyInline => {
                 common.data = tuple_header.as_slice(1, tuple_header.inline_data_len());
                 common.len = 1 + tuple_header.inline_data_len();
-                return Ok(Tuple::Leaf(TupleLeaf{
+                return Ok(Tuple::Key(TupleKey{
                     common,
-                    zm_tw: ZMTimeWindow::new(),
                 }));
-            }
+            },
+            TupleType::ValueInline => {
+                common.data = tuple_header.as_slice(1, tuple_header.inline_data_len());
+                common.len = 1 + tuple_header.inline_data_len();
+                return Ok(Tuple::Value(TupleValue{
+                    common,
+                    txn: None,
+                }));
+            },
             _ => {},
         };
 
@@ -278,13 +295,21 @@ impl Tuple {
             common.prefix = tuple_header.prefix_len();
         };
 
+        let mut zm_ta: Option<ZMTxnAddr> = None;
+        // let zm_tw: Option<ZMTimeWindow> = None;
+
+        /* Extract second description if need */
         if common.header.enable_second_desc() {
             let second_desc = common.header.second_descriptor();
-            
+
             match common.r#type {
                 TupleType::AddrDel | TupleType::AddrInternal | 
                 TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
-                    
+                    let ta = ZMTxnAddr::new();
+
+
+
+                    zm_ta = Some(ta)
                 },
                 _ => {},
             };
@@ -314,22 +339,19 @@ pub(crate) struct TupleCommon {
     flags: u8,
 }
 
-/**
- * Tuple for internal page.
- * The value of the tuple is the address of children page.
- */
 #[repr(C)]
-pub(crate) struct TupleInternal {
+pub(crate) struct TupleAddr {
     common: TupleCommon,
-    zm_ta: ZMTimeAggregate,
+    txn: Option<ZMTxnAddr>,
 }
 
-/**
- * Tuple for leaf page.
- * The value of the tuple it the actual value that store in b-tree.
- */
 #[repr(C)]
-pub(crate) struct TupleLeaf {
+pub(crate) struct TupleKey {
     common: TupleCommon,
-    zm_tw: ZMTimeWindow,
+}
+
+#[repr(C)]
+pub(crate) struct TupleValue {
+    common: TupleCommon,
+    txn: Option<ZMTxnValue>,
 }
