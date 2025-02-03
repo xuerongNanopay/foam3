@@ -9,30 +9,33 @@ pub(crate) struct ZMPage {
     pub(crate) stop_ts: FPTimeStamp,
 }
 
+/**
+ * Metadata for transaction use by value(leaf node value)
+ */
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub(crate) struct ZMTxnValue {
-    pub(crate) durable_start: FPTimeStamp,
-    pub(crate) start: FPTimeStamp,
-    pub(crate) txn_start: FPTxnId,
+    pub(crate) init_commit_at: FPTimeStamp,
+    pub(crate) init_at: FPTimeStamp,
+    pub(crate) init_by: FPTxnId,
 
-    pub(crate) durable_end: FPTimeStamp,
-    pub(crate) end: FPTimeStamp,
-    pub(crate) txn_end: FPTxnId,
+    pub(crate) del_commit_at: FPTimeStamp,
+    pub(crate) del_at: FPTimeStamp,
+    pub(crate) del_by: FPTxnId,
 
-    pub(crate) txn_prepare: u8,
+    pub(crate) in_txn_prepare: u8,
 }
 
 impl ZMTxnValue {
     pub(crate) fn new() -> ZMTxnValue {
         ZMTxnValue {
-            durable_start : FP_TIME_STAMP_MIN,
-            start         : FP_TIME_STAMP_MIN,
-            txn_start     : FP_TXN_ID_NONE,
-            durable_end   : FP_TIME_STAMP_MIN,
-            end           : FP_TIME_STAMP_MAX,
-            txn_end       : FP_TXN_ID_MAX,
-            txn_prepare   : 0u8,
+            init_commit_at   : FP_TIME_STAMP_MIN,
+            init_at          : FP_TIME_STAMP_MIN,
+            init_by          : FP_TXN_ID_NONE,
+            del_commit_at    : FP_TIME_STAMP_MIN,
+            del_at           : FP_TIME_STAMP_MAX,
+            del_by           : FP_TXN_ID_MAX,
+            in_txn_prepare   : 0u8,
         }
     }
 }
@@ -43,28 +46,29 @@ impl ZMTxnValue {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub(crate) struct ZMTxnAddr {
-    pub(crate) latest_durable_start: FPTimeStamp,
-    pub(crate) latest_start: FPTimeStamp,
-    pub(crate) latest_txn_start: FPTxnId,
+    pub(crate) newest_init_commit_at: FPTimeStamp,
+    pub(crate) newest_del_commit_at: FPTimeStamp,
 
-    pub(crate) latest_durable_end: FPTimeStamp,
-    pub(crate) latest_end: FPTimeStamp,
-    pub(crate) latest_txn_end: FPTxnId,
+    pub(crate) oldest_init_at: FPTimeStamp,
+    pub(crate) newest_by: FPTxnId,
 
-    pub(crate) txn_prepare: u8,
+    pub(crate) newest_del_at: FPTimeStamp,
+    pub(crate) newest_del_by: FPTimeStamp,
+
+    pub(crate) in_txn_prepare: u8,
 }
 
 impl ZMTxnAddr {
     #[inline(always)]
     pub(crate) fn new() -> ZMTxnAddr {
         ZMTxnAddr {
-            latest_durable_start  : FP_TIME_STAMP_MIN,
-            latest_start          : FP_TIME_STAMP_MIN,
-            latest_txn_start      : FP_TXN_ID_NONE,
-            latest_durable_end    : FP_TIME_STAMP_MIN,
-            latest_end            : FP_TIME_STAMP_MAX,
-            latest_txn_end        : FP_TXN_ID_MAX,
-            txn_prepare           : 0u8,
+            newest_init_commit_at   : FP_TIME_STAMP_MIN,
+            newest_del_commit_at    : FP_TIME_STAMP_MIN,
+            oldest_init_at          : FP_TIME_STAMP_MIN,
+            newest_by               : FP_TXN_ID_NONE,
+            newest_del_at           : FP_TIME_STAMP_MAX,
+            newest_del_by           : FP_TXN_ID_NONE,
+            in_txn_prepare          : 0u8,
         }
     }
 }
