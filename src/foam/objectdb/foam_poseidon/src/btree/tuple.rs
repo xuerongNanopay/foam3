@@ -182,20 +182,11 @@ impl TupleHeader {
 
     #[inline(always)]
     fn enable_key_prefix_comp(&self) -> bool {
-        assert!(self.is_key_tuple());
         assert!(!self.is_inline());
+        assert!(self.is_key_tuple());
 
         self.raw_type() == TupleType::KeyPrefix as u8
     }
-
-    #[inline(always)]
-    fn enable_key_prefix_comp_inline(&self) -> bool {
-        assert!(self.is_key_tuple());
-        assert!(self.is_inline());
-
-        self.raw_type_inline() == TupleType::KeyPrefixInline as u8
-    }
-
 
     #[inline(always)]
     fn descriptor(&self) -> u8 {
@@ -203,8 +194,8 @@ impl TupleHeader {
     }
 
     #[inline(always)]
-    fn prefix_len(&self) -> u8 {
-        assert!(self.enable_key_prefix_comp());
+    fn prefix_len_inline(&self) -> u8 {
+        assert!(self.is_inline());
 
         self.0[1]
     }
@@ -222,6 +213,7 @@ impl TupleHeader {
     #[inline(always)]
     fn enable_txn_desc(&self) -> bool {
         assert!(!self.is_inline());
+        assert!(self.is_addr_tuple() || self.is_value_tuple());
 
         FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_HEADER_TXN_DESC_MK)
     }
@@ -230,16 +222,25 @@ impl TupleHeader {
     fn txn_descriptor(&self) -> u8 {
         assert!(self.enable_txn_desc());
 
-        if self.enable_key_prefix_comp() {
-            self.0[2]
-        } else {
-            self.0[1]
-        }
+        self.0[1]
     }
 
     #[inline(always)]
     fn as_slice(&self, start: usize, end: usize) -> &'static[u8] {
         &self.0[start..end]
+    }
+}
+
+impl Into<TupleTxnDesc> for TupleHeader {
+    #[inline(always)]
+    fn into(self) -> TupleTxnDesc {
+        assert!(self.enable_txn_desc());
+        
+        let (flags, data) = (self.0[1], &self.0[2..]);
+        TupleTxnDesc {
+            flags,
+            data,
+        }
     }
 }
 
@@ -418,7 +419,7 @@ impl Tuple {
 
         match common.raw_type {
             TupleType::KeyPrefixInline => {
-                common.prefix = tuple_header.prefix_len();
+                common.prefix = tuple_header.prefix_len_inline();
                 common.data = tuple_header.as_slice(2, tuple_header.inline_data_len());
                 common.len = 2 + tuple_header.inline_data_len();
                 return Ok(Tuple::Key(TupleKey{
@@ -445,9 +446,10 @@ impl Tuple {
 
         /* Non-Inline tuple */
 
-        if common.header.enable_key_prefix_comp() {
-            common.prefix = tuple_header.prefix_len();
-        };
+        // Move to key tuple.
+        // if common.header.enable_key_prefix_comp() {
+        //     common.prefix = tuple_header.prefix_len();
+        // };
 
         let mut zm_ta: Option<ZMTxnAddr> = None;
         // let zm_tw: Option<ZMTimeWindow> = None;
