@@ -4,6 +4,7 @@
 use crate::{error::FP_ILLEGAL_ARGUMENT, internal::FPResult};
 
 //TODO: untested code.
+#[inline(always)]
 pub fn decode_uint(b: &[u8]) -> FPResult<(u64, usize)> {
     let mut result: u64 = 0;
     let mut shift = 0;
@@ -26,6 +27,7 @@ pub fn decode_uint(b: &[u8]) -> FPResult<(u64, usize)> {
     Err(FP_ILLEGAL_ARGUMENT)
 }
 
+#[inline(always)]
 pub fn encode_uint(mut v: u64) -> FPResult<Vec<u8>> {
     let mut buffer = Vec::new();
     while v >= 0x80 {
@@ -36,6 +38,7 @@ pub fn encode_uint(mut v: u64) -> FPResult<Vec<u8>> {
     Ok(buffer)
 }
 
+#[inline(always)]
 pub fn encode_uint_inline(mut v: u64, buf: &mut [u8]) -> FPResult<usize> {
     let mut i = 0;
     while v >= 0x80 {

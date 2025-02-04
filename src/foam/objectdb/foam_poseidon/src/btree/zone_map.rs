@@ -62,12 +62,12 @@ impl ZMTxnAddr {
     #[inline(always)]
     pub(crate) fn new() -> ZMTxnAddr {
         ZMTxnAddr {
-            newest_start_commit_at  : FP_TIME_STAMP_MIN,
-            newest_end_commit_at    : FP_TIME_STAMP_MIN,
-            oldest_start_at         : FP_TIME_STAMP_MIN,
+            newest_start_commit_at  : FP_TIME_STAMP_NONE,
+            newest_end_commit_at    : FP_TIME_STAMP_NONE,
+            oldest_start_at         : FP_TIME_STAMP_NONE,
             newest_mod_by           : FP_TXN_ID_NONE,
             newest_end_at           : FP_TIME_STAMP_MAX,
-            newest_end_by           : FP_TXN_ID_NONE,
+            newest_end_by           : FP_TXN_ID_MAX,
             in_txn_prepare          : 0u8,
         }
     }

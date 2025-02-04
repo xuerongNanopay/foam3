@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{error::FP_NO_IMPL, internal::FPResult, FP_BIT_IST, FP_BIT_MSK};
+use crate::{error::FP_NO_IMPL, internal::FPResult, util::compaction::varint, FP_BIT_IST, FP_BIT_MSK};
 
 use super::zone_map::{ZMTxnAddr, ZMTxnValue};
 
@@ -245,47 +245,100 @@ impl TupleHeader {
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Default)]
-pub(crate) struct TupleTxnDescAddr{
+pub(crate) struct TupleTxnDesc{
     data: &'static [u8],
     flags: u8,
 }
 
-impl TupleTxnDescAddr {
+impl TupleTxnDesc {
     #[inline(always)]
-    fn is_in_txn_prepare(&self) -> bool {
+    fn has_in_txn_prepare(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK)
     }
 
     #[inline(always)]
-    fn is_oldest_start_at(&self) -> bool {
+    fn has_txn_start_at(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_AT_MK)
     }
 
     #[inline(always)]
-    fn is_newest_start_by(&self) -> bool {
+    fn has_txn_start_by(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_BY_MK)
     }
 
     #[inline(always)]
-    fn is_newest_start_commit_at(&self) -> bool {
+    fn has_txn_start_commit_at(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_COMMIT_AT_MK)
     }
 
     #[inline(always)]
-    fn is_newest_end_at(&self) -> bool {
+    fn has_txn_end_at(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_AT_MK)
     }
 
     #[inline(always)]
-    fn is_newest_end_commit_at(&self) -> bool {
+    fn has_txn_end_commit_at(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_COMMIT_AT_MK)
     }
 
     #[inline(always)]
-    fn is_newest_end_by(&self) -> bool {
+    fn has_txn_end_by(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_BY_MK)
     }
 }
+
+impl Into<ZMTxnAddr> for TupleTxnDesc {
+    #[inline(always)]
+    fn into(self) -> ZMTxnAddr {
+        let mut cur = self.data;
+        let mut val: u64;
+        let mut idx: usize;
+        let mut ret = ZMTxnAddr::new();
+
+        if self.has_in_txn_prepare() {
+            ret.in_txn_prepare = 1u8;
+        }
+
+        if self.has_txn_start_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.oldest_start_at = val;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_start_by() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.newest_mod_by = val;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_start_commit_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.newest_start_commit_at = val + ret.oldest_start_at;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_end_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.newest_end_at = val + ret.oldest_start_at;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_end_by() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.newest_end_by = val;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_end_commit_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.newest_end_commit_at = val;
+            cur = &cur[idx..];
+        }
+
+        ret
+    }
+}
+
 
 #[repr(C)]
 pub(crate) enum Tuple {
