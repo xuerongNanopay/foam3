@@ -5,7 +5,7 @@ pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IS_SET, FP_SIZE_OF};
+use crate::{block::manager::BlockManager, cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IST, FP_SIZE_OF};
 
 use super::{page::{Page, PageAddrOption, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
@@ -120,7 +120,7 @@ impl BTree {
 
 
                     // Initial first leaf page if bulk load on.
-                    if FP_BIT_IS_SET!(btree.flags, FP_BTREE_BULK) {
+                    if FP_BIT_IST!(btree.flags, FP_BTREE_BULK) {
                         Self::new_leaf_page(btree, &mut *first_page_ref)?;
                         (*first_page_ref).r#type = PageRefType::Leaf;
                         (*first_page_ref).set_state(PageRefState::InMemory);
@@ -256,20 +256,20 @@ impl BTree {
             current_status = read_ref.get_state();
             match current_status {
                 PageRefState::Deleted => {
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_CACHE_ONLY | FP_BTEE_READ_NO_WAIT) {
+                    if FP_BIT_IST!(flags, FP_BTEE_READ_CACHE_ONLY | FP_BTEE_READ_NO_WAIT) {
                         return Err(FP_BT_PAGE_READ_NOT_FOUND);
                     }
                     //TODO: Need to consider transaction/snapshot.
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_SKIP_DELETED) {
+                    if FP_BIT_IST!(flags, FP_BTEE_READ_SKIP_DELETED) {
                         return Err(FP_BT_PAGE_READ_NOT_FOUND);
                     }
                     //TODO: goto read.
                 },
                 PageRefState::Disk => {
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_CACHE_ONLY) {
+                    if FP_BIT_IST!(flags, FP_BTEE_READ_CACHE_ONLY) {
                         return Err(FP_BT_PAGE_READ_NOT_FOUND);
                     }
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_OVER_CACHE) {
+                    if FP_BIT_IST!(flags, FP_BTEE_READ_OVER_CACHE) {
                         //TODO: check the used cache size.
                     }
 
@@ -277,18 +277,18 @@ impl BTree {
                     read_from_disk = true;
                     evit_skip = true;
 
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NEED_ONCE) {
+                    if FP_BIT_IST!(flags, FP_BTEE_READ_NEED_ONCE) {
                         wont_need = true
                     }
                     continue;
                 },
                 PageRefState::Locked => {
-                    if FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_WAIT) {
+                    if FP_BIT_IST!(flags, FP_BTEE_READ_NO_WAIT) {
                         return Err(FP_BT_PAGE_READ_NOT_FOUND);
                     }
 
                     if matches!(read_ref.get_read_state(), PageReadingState::Reading) {
-                        if FP_BIT_IS_SET!(flags, FP_BTEE_READ_CACHE_ONLY) {
+                        if FP_BIT_IST!(flags, FP_BTEE_READ_CACHE_ONLY) {
                             return Err(FP_BT_PAGE_READ_NOT_FOUND);
                         }
                     }
@@ -300,7 +300,7 @@ impl BTree {
                 },
                 PageRefState::InMemory => {
                     'evict: loop {
-                        if FP_BIT_IS_SET!(self.flags, FP_BTREE_IN_MEMORY) {
+                        if FP_BIT_IST!(self.flags, FP_BTREE_IN_MEMORY) {
                             break;
                         }
                         //MUST TODO: register harzard pointer.
@@ -310,7 +310,7 @@ impl BTree {
                             continue 'load_page;
                         }
 
-                        if evit_skip || FP_BIT_IS_SET!(flags, FP_BTEE_READ_NO_SPLIT) {
+                        if evit_skip || FP_BIT_IST!(flags, FP_BTEE_READ_NO_SPLIT) {
                             break;
                         }
 
@@ -344,7 +344,7 @@ impl BTree {
             return Ok(())
         }
 
-        if FP_BIT_IS_SET!(self.flags, FP_BTREE_IN_MEMORY) {
+        if FP_BIT_IST!(self.flags, FP_BTREE_IN_MEMORY) {
             return Ok(())
         }
 

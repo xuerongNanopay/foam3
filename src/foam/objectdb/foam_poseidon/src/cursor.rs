@@ -199,7 +199,7 @@ impl ICursor {
     }
 
     pub fn is_key_set(&self) -> bool {
-        FP_BIT_IS_SET!(self.flags, CURSOR_KEY_SET)
+        FP_BIT_IST!(self.flags, CURSOR_KEY_SET)
     }
 }
 

@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{error::FP_NO_IMPL, internal::FPResult, FP_BIT_IS_SET, FP_BIT_MASK};
+use crate::{error::FP_NO_IMPL, internal::FPResult, FP_BIT_IST, FP_BIT_MSK};
 
 use super::zone_map::{ZMTxnAddr, ZMTxnValue};
 
@@ -11,9 +11,15 @@ pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_LEN_MAX:u64 = 63;
 pub(crate) const FP_BTREE_TUPLE_HEADER_TYPE_MASK:u8 = 0x0f << 4;
 
 
-/* Second Descriptor  */
-pub(crate) const FP_BTREE_TUPLE_HEADER_SECOND_DESC_MK:u8 = 0x08;
+/* Txn Descriptor  */
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_DESC_MK:u8 = 0x08;
 pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK:u8 = 0x01;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_START_COMMIT_AT_MK:u8 = 0x01 << 1;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_END_COMMIT_AT_MK:u8 = 0x01 << 2;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_START_AT_MK:u8 = 0x01 << 3;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_END_AT_MK:u8 = 0x01 << 4;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_START_BY_MK:u8 = 0x01 << 5;
+pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_END_BY_MK:u8 = 0x01 << 6;
 
 #[repr(usize)]
 #[derive(Debug, Clone, Copy, Default)]
@@ -151,7 +157,7 @@ impl TupleHeader {
 
     #[inline(always)]
     fn is_inline(&self) -> bool {
-        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK)
+        FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK)
     }
 
     #[inline(always)]
@@ -159,7 +165,7 @@ impl TupleHeader {
         assert!(self.is_inline());
 
         let mut ret = self.0[0];
-        FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK);
+        FP_BIT_MSK!(ret, FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK);
         ret
     }
 
@@ -168,7 +174,7 @@ impl TupleHeader {
         assert!(!self.is_inline());
 
         let mut ret = self.0[0];
-        FP_BIT_MASK!(ret, FP_BTREE_TUPLE_HEADER_TYPE_MASK);
+        FP_BIT_MSK!(ret, FP_BTREE_TUPLE_HEADER_TYPE_MASK);
         ret
     }
 
@@ -211,18 +217,18 @@ impl TupleHeader {
     }
 
     /**
-     * Inline tuple do not support second description.
+     * Inline tuple do not support transaction description.
      */
     #[inline(always)]
-    fn enable_second_desc(&self) -> bool {
+    fn enable_txn_desc(&self) -> bool {
         assert!(!self.is_inline());
 
-        FP_BIT_IS_SET!(self.0[0], FP_BTREE_TUPLE_HEADER_SECOND_DESC_MK)
+        FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_HEADER_TXN_DESC_MK)
     }
 
     #[inline(always)]
-    fn second_descriptor(&self) -> u8 {
-        assert!(self.enable_second_desc());
+    fn txn_descriptor(&self) -> u8 {
+        assert!(self.enable_txn_desc());
 
         if self.enable_key_prefix_comp() {
             self.0[2]
@@ -237,6 +243,18 @@ impl TupleHeader {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Copy, Clone, Default)]
+pub(crate) struct TupleTxnDescAddr{
+    data: &'static [u8],
+    flags: u8,
+}
+
+impl TupleTxnDescAddr {
+    fn is_in_txn_prepare(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK)
+    }
+}
 
 #[repr(C)]
 pub(crate) enum Tuple {
@@ -299,13 +317,14 @@ impl Tuple {
         // let zm_tw: Option<ZMTimeWindow> = None;
 
         /* Extract second description if need */
-        if common.header.enable_second_desc() {
-            let second_desc = common.header.second_descriptor();
+        if common.header.enable_txn_desc() {
+            let second_desc = common.header.txn_descriptor();
 
             match common.r#type {
                 TupleType::AddrDel | TupleType::AddrInternal | 
                 TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
                     let ta = ZMTxnAddr::new();
+                    let txn_desc = common.header.txn_descriptor();
 
 
 

@@ -20,7 +20,7 @@ pub(crate) fn block_addr_unpack(block_handle: &BlockHandle, bytes: &[u8], addr_s
     let mut object_id = 0u64;
     if addr_size != 0 && iter.maybe_next() {
         let cur = iter.cur().unwrap();
-        if FP_BIT_IS_SET!(cur, FP_BLOCK_ADDR_INDICATOR) {
+        if FP_BIT_IST!(cur, FP_BLOCK_ADDR_INDICATOR) {
             object_id = FP_ASSERT_NOT_NONE!(iter.next(), FP_BK_ILLEGAL_ARGUMENT); 
         }
     }

@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{cursor::{BaseCursor, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER_INCLUSIVE}, error::FP_NO_IMPL, types::FPResult, FP_BIT_IS_SET};
+use crate::{cursor::{BaseCursor, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER_INCLUSIVE}, error::FP_NO_IMPL, types::FPResult, FP_BIT_IST};
 
 use super::btree::{btree_cursor::BtreeCursor, BTreeType};
 
@@ -18,7 +18,7 @@ pub(crate) fn key_bounds_check(bt_cursor: &BtreeCursor, upper: bool) -> FPResult
             return Err(FP_NO_IMPL);
         }
 
-        if FP_BIT_IS_SET!(bt_cursor.base.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
+        if FP_BIT_IST!(bt_cursor.base.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
             if matches!(bt_cursor.btree.r#type, BTreeType::Row) {
 
             } else {
@@ -38,7 +38,7 @@ pub(crate) fn key_bounds_check(bt_cursor: &BtreeCursor, upper: bool) -> FPResult
             return Err(FP_NO_IMPL);
         }
 
-        if FP_BIT_IS_SET!(bt_cursor.base.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
+        if FP_BIT_IST!(bt_cursor.base.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
             if matches!(bt_cursor.btree.r#type, BTreeType::Row) {
 
             } else {

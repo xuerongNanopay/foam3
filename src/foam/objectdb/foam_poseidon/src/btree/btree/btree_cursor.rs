@@ -2,7 +2,7 @@
 
 use std::{cell::UnsafeCell, ptr, sync::Arc};
 
-use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IS_SET, FP_BIT_SET, FP_MIN};
+use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IST, FP_BIT_SET, FP_MIN};
 
 use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
 
@@ -154,17 +154,17 @@ impl BtreeCursor<'_, '_> {
         let mut ret= false;
 
         /* Ignore if not config */
-        if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_LOWER | CURSOR_BOUND_UPPER){
+        if FP_BIT_IST!(self.icur.flags, CURSOR_BOUND_LOWER | CURSOR_BOUND_UPPER){
             return Ok(true);
         }
 
         //TODO: unlikely assert.
 
-        if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_LOWER) && false {
+        if FP_BIT_IST!(self.icur.flags, CURSOR_BOUND_LOWER) && false {
             ret = self.compare_bounds(false)?;
         }
 
-        if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_UPPER) {
+        if FP_BIT_IST!(self.icur.flags, CURSOR_BOUND_UPPER) {
             ret = self.compare_bounds(true)?;
         }
 
@@ -183,7 +183,7 @@ impl BtreeCursor<'_, '_> {
                 return Err(FP_NO_IMPL);
             }
 
-            if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
+            if FP_BIT_IST!(self.icur.flags, CURSOR_BOUND_UPPER_INCLUSIVE) {
                 if matches!(self.get_tree().r#type, BTreeType::Row) {
                     return Ok(cmp > 0);
                 } else {
@@ -205,7 +205,7 @@ impl BtreeCursor<'_, '_> {
                 return Err(FP_NO_IMPL);
             }
 
-            if FP_BIT_IS_SET!(self.icur.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
+            if FP_BIT_IST!(self.icur.flags, CURSOR_BOUND_LOWER_INCLUSIVE) {
                 if matches!(self.get_tree().r#type, BTreeType::Row) {
                     return Ok(cmp < 0);
                 } else {
@@ -244,7 +244,7 @@ impl BtreeCursor<'_, '_> {
         self.clear_position()?;
 
         /* Deactive the cursor. */
-        if FP_BIT_IS_SET!(self.flags, FP_BTREE_CURSOR_ACTIVE) {
+        if FP_BIT_IST!(self.flags, FP_BTREE_CURSOR_ACTIVE) {
             FP_BIT_CLR!(self.flags, FP_BTREE_CURSOR_ACTIVE)
         }
 
@@ -451,7 +451,7 @@ impl BtreeCursor<'_, '_> {
             /* descend */
 
             read_flags = FP_BTEE_READ_RETRY_OK;
-            if FP_BIT_IS_SET!(self.flags, FP_BTREE_CURSOR_READ_NEED_ONCE) {
+            if FP_BIT_IST!(self.flags, FP_BTREE_CURSOR_READ_NEED_ONCE) {
                 FP_BIT_SET!(read_flags, FP_BTEE_READ_NEED_ONCE)
             }
 

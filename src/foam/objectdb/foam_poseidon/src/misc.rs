@@ -63,7 +63,7 @@ macro_rules! FP_BIT_CLR {
     };
 }
 #[macro_export]
-macro_rules! FP_BIT_MASK {
+macro_rules! FP_BIT_MSK {
     ($value:expr, $mask:expr) => {
         crate::FP_BIT_OP!(MASK, $value, $mask)
     };
@@ -75,7 +75,7 @@ macro_rules! FP_BIT_TLG {
     };
 }
 #[macro_export]
-macro_rules! FP_BIT_IS_SET {
+macro_rules! FP_BIT_IST {
     ($value:expr, $mask:expr) => {
         crate::FP_BIT_OP!(IS_SET, $value, $mask)
     };
