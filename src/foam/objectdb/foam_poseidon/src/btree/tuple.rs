@@ -231,11 +231,11 @@ impl TupleHeader {
     }
 }
 
-impl Into<TupleTxnDesc> for TupleHeader {
+impl Into<TupleTxnDesc> for &TupleHeader {
     #[inline(always)]
     fn into(self) -> TupleTxnDesc {
         assert!(self.enable_txn_desc());
-        
+
         let (flags, data) = (self.0[1], &self.0[2..]);
         TupleTxnDesc {
             flags,
@@ -340,7 +340,7 @@ impl Into<ZMTxnAddr> for TupleTxnDesc {
     }
 }
 
-impl Into<ZMTxnValue> for TupleTxnDesc {
+impl Into<ZMTxnValue> for &TupleTxnDesc {
     #[inline(always)]
     fn into(self) -> ZMTxnValue {
         let mut cur = self.data;
@@ -456,17 +456,12 @@ impl Tuple {
 
         /* Extract second description if need */
         if common.header.enable_txn_desc() {
-            let second_desc = common.header.txn_descriptor();
-
             match common.r#type {
                 TupleType::AddrDel | TupleType::AddrInternal | 
                 TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
-                    let ta = ZMTxnAddr::new();
-                    let txn_desc = common.header.txn_descriptor();
-
-
-
-                    zm_ta = Some(ta)
+                    let txn_desc:TupleTxnDesc = tuple_header.into();
+                    let zm_txn_addr:ZMTxnAddr = txn_desc.into();
+                    zm_ta = Some(zm_txn_addr)
                 },
                 _ => {},
             };
