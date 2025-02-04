@@ -331,7 +331,59 @@ impl Into<ZMTxnAddr> for TupleTxnDesc {
 
         if self.has_txn_end_commit_at() {
             (val, idx) = varint::decode_uint(cur).unwrap();
-            ret.newest_end_commit_at = val;
+            ret.newest_end_commit_at = val + ret.newest_end_at;
+            cur = &cur[idx..];
+        }
+
+        ret
+    }
+}
+
+impl Into<ZMTxnValue> for TupleTxnDesc {
+    #[inline(always)]
+    fn into(self) -> ZMTxnValue {
+        let mut cur = self.data;
+        let mut val: u64;
+        let mut idx: usize;
+        let mut ret = ZMTxnValue::new();
+
+        if self.has_in_txn_prepare() {
+            ret.in_txn_prepare = 1u8;
+        }
+
+        if self.has_txn_start_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.start_at = val;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_start_by() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.start_by = val;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_start_commit_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.start_commit_at = val + ret.start_at;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_end_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.end_at = val + ret.start_at;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_end_by() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.end_by = val;
+            cur = &cur[idx..];
+        }
+
+        if self.has_txn_end_commit_at() {
+            (val, idx) = varint::decode_uint(cur).unwrap();
+            ret.end_commit_at = val + ret.end_at;
             cur = &cur[idx..];
         }
 
