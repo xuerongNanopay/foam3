@@ -251,8 +251,39 @@ pub(crate) struct TupleTxnDescAddr{
 }
 
 impl TupleTxnDescAddr {
+    #[inline(always)]
     fn is_in_txn_prepare(&self) -> bool {
         FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK)
+    }
+
+    #[inline(always)]
+    fn is_oldest_start_at(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_AT_MK)
+    }
+
+    #[inline(always)]
+    fn is_newest_start_by(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_BY_MK)
+    }
+
+    #[inline(always)]
+    fn is_newest_start_commit_at(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_COMMIT_AT_MK)
+    }
+
+    #[inline(always)]
+    fn is_newest_end_at(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_AT_MK)
+    }
+
+    #[inline(always)]
+    fn is_newest_end_commit_at(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_COMMIT_AT_MK)
+    }
+
+    #[inline(always)]
+    fn is_newest_end_by(&self) -> bool {
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_BY_MK)
     }
 }
 
