@@ -42,7 +42,7 @@ pub(crate) enum TupleType {
     /**
      * Tuple stores key/value.
      */
-    KVDel = 0x40,
+    Del = 0x40,
     Key = 0x50,
     KeyOverflow = 0x60,
     KeyOverflowDel = 0x70,
@@ -86,7 +86,7 @@ impl TryFrom<&TupleHeader> for TupleType {
             0x10 => Ok(TupleType::AddrInternal),
             0x20 => Ok(TupleType::AddrLeaf),
             0x30 => Ok(TupleType::AddrLeafOverflow),
-            0x40 => Ok(TupleType::KVDel),
+            0x40 => Ok(TupleType::Del),
             0x50 => Ok(TupleType::Key),
             0x60 => Ok(TupleType::KeyOverflow),
             0x70 => Ok(TupleType::KeyOverflowDel),
@@ -340,7 +340,7 @@ impl Into<ZMTxnAddr> for TupleTxnDesc {
     }
 }
 
-impl Into<ZMTxnValue> for &TupleTxnDesc {
+impl Into<ZMTxnValue> for TupleTxnDesc {
     #[inline(always)]
     fn into(self) -> ZMTxnValue {
         let mut cur = self.data;
@@ -446,22 +446,28 @@ impl Tuple {
 
         /* Non-Inline tuple */
 
-        // Move to key tuple.
+        // MUST TODO: Move to key tuple.
         // if common.header.enable_key_prefix_comp() {
         //     common.prefix = tuple_header.prefix_len();
         // };
 
         let mut zm_ta: Option<ZMTxnAddr> = None;
-        // let zm_tw: Option<ZMTimeWindow> = None;
+        let mut zm_tv: Option<ZMTxnValue> = None;
 
-        /* Extract second description if need */
+        /* Extract transaction description if exist */
         if common.header.enable_txn_desc() {
             match common.r#type {
                 TupleType::AddrDel | TupleType::AddrInternal | 
                 TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
                     let txn_desc:TupleTxnDesc = tuple_header.into();
                     let zm_txn_addr:ZMTxnAddr = txn_desc.into();
-                    zm_ta = Some(zm_txn_addr)
+                    zm_ta = Some(zm_txn_addr);
+                },
+                TupleType::Del | TupleType::Value | TupleType::ValueCopy |
+                TupleType::ValueOverflow | TupleType::ValueOverflowDel => {
+                    let txn_desc:TupleTxnDesc = tuple_header.into();
+                    let zm_txn_value:ZMTxnValue = txn_desc.into();
+                    zm_tv = Some(zm_txn_value);
                 },
                 _ => {},
             };
