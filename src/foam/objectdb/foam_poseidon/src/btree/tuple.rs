@@ -483,7 +483,7 @@ impl Tuple {
             common.prefix = tuple_header.prefix_len();
             cur = &tuple_header.0[2..]
         } else {
-            cur = &tuple_header.0[2..]
+            cur = &tuple_header.0[1..]
         }
 
         //NEED TODO: fast-truncate.
