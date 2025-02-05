@@ -5,21 +5,25 @@ use crate::{error::{FP_NO_IMPL, FP_NO_SUPPORT}, internal::FPResult, util::compac
 use super::zone_map::{ZMTxnAddr, ZMTxnValue};
 
 /* Descriptor/raw type */
-pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK:u8 = 0x03;
-pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_TYPE_ST:u8 = 2;
-pub(crate) const FP_BTREE_TUPLE_HEADER_INLINE_LEN_MAX:u64 = 63;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TYPE_MASK:u8 = 0x0f << 4;
+pub(crate) const FP_BTREE_TUPLE_INLINE_TYPE_MK:u8 = 0x03;
+pub(crate) const FP_BTREE_TUPLE_INLINE_TYPE_ST:u8 = 2;
+pub(crate) const FP_BTREE_TUPLE_INLINE_LEN_MAX:u64 = 63;
+pub(crate) const FP_BTREE_TUPLE_TYPE_MASK:u8 = 0x0f << 4;
 
 
 /* Txn Descriptor  */
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_DESC_MK:u8 = 0x08;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK:u8 = 0x01;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_START_COMMIT_AT_MK:u8 = 0x01 << 1;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_END_COMMIT_AT_MK:u8 = 0x01 << 2;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_START_AT_MK:u8 = 0x01 << 3;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_END_AT_MK:u8 = 0x01 << 4;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_START_BY_MK:u8 = 0x01 << 5;
-pub(crate) const FP_BTREE_TUPLE_HEADER_TXN_END_BY_MK:u8 = 0x01 << 6;
+pub(crate) const FP_BTREE_TUPLE_TXN_DESC_MK:u8 = 0x08;
+pub(crate) const FP_BTREE_TUPLE_TXN_PREPARE_MK:u8 = 0x01;
+pub(crate) const FP_BTREE_TUPLE_TXN_START_COMMIT_AT_MK:u8 = 0x01 << 1;
+pub(crate) const FP_BTREE_TUPLE_TXN_END_COMMIT_AT_MK:u8 = 0x01 << 2;
+pub(crate) const FP_BTREE_TUPLE_TXN_START_AT_MK:u8 = 0x01 << 3;
+pub(crate) const FP_BTREE_TUPLE_TXN_END_AT_MK:u8 = 0x01 << 4;
+pub(crate) const FP_BTREE_TUPLE_TXN_START_BY_MK:u8 = 0x01 << 5;
+pub(crate) const FP_BTREE_TUPLE_TXN_END_BY_MK:u8 = 0x01 << 6;
+
+/* Tuple flags. */
+pub(crate) type TupleFlag = u8;
+pub(crate) const FP_BTREE_TUPLE_OVERFLOW_MK:TupleFlag = 0x01;
 
 #[repr(usize)]
 #[derive(Debug, Clone, Copy, Default)]
@@ -157,7 +161,7 @@ impl TupleHeader {
 
     #[inline(always)]
     fn is_inline(&self) -> bool {
-        FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK)
+        FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_INLINE_TYPE_MK)
     }
 
     #[inline(always)]
@@ -165,7 +169,7 @@ impl TupleHeader {
         assert!(self.is_inline());
 
         let mut ret = self.0[0];
-        FP_BIT_MSK!(ret, FP_BTREE_TUPLE_HEADER_INLINE_TYPE_MK);
+        FP_BIT_MSK!(ret, FP_BTREE_TUPLE_INLINE_TYPE_MK);
         ret
     }
 
@@ -174,7 +178,7 @@ impl TupleHeader {
         assert!(!self.is_inline());
 
         let mut ret = self.0[0];
-        FP_BIT_MSK!(ret, FP_BTREE_TUPLE_HEADER_TYPE_MASK);
+        FP_BIT_MSK!(ret, FP_BTREE_TUPLE_TYPE_MASK);
         ret
     }
 
@@ -204,7 +208,7 @@ impl TupleHeader {
     fn inline_data_len(&self) -> usize {
         assert!(self.is_inline());
 
-        (self.0[0] >> FP_BTREE_TUPLE_HEADER_INLINE_TYPE_ST) as usize
+        (self.0[0] >> FP_BTREE_TUPLE_INLINE_TYPE_ST) as usize
     }
 
     /**
@@ -215,7 +219,7 @@ impl TupleHeader {
         assert!(!self.is_inline());
         assert!(self.is_addr_tuple() || self.is_value_tuple());
 
-        FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_HEADER_TXN_DESC_MK)
+        FP_BIT_IST!(self.0[0], FP_BTREE_TUPLE_TXN_DESC_MK)
     }
 
     #[inline(always)]
@@ -254,37 +258,37 @@ pub(crate) struct TupleTxnDesc{
 impl TupleTxnDesc {
     #[inline(always)]
     fn has_in_txn_prepare(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_PREPARE_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_PREPARE_MK)
     }
 
     #[inline(always)]
     fn has_txn_start_at(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_AT_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_START_AT_MK)
     }
 
     #[inline(always)]
     fn has_txn_start_by(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_BY_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_START_BY_MK)
     }
 
     #[inline(always)]
     fn has_txn_start_commit_at(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_START_COMMIT_AT_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_START_COMMIT_AT_MK)
     }
 
     #[inline(always)]
     fn has_txn_end_at(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_AT_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_END_AT_MK)
     }
 
     #[inline(always)]
     fn has_txn_end_commit_at(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_COMMIT_AT_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_END_COMMIT_AT_MK)
     }
 
     #[inline(always)]
     fn has_txn_end_by(&self) -> bool {
-        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_HEADER_TXN_END_BY_MK)
+        FP_BIT_IST!(self.flags, FP_BTREE_TUPLE_TXN_END_BY_MK)
     }
 }
 
@@ -486,6 +490,11 @@ impl Tuple {
         match common.r#type {
             TupleType::ValueCopy => {
                 return  Err(FP_NO_SUPPORT);
+            },
+            /* Overflow key and value. */
+            TupleType::KeyOverflow | TupleType::KeyOverflowDel |
+            TupleType::ValueOverflow | TupleType::ValueOverflowDel => {
+
             },
             _ => panic!("Tuple new error.")
         };
