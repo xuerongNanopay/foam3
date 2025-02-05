@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{error::FP_NO_IMPL, internal::FPResult, util::compaction::varint, FP_BIT_IST, FP_BIT_MSK};
+use crate::{error::{FP_NO_IMPL, FP_NO_SUPPORT}, internal::FPResult, util::compaction::varint, FP_BIT_IST, FP_BIT_MSK};
 
 use super::zone_map::{ZMTxnAddr, ZMTxnValue};
 
@@ -485,7 +485,7 @@ impl Tuple {
 
         match common.r#type {
             TupleType::ValueCopy => {
-
+                return  Err(FP_NO_SUPPORT);
             },
             _ => panic!("Tuple new error.")
         };
