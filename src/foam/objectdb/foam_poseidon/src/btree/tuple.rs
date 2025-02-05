@@ -288,9 +288,9 @@ impl TupleTxnDesc {
     }
 }
 
-impl Into<ZMTxnAddr> for TupleTxnDesc {
+impl <'a> Into<(ZMTxnAddr, &'a [u8])> for TupleTxnDesc {
     #[inline(always)]
-    fn into(self) -> ZMTxnAddr {
+    fn into(self) -> (ZMTxnAddr, &'a [u8]) {
         let mut cur = self.data;
         let mut val: u64;
         let mut idx: usize;
@@ -336,13 +336,13 @@ impl Into<ZMTxnAddr> for TupleTxnDesc {
             cur = &cur[idx..];
         }
 
-        ret
+        (ret, cur)
     }
 }
 
-impl Into<ZMTxnValue> for TupleTxnDesc {
+impl <'a> Into<(ZMTxnValue, &'a [u8])> for TupleTxnDesc {
     #[inline(always)]
-    fn into(self) -> ZMTxnValue {
+    fn into(self) -> (ZMTxnValue, &'a [u8]) {
         let mut cur = self.data;
         let mut val: u64;
         let mut idx: usize;
@@ -388,7 +388,7 @@ impl Into<ZMTxnValue> for TupleTxnDesc {
             cur = &cur[idx..];
         }
 
-        ret
+        (ret, cur)
     }
 }
 
@@ -401,6 +401,9 @@ pub(crate) enum Tuple {
 }
 
 impl Tuple {
+    /**
+     * __wt_cell_unpack_safe
+     */
     #[inline(always)]
     fn new(tuple_header: &TupleHeader) -> FPResult<Tuple> {
         let descriptor = tuple_header.descriptor();
@@ -453,6 +456,7 @@ impl Tuple {
 
         let mut zm_ta: Option<ZMTxnAddr> = None;
         let mut zm_tv: Option<ZMTxnValue> = None;
+        let mut cur: &[u8];
 
         /* Extract transaction description if exist */
         if common.header.enable_txn_desc() {
@@ -460,18 +464,31 @@ impl Tuple {
                 TupleType::AddrDel | TupleType::AddrInternal | 
                 TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
                     let txn_desc:TupleTxnDesc = tuple_header.into();
-                    let zm_txn_addr:ZMTxnAddr = txn_desc.into();
+                    let (zm_txn_addr, rest): (ZMTxnAddr, &[u8])= txn_desc.into();
+                    cur = rest;
                     zm_ta = Some(zm_txn_addr);
                 },
                 TupleType::Del | TupleType::Value | TupleType::ValueCopy |
                 TupleType::ValueOverflow | TupleType::ValueOverflowDel => {
                     let txn_desc:TupleTxnDesc = tuple_header.into();
-                    let zm_txn_value:ZMTxnValue = txn_desc.into();
+                    let (zm_txn_value, rest): (ZMTxnValue, &[u8]) = txn_desc.into();
+                    cur = rest;
                     zm_tv = Some(zm_txn_value);
                 },
                 _ => {},
             };
         }
+
+        //NEED TODO: fast-truncate.
+
+        //FEA(Col) TODO: record_number
+
+        match common.r#type {
+            TupleType::ValueCopy => {
+
+            },
+            _ => panic!("Tuple new error.")
+        };
 
         Err(FP_NO_IMPL)
     }
