@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::{error::{FP_NO_IMPL, FP_NO_SUPPORT}, internal::FPResult, util::compaction::varint, FP_BIT_IST, FP_BIT_MSK};
+use crate::{error::{FP_NO_IMPL, FP_NO_SUPPORT}, internal::FPResult, util::compaction::varint, FP_BIT_IST, FP_BIT_MSK, FP_BIT_SET};
 
 use super::zone_map::{ZMTxnAddr, ZMTxnValue};
 
@@ -42,7 +42,7 @@ pub(crate) enum TupleType {
     AddrDel = 0x00,
     AddrInternal = 0x10,
     AddrLeaf = 0x20,
-    AddrLeafOverflow = 0x30,
+    AddrLeafNone = 0x30,
     /**
      * Tuple stores key/value.
      */
@@ -89,7 +89,7 @@ impl TryFrom<&TupleHeader> for TupleType {
             0x00 => Ok(TupleType::AddrDel),
             0x10 => Ok(TupleType::AddrInternal),
             0x20 => Ok(TupleType::AddrLeaf),
-            0x30 => Ok(TupleType::AddrLeafOverflow),
+            0x30 => Ok(TupleType::AddrLeafNone),
             0x40 => Ok(TupleType::Del),
             0x50 => Ok(TupleType::Key),
             0x60 => Ok(TupleType::KeyOverflow),
@@ -155,7 +155,7 @@ impl TupleHeader {
             t == TupleType::AddrDel as u8 ||
             t == TupleType::AddrInternal as u8 ||
             t == TupleType::AddrLeaf as u8 ||
-            t == TupleType::AddrLeafOverflow as u8
+            t == TupleType::AddrLeafNone as u8
         }
     }
 
@@ -205,6 +205,14 @@ impl TupleHeader {
     }
 
     #[inline(always)]
+    fn prefix_len(&self) -> u8 {
+        assert!(!self.is_inline());
+
+        self.0[1]
+    }
+
+
+    #[inline(always)]
     fn inline_data_len(&self) -> usize {
         assert!(self.is_inline());
 
@@ -227,11 +235,6 @@ impl TupleHeader {
         assert!(self.enable_txn_desc());
 
         self.0[1]
-    }
-
-    #[inline(always)]
-    fn as_slice(&self, start: usize, end: usize) -> &'static[u8] {
-        &self.0[start..end]
     }
 }
 
@@ -427,21 +430,21 @@ impl Tuple {
         match common.raw_type {
             TupleType::KeyPrefixInline => {
                 common.prefix = tuple_header.prefix_len_inline();
-                common.data = tuple_header.as_slice(2, tuple_header.inline_data_len());
+                common.data = &tuple_header.0[2..tuple_header.inline_data_len()];
                 common.len = 2 + tuple_header.inline_data_len();
                 return Ok(Tuple::Key(TupleKey{
                     common,
                 }));
             },
             TupleType::KeyInline => {
-                common.data = tuple_header.as_slice(1, tuple_header.inline_data_len());
+                common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
                 common.len = 1 + tuple_header.inline_data_len();
                 return Ok(Tuple::Key(TupleKey{
                     common,
                 }));
             },
             TupleType::ValueInline => {
-                common.data = tuple_header.as_slice(1, tuple_header.inline_data_len());
+                common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
                 common.len = 1 + tuple_header.inline_data_len();
                 return Ok(Tuple::Value(TupleValue{
                     common,
@@ -453,11 +456,6 @@ impl Tuple {
 
         /* Non-Inline tuple */
 
-        // MUST TODO: Move to key tuple.
-        // if common.header.enable_key_prefix_comp() {
-        //     common.prefix = tuple_header.prefix_len();
-        // };
-
         let mut zm_ta: Option<ZMTxnAddr> = None;
         let mut zm_tv: Option<ZMTxnValue> = None;
         let mut cur: &[u8];
@@ -466,7 +464,7 @@ impl Tuple {
         if common.header.enable_txn_desc() {
             match common.r#type {
                 TupleType::AddrDel | TupleType::AddrInternal | 
-                TupleType::AddrLeaf | TupleType::AddrLeafOverflow => {
+                TupleType::AddrLeaf | TupleType::AddrLeafNone => {
                     let txn_desc:TupleTxnDesc = tuple_header.into();
                     let (zm_txn_addr, rest): (ZMTxnAddr, &[u8])= txn_desc.into();
                     cur = rest;
@@ -479,8 +477,13 @@ impl Tuple {
                     cur = rest;
                     zm_tv = Some(zm_txn_value);
                 },
-                _ => {},
+                _ => panic!("Tuple new impossible."),
             };
+        } else if common.header.enable_key_prefix_comp() {
+            common.prefix = tuple_header.prefix_len();
+            cur = &tuple_header.0[2..]
+        } else {
+            cur = &tuple_header.0[2..]
         }
 
         //NEED TODO: fast-truncate.
@@ -493,7 +496,18 @@ impl Tuple {
             },
             /* Overflow key and value. */
             TupleType::KeyOverflow | TupleType::KeyOverflowDel |
-            TupleType::ValueOverflow | TupleType::ValueOverflowDel => {
+            TupleType::ValueOverflow | TupleType::ValueOverflowDel |
+            TupleType::AddrDel | TupleType::AddrInternal | TupleType::AddrLeaf | TupleType::AddrLeafNone |
+            TupleType::Key | TupleType::KeyPrefix | TupleType::Value => {
+
+                /* Set overflow flag. */
+                match common.r#type {
+                    TupleType::KeyOverflow | TupleType::KeyOverflowDel |
+                    TupleType::ValueOverflow | TupleType::ValueOverflowDel => {
+                        FP_BIT_SET!(common.flags, FP_BTREE_TUPLE_OVERFLOW_MK)
+                    },
+                    _ => panic!("Tuple new impossible.")
+                };
 
             },
             _ => panic!("Tuple new error.")
@@ -520,7 +534,7 @@ pub(crate) struct TupleCommon {
 
     raw_type: TupleType,
     r#type: TupleType,
-    flags: u8,
+    flags: TupleFlag,
 }
 
 #[repr(C)]
