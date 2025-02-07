@@ -229,13 +229,11 @@ impl PageRef {
                     size: tuple_addr.common.data.len() as u8,
                     // txn: off_addr.zm,
                     del: if matches!(tuple_addr.common.raw_type, TupleType::AddrDel) {
-                        //TODO: try load.
-                        None
+                        tuple_addr.delete_marker
                     } else { None },
                 })
             },
         }
-        None
     }
 }
 

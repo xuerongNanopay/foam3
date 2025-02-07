@@ -449,7 +449,6 @@ impl Tuple {
                 return Ok(Tuple::Value(TupleValue{
                     common,
                     txn: None,
-                    delete_marker: None,
                 }));
             },
             _ => {},
@@ -538,7 +537,6 @@ impl Tuple {
                 Ok(Tuple::Value(TupleValue{
                     common,
                     txn: zm_tv,
-                    delete_marker: None,
                 }))
             },
             TupleType::AddrDel | TupleType::AddrInternal | 
@@ -546,6 +544,7 @@ impl Tuple {
                 Ok(Tuple::Addr(TupleAddr{
                     common,
                     txn: zm_ta,
+                    delete_marker: None,
                 }))
             },
             _ => panic!("Tuple new impossible.")
@@ -577,6 +576,7 @@ pub(crate) struct TupleCommon {
 pub(crate) struct TupleAddr {
     pub(crate) common: TupleCommon,
     pub(crate) txn: Option<ZMTxnAddr>,
+    pub(crate) delete_marker: Option<PageDel>,
 }
 
 #[repr(C)]
@@ -588,5 +588,4 @@ pub(crate) struct TupleKey {
 pub(crate) struct TupleValue {
     pub(crate) common: TupleCommon,
     pub(crate) txn: Option<ZMTxnValue>,
-    pub(crate) delete_marker: Option<PageDel>,
 }
