@@ -4,7 +4,7 @@ use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Orderin
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
-use super::{row::{RowKeyMem, RowLeaf}, tuple::TupleHeader, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
+use super::{row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
 /**
  * PageRef type.
@@ -69,7 +69,7 @@ pub(crate) struct PageOffAddr {
 }
 
 #[repr(C)]
-pub(crate) enum PageAddrOption {
+pub(crate) enum PageRefAddr {
     None,
     Off(PageOffAddr), /* off-page page address */
     In(TupleHeader),  /* in-page page address */
@@ -88,7 +88,7 @@ pub(crate) struct PageAddr {
     pub(crate) r#type: PageAddrType,
     pub(crate) addr: [u8; FP_BTREE_PAGE_ADDR_MAX_LENGTH],
     pub(crate) size: u8,
-    pub(crate) zm: ZMPage,
+    // pub(crate) zm: ZMPage,
 
     pub(crate) del: PageDeleted,
 }
@@ -107,7 +107,7 @@ pub(crate) struct PageRef {
     
     pub(crate) key: PageRefKey,
 
-    pub(crate) addr: PageAddrOption, /* page address info. */
+    pub(crate) addr: PageRefAddr, /* page address info. */
     
     pub(crate) page_header: Option<PageHeader>,
     // page_status: pageStatus, /* prefetch/reading */
@@ -193,22 +193,41 @@ impl PageRef {
         let addr = &self.addr;
 
         match addr {
-            PageAddrOption::None => {
+            PageRefAddr::None => {
                 return None;
             },
-            PageAddrOption::Off(off_addr) => {
+            PageRefAddr::Off(off_addr) => {
                 let mut addr = [0u8; FP_BTREE_PAGE_ADDR_MAX_LENGTH];
                 addr.copy_from_slice(&off_addr.addr);
                 return Some(PageAddr{
                     r#type: off_addr.r#type,
                     addr,
                     size: off_addr.addr.len() as u8,
-                    zm: off_addr.zm,
+                    // zm: off_addr.zm,
                     del: PageDeleted::default(),
                 })
             },
-            PageAddrOption::In(in_addr) => {
+            PageRefAddr::In(in_addr) => {
+                let tuple = Tuple::new(in_addr).unwrap();
+                let tuple_addr = match tuple {
+                    Tuple::Addr(a) => a,
+                    _ => panic!("page_address impossible"),
+                };
+                let mut addr = [0u8; FP_BTREE_PAGE_ADDR_MAX_LENGTH];
+                addr.copy_from_slice(&tuple_addr.common.data);
 
+                return Some(PageAddr{
+                    r#type: match tuple_addr.common.raw_type {
+                        TupleType::AddrInternal => {
+                            PageAddrType::Internal
+                        },
+                        _ => panic!("page_address impossible"),
+                    },
+                    addr,
+                    size: tuple_addr.common.data.len() as u8,
+                    // txn: off_addr.zm,
+                    del: PageDeleted::default(),
+                })
             },
         }
         None
@@ -421,9 +440,14 @@ impl Page {
         Ok(())
     }
 
-    // /**
-    //  * 
-    //  */
+    /**
+     * Read a page.
+     * __page_read
+     */
+    pub(crate) fn read_page(&self) -> FPResult<()> {
+
+        Err(FP_NO_SUPPORT)
+    }
 }
 
 #[repr(C)]

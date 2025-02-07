@@ -412,7 +412,7 @@ impl Tuple {
      * __wt_cell_unpack_safe
      */
     #[inline(always)]
-    fn new(tuple_header: &TupleHeader) -> FPResult<Tuple> {
+    pub(crate) fn new(tuple_header: &TupleHeader) -> FPResult<Tuple> {
         let descriptor = tuple_header.descriptor();
         let raw_type = TupleType::try_from(tuple_header).unwrap();
         let r#type = raw_type.to_internal_type();
@@ -557,33 +557,33 @@ impl Tuple {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Default)]
 pub(crate) struct TupleCommon {
-    header: TupleHeader,
-    col_v: u64,      /* Run-Length Encoding or Record Number in column-store */
+    pub(crate) header: TupleHeader,
+    pub(crate) col_v: u64,      /* Run-Length Encoding or Record Number in column-store */
 
-    data: &'static [u8], /* Data */
+    pub(crate) data: &'static [u8], /* Data */
 
-    raw_tuple_len: usize, /* header + data length */
+    pub(crate) raw_tuple_len: usize, /* header + data length */
 
-    prefix: u8,
+    pub(crate) prefix: u8,
 
-    raw_type: TupleType,
-    r#type: TupleType,
-    flags: TupleFlag,
+    pub(crate) raw_type: TupleType,
+    pub(crate) r#type: TupleType,
+    pub(crate) flags: TupleFlag,
 }
 
 #[repr(C)]
 pub(crate) struct TupleAddr {
-    common: TupleCommon,
-    txn: Option<ZMTxnAddr>,
+    pub(crate) common: TupleCommon,
+    pub(crate) txn: Option<ZMTxnAddr>,
 }
 
 #[repr(C)]
 pub(crate) struct TupleKey {
-    common: TupleCommon,
+    pub(crate) common: TupleCommon,
 }
 
 #[repr(C)]
 pub(crate) struct TupleValue {
-    common: TupleCommon,
-    txn: Option<ZMTxnValue>,
+    pub(crate)common: TupleCommon,
+    pub(crate)txn: Option<ZMTxnValue>,
 }
