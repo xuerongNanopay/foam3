@@ -2,7 +2,7 @@
 
 use crate::{error::{FP_NO_IMPL, FP_NO_SUPPORT}, internal::FPResult, util::compaction::varint, FP_BIT_IST, FP_BIT_MSK, FP_BIT_SET};
 
-use super::zone_map::{ZMTxnAddr, ZMTxnValue};
+use super::{page::{PageDel}, zone_map::{ZMTxnAddr, ZMTxnValue}};
 
 /* Descriptor/raw type */
 pub(crate) const FP_BTREE_TUPLE_INLINE_TYPE_MK:u8 = 0x03;
@@ -449,6 +449,7 @@ impl Tuple {
                 return Ok(Tuple::Value(TupleValue{
                     common,
                     txn: None,
+                    delete_marker: None,
                 }));
             },
             _ => {},
@@ -537,6 +538,7 @@ impl Tuple {
                 Ok(Tuple::Value(TupleValue{
                     common,
                     txn: zm_tv,
+                    delete_marker: None,
                 }))
             },
             TupleType::AddrDel | TupleType::AddrInternal | 
@@ -584,6 +586,7 @@ pub(crate) struct TupleKey {
 
 #[repr(C)]
 pub(crate) struct TupleValue {
-    pub(crate)common: TupleCommon,
-    pub(crate)txn: Option<ZMTxnValue>,
+    pub(crate) common: TupleCommon,
+    pub(crate) txn: Option<ZMTxnValue>,
+    pub(crate) delete_marker: Option<PageDel>,
 }

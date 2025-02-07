@@ -2,7 +2,7 @@
 
 use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Ordering}};
 
-use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::{FPResult, FPTimeStamp, FPTxnId}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
 use super::{row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
@@ -58,7 +58,7 @@ pub(crate) enum PageAddrType {
     None = 0,
     Internal = 1,     /* Internal page */
     Leaf = 2,         /* Leaf page */
-    OverflowLeaf = 3, /* Leaf page with overflow */
+    LeafNone = 3, /* Leaf page with overflow */
 }
 
 #[repr(C)]
@@ -76,13 +76,6 @@ pub(crate) enum PageRefAddr {
 }
 
 #[repr(C)]
-#[derive(Default, Clone, Copy)]
-pub(crate) struct PageDeleted {
-    pub(crate) txn_id: u64,
-    pub(crate) timestamp: u64,
-}
-
-#[repr(C)]
 #[derive(Clone, Copy)]
 pub(crate) struct PageAddr {
     pub(crate) r#type: PageAddrType,
@@ -90,7 +83,7 @@ pub(crate) struct PageAddr {
     pub(crate) size: u8,
     // pub(crate) zm: ZMPage,
 
-    pub(crate) del: PageDeleted,
+    pub(crate) del: Option<PageDel>,
 }
 
 /**
@@ -204,7 +197,7 @@ impl PageRef {
                     addr,
                     size: off_addr.addr.len() as u8,
                     // zm: off_addr.zm,
-                    del: PageDeleted::default(),
+                    del: None,
                 })
             },
             PageRefAddr::In(in_addr) => {
@@ -221,12 +214,24 @@ impl PageRef {
                         TupleType::AddrInternal => {
                             PageAddrType::Internal
                         },
+                        TupleType::AddrLeaf => {
+                            PageAddrType::Leaf
+                        },
+                        TupleType::AddrLeafNone => {
+                            PageAddrType::LeafNone
+                        },
+                        TupleType::AddrDel => {
+                            PageAddrType::LeafNone
+                        },
                         _ => panic!("page_address impossible"),
                     },
                     addr,
                     size: tuple_addr.common.data.len() as u8,
                     // txn: off_addr.zm,
-                    del: PageDeleted::default(),
+                    del: if matches!(tuple_addr.common.raw_type, TupleType::AddrDel) {
+                        //TODO: try load.
+                        None
+                    } else { None },
                 })
             },
         }
@@ -457,4 +462,14 @@ pub(crate) struct PageModify {
     pub(crate) last_eviction_echo: u64,
     pub(crate) last_eviction_id: u64,
     pub(crate) last_eviction_timestamp: u64,
+}
+
+#[repr(C)]
+#[derive(Default, Clone, Copy)]
+pub(crate) struct PageDel {
+    pub(crate) txn_id: FPTxnId,
+    pub(crate) delete_timestamp: FPTimeStamp,
+    pub(crate) delete_committed_timestamp: FPTimeStamp,
+    pub(crate) committed: bool,
+    pub(crate) is_sync: bool,
 }
