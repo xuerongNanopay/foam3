@@ -431,21 +431,21 @@ impl Tuple {
             TupleType::KeyPrefixInline => {
                 common.prefix = tuple_header.prefix_len_inline();
                 common.data = &tuple_header.0[2..tuple_header.inline_data_len()];
-                common.len = 2 + tuple_header.inline_data_len();
+                common.raw_tuple_len = 2 + tuple_header.inline_data_len();
                 return Ok(Tuple::Key(TupleKey{
                     common,
                 }));
             },
             TupleType::KeyInline => {
                 common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
-                common.len = 1 + tuple_header.inline_data_len();
+                common.raw_tuple_len = 1 + tuple_header.inline_data_len();
                 return Ok(Tuple::Key(TupleKey{
                     common,
                 }));
             },
             TupleType::ValueInline => {
                 common.data = &tuple_header.0[1..tuple_header.inline_data_len()];
-                common.len = 1 + tuple_header.inline_data_len();
+                common.raw_tuple_len = 1 + tuple_header.inline_data_len();
                 return Ok(Tuple::Value(TupleValue{
                     common,
                     txn: None,
@@ -490,7 +490,7 @@ impl Tuple {
 
         //FEA(Col) TODO: record_number
 
-        match common.r#type {
+        match common.raw_type {
             TupleType::ValueCopy => {
                 return  Err(FP_NO_SUPPORT);
             },
@@ -501,7 +501,7 @@ impl Tuple {
             TupleType::Key | TupleType::KeyPrefix | TupleType::Value => {
 
                 /* Set overflow flag. */
-                match common.r#type {
+                match common.raw_type {
                     TupleType::KeyOverflow | TupleType::KeyOverflowDel |
                     TupleType::ValueOverflow | TupleType::ValueOverflowDel => {
                         FP_BIT_SET!(common.flags, FP_BTREE_TUPLE_OVERFLOW_MK)
@@ -509,6 +509,20 @@ impl Tuple {
                     _ => panic!("Tuple new impossible.")
                 };
 
+                /**
+                 * Tuple head is followed by a 4B data length and data.
+                 */
+                let (data_len, idx) = varint::decode_uint(cur).unwrap();
+                cur = &cur[idx..];
+
+                let tuple_header_len = unsafe {
+                    let s = tuple_header.0.as_ptr();
+                    let e = cur.as_ptr();
+                    e.offset_from(s)
+                };
+
+                common.raw_tuple_len = tuple_header_len as usize + data_len as usize;
+                common.data = &cur[..data_len as usize];
             },
             _ => panic!("Tuple new error.")
         };
@@ -528,7 +542,7 @@ pub(crate) struct TupleCommon {
 
     data: &'static [u8], /* Data */
 
-    len: usize, /* header + data length */
+    raw_tuple_len: usize, /* header + data length */
 
     prefix: u8,
 
