@@ -527,7 +527,27 @@ impl Tuple {
             _ => panic!("Tuple new error.")
         };
 
-        Err(FP_NO_IMPL)
+        match common.r#type {
+            TupleType::Key | TupleType::KeyOverflow => {
+                Ok(Tuple::Key(TupleKey{
+                    common
+                }))
+            },
+            TupleType::Value | TupleType::ValueOverflow => {
+                Ok(Tuple::Value(TupleValue{
+                    common,
+                    txn: zm_tv,
+                }))
+            },
+            TupleType::AddrDel | TupleType::AddrInternal | 
+            TupleType::AddrLeaf | TupleType::AddrLeafNone => {
+                Ok(Tuple::Addr(TupleAddr{
+                    common,
+                    txn: zm_ta,
+                }))
+            },
+            _ => panic!("Tuple new impossible.")
+        }
     }
 }
 
