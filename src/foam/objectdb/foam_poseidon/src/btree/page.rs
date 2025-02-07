@@ -4,7 +4,7 @@ use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Orderin
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::{FPResult, FPTimeStamp, FPTxnId}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
 
-use super::{row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
+use super::{btree::BTree, row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
 /**
  * PageRef type.
@@ -181,7 +181,7 @@ impl PageRef {
     /**
      * Return address of the page.
      */
-    pub(crate) fn page_address(&self) -> Option<PageAddr> {
+    pub(crate) fn page_address(&self, btree: &BTree) -> Option<PageAddr> {
         
         let addr = &self.addr;
 
