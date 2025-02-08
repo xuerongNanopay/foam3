@@ -87,9 +87,12 @@ impl PageHeader {
     }
 }
 
-pub(crate) struct BufItem {
-    pub(crate) size: FPFileSize,
-    pub(crate) mem: Vec<u8>
+pub(crate) struct BlkItem {
+    pub(crate) data: &'static [u8],
+    // pub(crate) size: usize,
+    // pub(crate) mem: Vec<u8>
+
+
 }
 
 #[derive(Default, Debug, Clone, Copy)]

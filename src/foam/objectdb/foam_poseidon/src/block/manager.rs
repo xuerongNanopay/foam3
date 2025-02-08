@@ -15,7 +15,7 @@ use crate::{
     }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR
 };
 
-use super::{addr, handle::{self, file_header_write, BlockHandle}, BlockHeader, BlockRef, BufItem, PageHeader};
+use super::{addr, handle::{self, file_header_write, BlockHandle}, BlockHeader, BlockRef, BlkItem, PageHeader};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -33,7 +33,7 @@ impl BlockManager {
     /**
      * Read a block base on block reference(BlockRef).
      */
-    fn read(&self, raw_addr: &[u8], addr_size: usize) -> FPResult<BufItem> {
+    fn read(&self, raw_addr: &[u8], addr_size: usize) -> FPResult<BlkItem> {
         let br = addr::block_addr_unpack(&self.block_handle, raw_addr, addr_size)?;
         
         FP_STATS_INCR!(block_read);
@@ -71,7 +71,7 @@ fn drop() {
  * Read a block into a buffer.
  * TODO: retry logic and checksum verify.
  */
-fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<BufItem> {
+fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPResult<BlkItem> {
     
     if block_ref.size < block_handle.allocation_size {
         FP_LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);
@@ -88,10 +88,11 @@ fn read_offset_from_bh(block_handle: &BlockHandle, block_ref: &BlockRef) -> FPRe
     if block_ref.checksum == block_header.checksum {
         block_header_in_buf.checksum = 0;
         if FP_CHECKSUM_EQ!(&r_buf, size, block_header.checksum) {
-            return Ok(BufItem{
-                size: r_size,
-                mem: r_buf,
-            });
+            // MUST TODO: as I refacter BlkItem.
+            // return Ok(BlkItem{
+            //     // size: r_size as usize,
+            //     mem: r_buf,
+            // });
         }
     }
 
