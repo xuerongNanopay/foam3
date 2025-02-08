@@ -3,7 +3,7 @@
 use crate::util::compaction::varint;
 
 #[derive(Default, Clone, Copy)]
-struct BlkAddr {
+pub(crate) struct BlkAddr {
     file_offset: u64,
     size: u64,
     checksum: u32,
@@ -11,7 +11,7 @@ struct BlkAddr {
 }
 
 impl BlkAddr {
-    fn new(raw_addr: &[u8], blk_size: u32) -> BlkAddr {
+    pub(crate) fn new(raw_addr: &[u8], blk_size: u32) -> BlkAddr {
         let mut p = raw_addr;
 
         let (file_offset, idx) = varint::decode_uint(p).unwrap();

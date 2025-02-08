@@ -25,7 +25,7 @@ struct BlockOpenCfg {
  * Not physical representation of page.
  */
 
-pub(crate) struct BlockHandle {
+pub(crate) struct BlkHandle {
     name: String,   /* Name */
     object_id: u32,
 
@@ -48,7 +48,7 @@ pub(crate) struct BlockHandle {
     // block_header_size: u32,
 }
 
-impl BlockHandle {
+impl BlkHandle {
     fn write_size(&self, len: usize) {
 
     }
@@ -67,7 +67,7 @@ fn open(
     allocation_size: FPFileSize,
     readonly: bool,
     fixed: bool,
-) -> FPResult<Arc<BlockHandle>> {
+) -> FPResult<Arc<BlkHandle>> {
     let hash = hash_city::city_hash_64(filename, filename.len());
     let bucket = hash % 10; //TODO: bucket size should be a config
 
@@ -92,7 +92,7 @@ fn open(
     let fh = file_handle.clone();
 
     // construct new block.
-    let mut new_block_handle = Arc::new(BlockHandle {
+    let mut new_block_handle = Arc::new(BlkHandle {
         name: filename.to_string(),
         object_id,
 
@@ -125,14 +125,14 @@ fn open(
 /**
  * close block handle
  */
-fn close(file_system: Arc<FPFileSystem>, block_handle: Arc<BlockHandle>) -> FPResult<()> {
+fn close(file_system: Arc<FPFileSystem>, block_handle: Arc<BlkHandle>) -> FPResult<()> {
     file_system.close_fh(block_handle.name.as_str())
 }
 
 /**
  * Read and verify Meta block.
  */
-fn file_header_read_and_verify(block_handle: Arc<BlockHandle>, allocation_size: FPFileSize) -> FPResult<()> {
+fn file_header_read_and_verify(block_handle: Arc<BlkHandle>, allocation_size: FPFileSize) -> FPResult<()> {
 
     if block_handle.size < allocation_size as u64 {
         return Err(FP_BK_DATA_CORRUPTION)
