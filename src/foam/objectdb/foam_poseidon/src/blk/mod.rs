@@ -7,6 +7,8 @@ pub mod handle;
 pub mod addr;
 pub mod cache;
 mod pool;
+mod mgr;
+mod meta;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
