@@ -58,6 +58,7 @@ fn blkpool_read_pool(
 
 /**
  * Read block form file.
+ * __bm_read -> __wt_bm_read -> __wti_block_read_off -> __wt_read -> fh_read
  */
 fn blkpool_read_blk(
     addr: &[u8]

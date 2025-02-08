@@ -1,7 +1,7 @@
 mod btree;
 #[macro_use]
 mod misc;
-mod block;
+mod blk;
 mod os;
 mod session;
 mod util;
@@ -22,7 +22,6 @@ mod cursor;
 mod dao;
 mod support;
 mod evict;
-mod blk_pool;
 mod gcc;
 
 #[no_mangle]

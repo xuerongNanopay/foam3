@@ -6,7 +6,7 @@ pub mod manager;
 pub mod handle;
 pub mod addr;
 pub mod cache;
-pub mod read;
+mod pool;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
@@ -120,7 +120,7 @@ mod tests {
     use std::io::{self, Bytes, Read, Write};
     use std::{mem, vec};
 
-    use crate::block::FileHeader;
+    use crate::blk::FileHeader;
 
     #[test]
     fn write_block_header_to_file() {
