@@ -6,11 +6,20 @@ use crate::{error::FP_NO_IMPL, internal::FPResult};
 
 use super::{FilBuf, FilHandle};
 
-struct NativeFilHandle {
+pub(crate) struct NativeFilHandle {
     fd: RwLock<File>,
 }
 
+impl NativeFilHandle {
+    pub(crate) fn new(file_name: &str) -> FPResult<NativeFilHandle> {
+        Ok(NativeFilHandle{
+            fd: RwLock::new(FP_IO_ERR_RET!(File::create(file_name))),
+        })
+    }
+}
+
 impl FilHandle for NativeFilHandle {
+
     fn read(&self, offset: u64, len: u64) -> FPResult<FilBuf> {
         //TODO: monitor.
         let mut fd = self.fd.write().unwrap();

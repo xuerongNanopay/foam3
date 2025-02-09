@@ -1,7 +1,7 @@
 #![allow(unused)]
 
-mod posix;
-mod native;
+pub mod posix;
+pub mod native;
 
 use crate::{error::FP_NO_IMPL, internal::FPResult};
 

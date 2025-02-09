@@ -4,10 +4,10 @@ use crate::util::compaction::varint;
 
 #[derive(Default, Clone, Copy)]
 pub(crate) struct BlkAddr {
-    file_offset: u64,
-    size: u64,
-    checksum: u32,
-    object_id: Option<u32>,
+    pub(crate) file_offset: u64,
+    pub(crate) size: u64,
+    pub(crate) checksum: u32,
+    pub(crate) object_id: Option<u32>,
 }
 
 impl BlkAddr {

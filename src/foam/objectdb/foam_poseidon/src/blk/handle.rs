@@ -3,11 +3,14 @@
 use super::meta::BlkAddr;
 use super::*;
 use crate::error::*;
+use crate::fil::handle::native::NativeFilHandle;
+use crate::fil::handle::FilHandle;
 use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::internal::{FPFileSize, FPResult};
 use crate::util::hash_city;
 use std::collections::LinkedList;
+use std::io::Read;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
@@ -42,12 +45,15 @@ pub(crate) struct BlkHandle {
     pub(crate) allocation_size: FPFileSize,
     alloc_first: AtomicBool,
 
+    blk_unit: u64, /* Base block unit, 4KB in default. */ 
+
     // os_cache: usize,              
     // os_cache_max: usize,
     // os_cache_dirty_max: usize,
 
     // block_header_size: u32,
     // file_handle
+    fil_handle: Box<dyn FilHandle>,
 }
 
 impl BlkHandle {
@@ -57,6 +63,8 @@ impl BlkHandle {
 
     /**
      * __wti_block_read_off
+     * 1. Retry read from filHandle.
+     * 2. Deserialization.
      */
     pub(crate) fn read(
         &self, 
@@ -65,7 +73,11 @@ impl BlkHandle {
         //NEED TODO:
         //FEAT(chunk cache)
 
+        if addr.size < self.blk_unit {
+            return Err(FP_BLK_HDL_READ_ILL_BLK_SIZE);
+        }
 
+        let buf = self.fil_handle.read(addr.file_offset, addr.size)?;
         Err(FP_NO_ERR)
     }
 }
@@ -127,7 +139,8 @@ fn open(
             allocation_size
         },
         alloc_first: AtomicBool::new(default_cfg.alloc_first),
-
+        blk_unit: 1024*4,
+        fil_handle: Box::new(NativeFilHandle::new("aaa")?),
         // os_cache_max: default_cfg.os_cache_max,
         // os_cache_dirty_max: default_cfg.os_cache_dirty_max,
 

@@ -12,12 +12,15 @@ struct BlkMgr {
 }
 
 impl BlkMgr {
-    fn read(&self, addr: &[u8]) ->FPResult<BlkItem> {
+    /**
+     * __wt_bm_read
+     * 1. convert addr to BlkAddr
+     * 2. read Block from handle.
+     */
+    fn read(&self, addr: &[u8]) -> FPResult<BlkItem> {
         let addr = BlkAddr::new(addr, 4*1024);
 
-        //NEED TODO: multi block.
-
-
-        Err(FP_NO_IMPL)
+        //FEAT TODO: multi block handles.
+        self.handle.read(&addr)
     }
 }
