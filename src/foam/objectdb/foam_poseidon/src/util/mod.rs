@@ -4,3 +4,4 @@ pub mod hash_city;
 pub mod compaction;
 pub mod sync;
 pub mod ptr;
+pub mod checksum;

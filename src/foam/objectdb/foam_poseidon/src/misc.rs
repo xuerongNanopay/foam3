@@ -120,28 +120,28 @@ macro_rules! FP_OS_WIN {
 
 #[macro_export]
 macro_rules! FP_REINTERPRET_CAST_BUF {
-    ($vec_u8:ident, $type:ty, $offset:expr) => {
+    ($vec_u8:expr, $type:ty, $offset:expr) => {
         unsafe {
             let p = $vec_u8.as_ptr();
             p.add($offset);
             & *(p as *const $type)
         }
     };
-    ($vec_u8:ident, $type:ty) => {
+    ($vec_u8:expr, $type:ty) => {
         FP_REINTERPRET_CAST_BUF!($vec_u8, $type, 0)
     };
 }
 
 #[macro_export]
 macro_rules! FP_REINTERPRET_CAST_BUF_MUT {
-    ($vec_u8:ident, $type:ty, $offset:expr) => {
+    ($vec_u8:expr, $type:ty, $offset:expr) => {
         unsafe {
             let p = $vec_u8.as_mut_ptr();
             p.add($offset);
             &mut *(p as *mut $type)
         }
     };
-    ($vec_u8:ident, $type:ty) => {
+    ($vec_u8:expr, $type:ty) => {
         FP_REINTERPRET_CAST_BUF_MUT!($vec_u8, $type, 0)
     };
 }

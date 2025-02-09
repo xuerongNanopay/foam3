@@ -38,18 +38,28 @@ impl BlkAddr {
     }
 }
 
+pub(crate) const FP_BLK_HEADER_CKSUM_INCL_DATA_MK: u8 = 0x01;
+
 /**
  * Block header.
  */
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub(crate) struct BlkHeader {
-
+    pub(crate) disk_size: u32,
+    pub(crate) checksum: u32,
+    pub(crate) flags: u8,
+    pub(crate) unused: [u8;3],
 }
 
-impl From<&[u8]> for &BlkHeader {
+impl From<&[u8]> for BlkHeader {
     fn from(raw_data: &[u8]) -> Self {
-        &BlkHeader{
-
+        let raw_header = FP_REINTERPRET_CAST_BUF!(raw_data, BlkHeader);
+        let mut blk_header = *raw_header;
+        if cfg!(target_endian = "big") { 
+            blk_header.disk_size = BIT_REVERSE_32!(blk_header.disk_size);
+            blk_header.checksum = BIT_REVERSE_32!(blk_header.checksum);
         }
+        blk_header
     }
 }

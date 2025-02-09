@@ -168,3 +168,4 @@ pub const FP_BT_PAGE_READ_NOT_FOUND:     FPErr = 302;
 pub const FP_BT_PAGE_READ_RETRY:         FPErr = 302;
 
 pub const FP_BLK_HDL_READ_ILL_BLK_SIZE: FPErr = 501;
+pub const FP_BLK_HDL_READ_ILL_CHECKSUM: FPErr = 502;

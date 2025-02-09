@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use super::meta::BlkAddr;
+use super::meta::{BlkAddr, BlkHeader, FP_BLK_HEADER_CKSUM_INCL_DATA_MK};
 use super::*;
 use crate::error::*;
 use crate::fil::handle::native::NativeFilHandle;
@@ -8,7 +8,7 @@ use crate::fil::handle::FilHandle;
 use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::internal::{FPFileSize, FPResult};
-use crate::util::hash_city;
+use crate::util::{checksum, hash_city};
 use std::collections::LinkedList;
 use std::io::Read;
 use std::sync::{Mutex, Arc};
@@ -53,6 +53,7 @@ pub(crate) struct BlkHandle {
     // file_handle
     fil_handle: Box<dyn FilHandle>,
     blk_unit: u64, /* Base block unit, 4KB in default. */ 
+    blk_header_offset: usize,
 
 }
 
@@ -78,10 +79,33 @@ impl BlkHandle {
         }
 
         //FEAT TODO: read bandwidth.
-        let buf = self.fil_handle.read(addr.file_offset, addr.size)?;
+        let mut buf = self.fil_handle.read(addr.file_offset, addr.size)?;
+        let blk = &mut buf.data[..];
+        let raw_blk_header = &blk[self.blk_header_offset..];
+        let blk_header = BlkHeader::from(raw_blk_header);
 
-        
+        if blk_header.checksum == addr.checksum {   
+            let header = FP_REINTERPRET_CAST_BUF_MUT!(blk, BlkHeader);
+            let size = if FP_BIT_IST!(header.flags, FP_BLK_HEADER_CKSUM_INCL_DATA_MK) {
+                addr.size
+            } else {
+                //FEAT TODO: once implementing compression.
+                addr.size
+            };
+
+            header.checksum = 0;
+
+            if !self.verify_checksum(blk, size as usize, addr.checksum) {
+                return Err(FP_BLK_HDL_READ_ILL_CHECKSUM);
+            }
+
+        }
+
         Err(FP_NO_ERR)
+    }
+
+    fn verify_checksum(&self, buf: &[u8], size: usize, expect: u32) -> bool {
+        checksum::crc32(&buf[..size]) == expect
     }
 }
 
@@ -146,6 +170,7 @@ fn open(
         fil_handle: Box::new(NativeFilHandle::new("aaa")?),
         // os_cache_max: default_cfg.os_cache_max,
         // os_cache_dirty_max: default_cfg.os_cache_dirty_max,
+        blk_header_offset: 29,
 
     });
     file_header_read_and_verify(new_block_handle.clone(), allocation_size)?;
