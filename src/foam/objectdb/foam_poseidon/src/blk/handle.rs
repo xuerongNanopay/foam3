@@ -1,5 +1,6 @@
 #![allow(unused)]
 
+use super::meta::BlkAddr;
 use super::*;
 use crate::error::*;
 use crate::meta::*;
@@ -46,11 +47,26 @@ pub(crate) struct BlkHandle {
     // os_cache_dirty_max: usize,
 
     // block_header_size: u32,
+    // file_handle
 }
 
 impl BlkHandle {
     fn write_size(&self, len: usize) {
 
+    }
+
+    /**
+     * __wti_block_read_off
+     */
+    pub(crate) fn read(
+        &self, 
+        addr: &BlkAddr,
+    ) -> FPResult<BlkItem> {
+        //NEED TODO:
+        //FEAT(chunk cache)
+
+
+        Err(FP_NO_ERR)
     }
 }
 

@@ -2,13 +2,13 @@
 
 use crate::{error::FP_NO_IMPL, internal::FPResult};
 
-use super::{meta::BlkAddr, BlkItem};
+use super::{handle::BlkHandle, meta::BlkAddr, BlkItem};
 
 /**
  * Block manager.
  */
 struct BlkMgr {
-
+    handle: BlkHandle,
 }
 
 impl BlkMgr {
@@ -17,7 +17,7 @@ impl BlkMgr {
 
         //NEED TODO: multi block.
 
-        
+
         Err(FP_NO_IMPL)
     }
 }

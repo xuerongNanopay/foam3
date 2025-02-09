@@ -21,7 +21,7 @@ macro_rules! FP_IO_ERR_RET {
     ($func:expr) => {
         match $func {
             Ok(e) => e,
-            Err(e) => return Err(convert_std_io_err_to_fp_err(e)),
+            Err(e) => return Err(crate::error::convert_std_io_err_to_fp_err(e)),
         }
     };
 }

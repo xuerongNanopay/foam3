@@ -13,6 +13,9 @@ mod meta;
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
 pub(crate) const FP_BLOCK_HEADER_LEN: usize = 30;
+
+type RawBlk = Vec<u8>;
+
 /**
  * Each .fp file has one FileHeader
  */
@@ -90,7 +93,8 @@ impl PageHeader {
 }
 
 pub(crate) struct BlkItem {
-    pub(crate) data: &'static [u8],
+    pub(crate) data: Vec<u8>,
+    // pub(crate) data: &'static [u8],
     // pub(crate) size: usize,
     // pub(crate) mem: Vec<u8>
 
