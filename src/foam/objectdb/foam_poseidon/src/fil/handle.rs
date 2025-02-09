@@ -12,7 +12,6 @@ pub(crate) struct FilBuf {
 
 pub(crate) trait FilHandle {
     fn read(&self, offset: u64, len: u64) -> FPResult<FilBuf> {
-        //TODO: monitor.
         Err(FP_NO_IMPL)
     }
 }
