@@ -2,6 +2,9 @@
 
 use crate::util::compaction::varint;
 
+/**
+ * Block address
+ */
 #[derive(Default, Clone, Copy)]
 pub(crate) struct BlkAddr {
     pub(crate) file_offset: u64,
@@ -31,6 +34,22 @@ impl BlkAddr {
             size: size * blk_size as u64,
             checksum: checksum as u32,
             ..Default::default()
+        }
+    }
+}
+
+/**
+ * Block header.
+ */
+#[repr(C)]
+pub(crate) struct BlkHeader {
+
+}
+
+impl From<&[u8]> for &BlkHeader {
+    fn from(raw_data: &[u8]) -> Self {
+        &BlkHeader{
+
         }
     }
 }

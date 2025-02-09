@@ -45,8 +45,6 @@ pub(crate) struct BlkHandle {
     pub(crate) allocation_size: FPFileSize,
     alloc_first: AtomicBool,
 
-    blk_unit: u64, /* Base block unit, 4KB in default. */ 
-
     // os_cache: usize,              
     // os_cache_max: usize,
     // os_cache_dirty_max: usize,
@@ -54,6 +52,8 @@ pub(crate) struct BlkHandle {
     // block_header_size: u32,
     // file_handle
     fil_handle: Box<dyn FilHandle>,
+    blk_unit: u64, /* Base block unit, 4KB in default. */ 
+
 }
 
 impl BlkHandle {
@@ -77,7 +77,10 @@ impl BlkHandle {
             return Err(FP_BLK_HDL_READ_ILL_BLK_SIZE);
         }
 
+        //FEAT TODO: read bandwidth.
         let buf = self.fil_handle.read(addr.file_offset, addr.size)?;
+
+        
         Err(FP_NO_ERR)
     }
 }
