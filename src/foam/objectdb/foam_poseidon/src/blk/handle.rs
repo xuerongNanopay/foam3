@@ -101,7 +101,9 @@ impl BlkHandle {
 
         }
 
-        Err(FP_NO_ERR)
+        Ok(BlkItem{
+            data: buf.data
+        })
     }
 
     fn verify_checksum(&self, buf: &[u8], size: usize, expect: u32) -> bool {
