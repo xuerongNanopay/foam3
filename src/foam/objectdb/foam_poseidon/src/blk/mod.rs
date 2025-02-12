@@ -44,7 +44,7 @@ impl FileHeader {
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy)]
 pub(crate) struct BlockRef {
-    object_id: u32,
+    source_id: u32,
     offset: FPFileSize, /* offset in file */
     size: FPFileSize, /* size of a block in file */
     checksum: u32,
@@ -93,6 +93,7 @@ impl PageHeader {
 }
 
 pub(crate) struct BlkItem {
+    // pub(crate) reserved_header_len: usize,
     pub(crate) data: Vec<u8>,
     // pub(crate) data: &'static [u8],
     pub(crate) size: usize,

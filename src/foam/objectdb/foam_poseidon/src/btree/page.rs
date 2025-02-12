@@ -6,6 +6,28 @@ use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::{FPResult, FP
 
 use super::{btree::BTree, row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
+#[repr(C)]
+pub(crate) union PageHeaderV {
+    entries: u32,
+    datalen: u32,
+}
+
+/**
+ * Page Header.
+ */
+#[repr(C)]
+pub(crate) struct PageHeader {
+    record_number: u64, /* column-store */
+    write_epoch: u64,
+    memory_size: u32,
+    v: PageHeaderV,
+    r#type: u8,
+
+    flags: u8,
+    unused: u8,
+    version: u8,
+}
+
 /**
  * PageRef type.
  */
@@ -289,25 +311,6 @@ pub(crate) enum PageType {
     Internal,
     RowLeaf,
     Overflow,
-}
-
-#[repr(C)]
-pub(crate) union PageHeaderV {
-    entries: u32,
-    datalen: u32,
-}
-
-#[repr(C)]
-pub(crate) struct PageHeader {
-    record_number: u64, /* column-store */
-    write_epoch: u64,
-    memory_size: u32,
-    v: PageHeaderV,
-    r#type: u8,
-
-    flags: u8,
-    unused: u8,
-    version: u8,
 }
 
 #[repr(C)]

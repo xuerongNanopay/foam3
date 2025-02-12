@@ -31,7 +31,7 @@ struct BlockOpenCfg {
 
 pub(crate) struct BlkHandle {
     name: String,   /* Name */
-    object_id: u32,
+    source_id: u32,
 
     pub file_handle: Arc<FPFileHandle>,  /* underline file handle */
     pub(crate) size: FPFileSize,         /* File size */
@@ -121,7 +121,7 @@ fn open(
     file_system: Arc<FPFileSystem>,
     default_cfg: BlockOpenCfg,
     filename: &str, 
-    object_id: u32,
+    source_id: u32,
     allocation_size: FPFileSize,
     readonly: bool,
     fixed: bool,
@@ -152,7 +152,7 @@ fn open(
     // construct new block.
     let mut new_block_handle = Arc::new(BlkHandle {
         name: filename.to_string(),
-        object_id,
+        source_id,
 
         file_handle,
         size: fh.size()?,

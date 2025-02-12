@@ -10,7 +10,7 @@ pub(crate) struct BlkAddr {
     pub(crate) file_offset: u64,
     pub(crate) size: u64,
     pub(crate) checksum: u32,
-    pub(crate) object_id: Option<u32>,
+    pub(crate) source_id: Option<u32>,
 }
 
 impl BlkAddr {
@@ -25,7 +25,7 @@ impl BlkAddr {
         p = &p[idx..];
 
         if p.len() > 0 {
-            //NEED TODO: object_id.
+            //NEED TODO: source_id.
         }
         
         BlkAddr {
