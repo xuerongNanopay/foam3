@@ -95,7 +95,7 @@ impl PageHeader {
 pub(crate) struct BlkItem {
     pub(crate) data: Vec<u8>,
     // pub(crate) data: &'static [u8],
-    // pub(crate) size: usize,
+    pub(crate) size: usize,
     // pub(crate) mem: Vec<u8>
 
 

@@ -7,7 +7,7 @@ use crate::{error::FP_NO_IMPL, internal::FPResult};
 
 pub(crate) struct FilBuf {
     pub(crate) data: Vec<u8>,
-    pub(crate) size: u64,
+    pub(crate) size: usize,
 }
 
 pub(crate) trait FilHandle {

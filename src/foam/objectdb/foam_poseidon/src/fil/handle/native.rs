@@ -28,6 +28,7 @@ impl FilHandle for NativeFilHandle {
 
         FP_IO_ERR_RET!(fd.seek(SeekFrom::Start(offset)));
         let mut data = vec![0u8; len as usize];
+        let size = data.len();
         //TODO: retry. replace chunk read.
         FP_IO_ERR_RET!(fd.read_exact(&mut data[..]));
 
@@ -35,7 +36,7 @@ impl FilHandle for NativeFilHandle {
 
         Ok(FilBuf{
             data,
-            size: len,
+            size,
         })
     }
 }

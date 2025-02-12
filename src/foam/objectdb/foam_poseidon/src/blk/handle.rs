@@ -102,7 +102,8 @@ impl BlkHandle {
         }
 
         Ok(BlkItem{
-            data: buf.data
+            data: buf.data,
+            size: buf.size,
         })
     }
 
