@@ -41,9 +41,9 @@ impl PageHeader {
 impl From<&[u8]> for PageHeader {
     fn from(raw_data: &[u8]) -> Self {
         let raw_header = FP_REINTERPRET_CAST_BUF!(raw_data, PageHeader);
-        let mut blk_header = *raw_header;
-        blk_header.endian_swap();
-        blk_header
+        let mut page_header = *raw_header;
+        page_header.endian_swap();
+        page_header
     }
 }
 
