@@ -94,6 +94,7 @@ impl BlkHandle {
 
             header.checksum = 0;
 
+            //NEED TODO: checksum.
             if !self.verify_checksum(blk, size as usize, addr.checksum) {
                 return Err(FP_BLK_HDL_READ_ILL_CHECKSUM);
             }
@@ -101,7 +102,8 @@ impl BlkHandle {
         }
 
         Ok(BlkItem{
-            data: buf.data,
+            // blk_header,
+            raw: buf.data,
             size: buf.size,
         })
     }

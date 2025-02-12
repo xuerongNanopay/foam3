@@ -327,21 +327,21 @@ macro_rules! BIT_REVERSE {
 #[macro_export]
 macro_rules! BIT_REVERSE_16 {
     ($v:expr) => {
-        BIT_REVERSE!(16, $v)
+        crate::BIT_REVERSE!(16, $v)
     }
 }
 
 #[macro_export]
 macro_rules! BIT_REVERSE_32 {
     ($v:expr) => {
-        BIT_REVERSE!(32, $v)
+        crate::BIT_REVERSE!(32, $v)
     }
 }
 
 #[macro_export]
 macro_rules! BIT_REVERSE_64 {
     ($v:expr) => {
-        BIT_REVERSE!(64, $v)
+        crate::BIT_REVERSE!(64, $v)
     }
 }
 

@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::marker::PhantomData;
+use meta::BlkHeader;
 
 use crate::{meta::FP_METAFILE, internal::{FPFileSize}};
 
@@ -71,6 +71,7 @@ impl BlockHeader {
     }
 }
 
+//TODO: removed
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy)]
 pub(crate) struct PageHeader {
@@ -95,13 +96,15 @@ impl PageHeader {
 }
 
 pub(crate) struct BlkItem {
-    // pub(crate) reserved_header_len: usize,
-    pub(crate) data: Vec<u8>,
-    // pub(crate) data: &'static [u8],
+    pub(crate) raw: Vec<u8>,
     pub(crate) size: usize,
-    // pub(crate) mem: Vec<u8>
+}
 
-
+impl BlkItem {
+    pub(crate) fn blk_header(&self) -> BlkHeader {
+        let raw_blk_header = &self.raw[FP_SIZE_OF!(PageHeader)..];
+        BlkHeader::from(raw_blk_header)
+    }
 }
 
 #[derive(Default, Debug, Clone, Copy)]

@@ -15,7 +15,7 @@ use crate::{
     }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR
 };
 
-use super::{addr, handle::{self, BlkHandle}, BlockHeader, BlockRef, BlkItem, PageHeader};
+use super::{addr, handle::{self, BlkHandle}, BlkItem, BlockHeader, BlockRef, PageHeader};
 
 //TODO: drop file object from directory.(block_open.c line28)
 

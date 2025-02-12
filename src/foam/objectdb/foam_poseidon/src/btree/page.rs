@@ -2,11 +2,12 @@
 
 use std::{mem::ManuallyDrop, ptr, sync::atomic::{AtomicPtr, AtomicUsize, Ordering}};
 
-use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::{FPResult, FPTimeStamp, FPTxnId}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_SIZE_OF};
+use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::{FPResult, FPTimeStamp, FPTxnId}, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_REINTERPRET_CAST_BUF, FP_SIZE_OF};
 
 use super::{btree::BTree, row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub(crate) union PageHeaderV {
     entries: u32,
     datalen: u32,
@@ -16,6 +17,7 @@ pub(crate) union PageHeaderV {
  * Page Header.
  */
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub(crate) struct PageHeader {
     record_number: u64, /* column-store */
     write_epoch: u64,
@@ -26,6 +28,23 @@ pub(crate) struct PageHeader {
     flags: u8,
     unused: u8,
     version: u8,
+}
+
+impl PageHeader {
+    fn endian_swap(&mut self) {
+        if cfg!(target_endian = "big") { 
+            self.record_number = crate::BIT_REVERSE_64!(self.record_number);
+        }
+    }
+}
+
+impl From<&[u8]> for PageHeader {
+    fn from(raw_data: &[u8]) -> Self {
+        let raw_header = FP_REINTERPRET_CAST_BUF!(raw_data, PageHeader);
+        let mut blk_header = *raw_header;
+        blk_header.endian_swap();
+        blk_header
+    }
 }
 
 /**

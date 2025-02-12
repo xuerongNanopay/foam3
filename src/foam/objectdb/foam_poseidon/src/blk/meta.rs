@@ -52,14 +52,20 @@ pub(crate) struct BlkHeader {
     pub(crate) unused: [u8;3],
 }
 
+impl BlkHeader {
+    fn endian_swap(&mut self) {
+        if cfg!(target_endian = "big") { 
+            self.disk_size = BIT_REVERSE_32!(self.disk_size);
+            self.checksum = BIT_REVERSE_32!(self.checksum);
+        }
+    }
+}
+
 impl From<&[u8]> for BlkHeader {
     fn from(raw_data: &[u8]) -> Self {
         let raw_header = FP_REINTERPRET_CAST_BUF!(raw_data, BlkHeader);
         let mut blk_header = *raw_header;
-        if cfg!(target_endian = "big") { 
-            blk_header.disk_size = BIT_REVERSE_32!(blk_header.disk_size);
-            blk_header.checksum = BIT_REVERSE_32!(blk_header.checksum);
-        }
+        blk_header.endian_swap();
         blk_header
     }
 }

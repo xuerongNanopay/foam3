@@ -56,7 +56,7 @@ impl  Blkpool  {
                 None => {},
             };
 
-
+            //FEAT TODO: matrix
             blk_item = self.blkpool_read_blk(addr)?;
 
             break 'read_blk;
