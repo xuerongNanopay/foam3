@@ -6,7 +6,6 @@ use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_SUPPORT}, internal::{FPResult, FP
 
 use super::{btree::BTree, row::{RowKeyMem, RowLeaf}, tuple::{self, Tuple, TupleHeader, TupleType}, zone_map::ZMPage, FP_BTREE_PAGE_ADDR_MAX_LENGTH};
 
-type PageFlag = u8;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -14,6 +13,12 @@ pub(crate) union PageHeaderV {
     entries: u32,
     datalen: u32,
 }
+
+type PageFlag = u8;
+
+pub(crate) const FP_BTREE_PAGE_COMPRESSED: PageFlag = 0x01;
+pub(crate) const FP_BTREE_PAGE_ENCRYPTED:  PageFlag = 0x01 << 1;
+pub(crate) const FP_BTREE_PAGE_UNUSED:     PageFlag = 0x01 << 2;
 
 /**
  * Page Header.
