@@ -7,17 +7,17 @@ use super::{handle::BlkHandle, meta::BlkAddr, BlkItem};
 /**
  * Block manager.
  */
-struct BlkMgr<MH> {
-    handle: BlkHandle<MH>,
+struct BlkMgr {
+    handle: BlkHandle,
 }
 
-impl <MH> BlkMgr <MH> {
+impl  BlkMgr  {
     /**
      * __wt_bm_read
      * 1. convert addr to BlkAddr
      * 2. read Block from handle.
      */
-    fn read(&self, addr: &[u8]) -> FPResult<BlkItem<MH>> {
+    fn read(&self, addr: &[u8]) -> FPResult<BlkItem> {
         let addr = BlkAddr::new(addr, 4*1024);
 
         //FEAT TODO: multi block handles.

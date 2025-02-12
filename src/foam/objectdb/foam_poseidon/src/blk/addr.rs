@@ -9,7 +9,7 @@ static FP_BLOCK_ADDR_INDICATOR: u8 = 0x01;
 /**
  * Unpack from bytes to block address.
  */
-pub(crate) fn block_addr_unpack<HM> (block_handle: &BlkHandle<HM>, bytes: &[u8], addr_size: usize) -> FPResult<BlockRef> {
+pub(crate) fn block_addr_unpack (block_handle: &BlkHandle, bytes: &[u8], addr_size: usize) -> FPResult<BlockRef> {
     let mut iter = VarintDecodeIterator::new(bytes);
     
     let offset = FP_ASSERT_NOT_NONE!(iter.next(), FP_BK_ILLEGAL_ARGUMENT); /* offset */
@@ -39,7 +39,7 @@ pub(crate) fn block_addr_unpack<HM> (block_handle: &BlkHandle<HM>, bytes: &[u8],
     }
 }
 
-pub(crate) fn block_addr_pack<HM>(bh: &BlkHandle<HM>, bytes: &mut [u8], block_ref: &BlockRef) -> FPResult<()> {
+pub(crate) fn block_addr_pack(bh: &BlkHandle, bytes: &mut [u8], block_ref: &BlockRef) -> FPResult<()> {
     let mut offset = 0u64;
     let mut size = 0u64;
     let mut checksum = 0u64;

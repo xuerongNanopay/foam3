@@ -24,7 +24,7 @@ use super::{addr, handle::{self, BlkHandle}, BlockHeader, BlockRef, BlkItem, Pag
  * TODO: multi block handler block manager.
  */
 pub(crate) struct BlockManager {
-    block_handle: Arc<BlkHandle<PageHeader>>,
+    block_handle: Arc<BlkHandle>,
 
     is_multi_handle: bool, /* TODO: allow store block into mutli handle */
 }
@@ -33,7 +33,7 @@ impl BlockManager {
     /**
      * Read a block base on block reference(BlockRef).
      */
-    fn read(&self, raw_addr: &[u8], addr_size: usize) -> FPResult<BlkItem<PageHeader>> {
+    fn read(&self, raw_addr: &[u8], addr_size: usize) -> FPResult<BlkItem> {
         let br = addr::block_addr_unpack(&self.block_handle, raw_addr, addr_size)?;
         
         FP_STATS_INCR!(block_read);
@@ -71,7 +71,7 @@ fn drop() {
  * Read a block into a buffer.
  * TODO: retry logic and checksum verify.
  */
-fn read_offset_from_bh(block_handle: &BlkHandle<PageHeader>, block_ref: &BlockRef) -> FPResult<BlkItem<PageHeader>> {
+fn read_offset_from_bh(block_handle: &BlkHandle, block_ref: &BlockRef) -> FPResult<BlkItem> {
     
     if block_ref.size < block_handle.allocation_size {
         FP_LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);

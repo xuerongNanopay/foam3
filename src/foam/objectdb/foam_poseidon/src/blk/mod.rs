@@ -94,8 +94,7 @@ impl PageHeader {
     }
 }
 
-pub(crate) struct BlkItem<MH> {
-    _meta_header: PhantomData<MH>,
+pub(crate) struct BlkItem {
     // pub(crate) reserved_header_len: usize,
     pub(crate) data: Vec<u8>,
     // pub(crate) data: &'static [u8],
