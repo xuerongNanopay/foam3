@@ -15,7 +15,7 @@ use crate::{
     }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR
 };
 
-use super::{addr, handle::{self, file_header_write, BlkHandle}, BlockHeader, BlockRef, BlkItem, PageHeader};
+use super::{addr, handle::{self, BlkHandle}, BlockHeader, BlockRef, BlkItem, PageHeader};
 
 //TODO: drop file object from directory.(block_open.c line28)
 
@@ -24,7 +24,7 @@ use super::{addr, handle::{self, file_header_write, BlkHandle}, BlockHeader, Blo
  * TODO: multi block handler block manager.
  */
 pub(crate) struct BlockManager {
-    block_handle: Arc<BlkHandle>,
+    block_handle: Arc<BlkHandle<PageHeader>>,
 
     is_multi_handle: bool, /* TODO: allow store block into mutli handle */
 }
@@ -54,7 +54,7 @@ impl BlockManager {
  */
 fn create(file_system: Arc<FPFileSystem>, filename: &str, alloc_size: u32) -> FPResult<()> {
     let fh = file_system.open(filename, FileType::Data, FP_FS_OPEN_CREATE | FP_FS_OPEN_DURABLE | FP_FS_OPEN_EXCLUSIVE)?;
-    file_header_write(fh.clone(), alloc_size)?;
+    // file_header_write(fh.clone(), alloc_size)?;
     fh.sync()?;
     file_system.close_fh(&fh.name)?;
     Ok(())
@@ -71,7 +71,7 @@ fn drop() {
  * Read a block into a buffer.
  * TODO: retry logic and checksum verify.
  */
-fn read_offset_from_bh(block_handle: &BlkHandle, block_ref: &BlockRef) -> FPResult<BlkItem> {
+fn read_offset_from_bh(block_handle: &BlkHandle<PageHeader>, block_ref: &BlockRef) -> FPResult<BlkItem> {
     
     if block_ref.size < block_handle.allocation_size {
         FP_LOG_ERR!("block handle size {} is less than allocation size {}.", block_handle.size, block_ref.size);

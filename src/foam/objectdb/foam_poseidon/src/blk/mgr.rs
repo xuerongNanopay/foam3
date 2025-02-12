@@ -7,11 +7,11 @@ use super::{handle::BlkHandle, meta::BlkAddr, BlkItem};
 /**
  * Block manager.
  */
-struct BlkMgr {
-    handle: BlkHandle,
+struct BlkMgr<MH> {
+    handle: BlkHandle<MH>,
 }
 
-impl BlkMgr {
+impl <MH> BlkMgr <MH> {
     /**
      * __wt_bm_read
      * 1. convert addr to BlkAddr

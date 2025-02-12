@@ -2,7 +2,7 @@
 
 use crate::{error::FP_NO_IMPL, internal::FPResult};
 
-use super::{handle::BlkHandle, meta::BlkAddr, BlkItem};
+use super::{handle::BlkHandle, meta::BlkAddr, BlkItem, PageHeader};
 
 #[derive(Default, Clone, Copy)]
 enum BlkpoolType {
@@ -21,7 +21,7 @@ struct BlkpoolItem {
  */
 struct Blkpool {
     blk_size: u32,
-    blk_handle: BlkHandle,
+    blk_handle: BlkHandle<PageHeader>,
 }
 
 impl Blkpool {
