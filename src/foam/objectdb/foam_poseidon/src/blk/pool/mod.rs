@@ -29,6 +29,7 @@ impl Blkpool {
     /**
      * Read block.
      * __wt_blkcache_read
+     * by: __page_read.
      * 1. Checks if the block exists in memory
      * 2. Reads from the block manager if not found in cache
      * 3. Handles decryption (if the block is encrypted). TODO
@@ -69,11 +70,7 @@ impl Blkpool {
      * __bm_read -> __wt_bm_read -> __wti_block_read_off -> __wt_read -> fh_read
      */
     fn blkpool_read_blk(&self, addr: &BlkAddr) -> FPResult<BlkItem> {
-
-        self.blk_handle.read(addr)?;
-
-        
-        Err(FP_NO_IMPL)
+        self.blk_handle.read(addr)
     }
 
 }
