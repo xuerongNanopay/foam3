@@ -120,29 +120,29 @@ macro_rules! FP_OS_WIN {
 
 #[macro_export]
 macro_rules! FP_REINTERPRET_CAST_BUF {
-    ($vec_u8:expr, $type:ty, $offset:expr) => {
+    ($FP_VEC_U8:expr, $type:ty, $offset:expr) => {
         unsafe {
-            let p = $vec_u8.as_ptr();
+            let p = $FP_VEC_U8.as_ptr();
             p.add($offset);
             & *(p as *const $type)
         }
     };
-    ($vec_u8:expr, $type:ty) => {
-        FP_REINTERPRET_CAST_BUF!($vec_u8, $type, 0)
+    ($FP_VEC_U8:expr, $type:ty) => {
+        FP_REINTERPRET_CAST_BUF!($FP_VEC_U8, $type, 0)
     };
 }
 
 #[macro_export]
 macro_rules! FP_REINTERPRET_CAST_BUF_MUT {
-    ($vec_u8:expr, $type:ty, $offset:expr) => {
+    ($FP_VEC_U8:expr, $type:ty, $offset:expr) => {
         unsafe {
-            let p = $vec_u8.as_mut_ptr();
+            let p = $FP_VEC_U8.as_mut_ptr();
             p.add($offset);
             &mut *(p as *mut $type)
         }
     };
-    ($vec_u8:expr, $type:ty) => {
-        FP_REINTERPRET_CAST_BUF_MUT!($vec_u8, $type, 0)
+    ($FP_VEC_U8:expr, $type:ty) => {
+        FP_REINTERPRET_CAST_BUF_MUT!($FP_VEC_U8, $type, 0)
     };
 }
 
@@ -308,7 +308,7 @@ macro_rules! FP_DEALLOC {
 }
 
 #[macro_export]
-macro_rules! BIT_REVERSE {
+macro_rules! FP_BIT_REVERSE {
     (64, $v:expr) => {
         (($v << 56) & 0xff00000000000000u64) | (($v << 40) & 0x00ff000000000000u64) |
         (($v << 24) & 0x0000ff0000000000u64) | (($v << 8) & 0x000000ff00000000u64) |
@@ -325,28 +325,28 @@ macro_rules! BIT_REVERSE {
 }
 
 #[macro_export]
-macro_rules! BIT_REVERSE_16 {
+macro_rules! FP_BIT_REVERSE_16 {
     ($v:expr) => {
-        crate::BIT_REVERSE!(16, $v)
+        crate::FP_BIT_REVERSE!(16, $v)
     }
 }
 
 #[macro_export]
-macro_rules! BIT_REVERSE_32 {
+macro_rules! FP_BIT_REVERSE_32 {
     ($v:expr) => {
-        crate::BIT_REVERSE!(32, $v)
+        crate::FP_BIT_REVERSE!(32, $v)
     }
 }
 
 #[macro_export]
-macro_rules! BIT_REVERSE_64 {
+macro_rules! FP_BIT_REVERSE_64 {
     ($v:expr) => {
-        crate::BIT_REVERSE!(64, $v)
+        crate::FP_BIT_REVERSE!(64, $v)
     }
 }
 
 #[macro_export]
-macro_rules! VEC_U8 {
+macro_rules! FP_VEC_U8 {
     [$($x:expr),*] => {
         vec![$($x as u8),*]
     };
@@ -357,7 +357,7 @@ macro_rules! VEC_U8 {
         buf
     };
     ($s:expr) => {
-        VEC_U8!($s, 0)
+        FP_VEC_U8!($s, 0)
     };
 }
 
@@ -387,10 +387,10 @@ mod tests {
     }
 
     #[test]
-    fn test_bit_reverse_macro() {
-        assert_eq!(BIT_REVERSE_16!(0x1122), 0x2211);
-        assert_eq!(BIT_REVERSE_32!(0x11223344), 0x44332211);
-        assert_eq!(BIT_REVERSE_64!(0x1122334411223344), 0x4433221144332211);
+    fn test_FP_BIT_REVERSE_macro() {
+        assert_eq!(FP_BIT_REVERSE_16!(0x1122), 0x2211);
+        assert_eq!(FP_BIT_REVERSE_32!(0x11223344), 0x44332211);
+        assert_eq!(FP_BIT_REVERSE_64!(0x1122334411223344), 0x4433221144332211);
         let a = 8;
     }
 }

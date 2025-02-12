@@ -33,7 +33,7 @@ pub(crate) struct PageHeader {
 impl PageHeader {
     fn endian_swap(&mut self) {
         if cfg!(target_endian = "big") { 
-            self.record_number = crate::BIT_REVERSE_64!(self.record_number);
+            self.record_number = crate::FP_BIT_REVERSE_64!(self.record_number);
         }
     }
 }

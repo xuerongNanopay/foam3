@@ -209,7 +209,7 @@ impl BlkHandle {
 //     // file_header.maybe_convert_endian();
     
 //     let save_checksum = file_header.checksum;
-//     let real_checksum = if cfg!(target_endian = "big") { BIT_REVERSE_32!(file_header.checksum) } else { file_header.checksum };
+//     let real_checksum = if cfg!(target_endian = "big") { FP_BIT_REVERSE_32!(file_header.checksum) } else { file_header.checksum };
 
 //     //TODO: checksum verify.
 //     file_header.checksum = 0;
@@ -235,7 +235,7 @@ impl BlkHandle {
 // }
 
 // pub(crate) fn file_header_write(file_handle: Arc<FPFileHandle>, alloc_size: u32) -> FPResult<()> {
-//     let mut buf = VEC_U8!(alloc_size);
+//     let mut buf = FP_VEC_U8!(alloc_size);
 //     let header = FP_REINTERPRET_CAST_BUF_MUT!(buf, FileHeader);
 
 //     header.magic = FP_BLOCK_MAGIC;

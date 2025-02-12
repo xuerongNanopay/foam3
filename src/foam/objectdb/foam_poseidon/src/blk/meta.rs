@@ -55,8 +55,8 @@ pub(crate) struct BlkHeader {
 impl BlkHeader {
     fn endian_swap(&mut self) {
         if cfg!(target_endian = "big") { 
-            self.disk_size = BIT_REVERSE_32!(self.disk_size);
-            self.checksum = BIT_REVERSE_32!(self.checksum);
+            self.disk_size = FP_BIT_REVERSE_32!(self.disk_size);
+            self.checksum = FP_BIT_REVERSE_32!(self.checksum);
         }
     }
 }

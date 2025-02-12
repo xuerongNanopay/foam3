@@ -34,11 +34,11 @@ struct FileHeader {
 impl FileHeader {
     fn maybe_convert_endian(&mut self) {
         if cfg!(target_endian = "big") { 
-            self.magic = BIT_REVERSE_32!(self.magic);
-            self.major = BIT_REVERSE_16!(self.major);
-            self.minor = BIT_REVERSE_16!(self.minor);
-            self.checksum = BIT_REVERSE_32!(self.checksum);
-            self.reserved = BIT_REVERSE_32!(self.reserved);
+            self.magic = FP_BIT_REVERSE_32!(self.magic);
+            self.major = FP_BIT_REVERSE_16!(self.major);
+            self.minor = FP_BIT_REVERSE_16!(self.minor);
+            self.checksum = FP_BIT_REVERSE_32!(self.checksum);
+            self.reserved = FP_BIT_REVERSE_32!(self.reserved);
         }
     }
 }
@@ -65,8 +65,8 @@ pub(crate) struct BlockHeader {
 impl BlockHeader {
     fn maybe_convert_endian(&mut self) {
         if cfg!(target_endian = "big") { 
-            self.disk_size = BIT_REVERSE_32!(self.disk_size);
-            self.checksum = BIT_REVERSE_32!(self.checksum);
+            self.disk_size = FP_BIT_REVERSE_32!(self.disk_size);
+            self.checksum = FP_BIT_REVERSE_32!(self.checksum);
         }
     }
 }
@@ -86,11 +86,11 @@ pub(crate) struct PageHeader {
 impl PageHeader {
     fn maybe_convert_endian(&mut self) {
         if cfg!(target_endian = "big") { 
-            self.record_number = BIT_REVERSE_64!(self.record_number);
-            self.write_epoch = BIT_REVERSE_64!(self.write_epoch);
-            self.memory_size = BIT_REVERSE_32!(self.memory_size);
-            self.entries = BIT_REVERSE_32!(self.entries);
-            self.overflow_data_len = BIT_REVERSE_32!(self.overflow_data_len);
+            self.record_number = FP_BIT_REVERSE_64!(self.record_number);
+            self.write_epoch = FP_BIT_REVERSE_64!(self.write_epoch);
+            self.memory_size = FP_BIT_REVERSE_32!(self.memory_size);
+            self.entries = FP_BIT_REVERSE_32!(self.entries);
+            self.overflow_data_len = FP_BIT_REVERSE_32!(self.overflow_data_len);
         }
     }
 }
