@@ -29,7 +29,6 @@ struct BlockOpenCfg {
  * Block; reference a single file.
  * Not physical representation of page.
  */
-
 pub(crate) struct BlkHandle<MH> {
     name: String,   /* Name */
     source_id: u32,
@@ -52,10 +51,9 @@ pub(crate) struct BlkHandle<MH> {
 
     // block_header_size: u32,
     // file_handle
-    _meta_header: PhantomData<MH>,
+    _meta_header: PhantomData<MH>, /* We put MetaHeader of the contain before block header. */
     fil_handle: Box<dyn FilHandle>,
     blk_unit: u64, /* Base block unit, 4KB in default. */ 
-    blk_header_offset: usize,
 
 }
 
@@ -72,7 +70,7 @@ impl <MH> BlkHandle<MH> {
     pub(crate) fn read(
         &self, 
         addr: BlkAddr,
-    ) -> FPResult<BlkItem> {
+    ) -> FPResult<BlkItem<MH>> {
         //NEED TODO:
         //FEAT(chunk cache)
 
@@ -83,7 +81,7 @@ impl <MH> BlkHandle<MH> {
         //FEAT TODO: read bandwidth.
         let mut buf = self.fil_handle.read(addr.file_offset, addr.size)?;
         let blk = &mut buf.data[..];
-        let raw_blk_header = &blk[self.blk_header_offset..];
+        let raw_blk_header = &blk[FP_SIZE_OF!(MH)..];
         let blk_header = BlkHeader::from(raw_blk_header);
 
         if blk_header.checksum == addr.checksum {   
@@ -104,6 +102,7 @@ impl <MH> BlkHandle<MH> {
         }
 
         Ok(BlkItem{
+            _meta_header: self._meta_header,
             data: buf.data,
             size: buf.size,
         })

@@ -17,7 +17,7 @@ impl <MH> BlkMgr <MH> {
      * 1. convert addr to BlkAddr
      * 2. read Block from handle.
      */
-    fn read(&self, addr: &[u8]) -> FPResult<BlkItem> {
+    fn read(&self, addr: &[u8]) -> FPResult<BlkItem<MH>> {
         let addr = BlkAddr::new(addr, 4*1024);
 
         //FEAT TODO: multi block handles.

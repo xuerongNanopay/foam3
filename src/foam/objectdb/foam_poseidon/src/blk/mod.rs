@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+use std::marker::PhantomData;
+
 use crate::{meta::FP_METAFILE, internal::{FPFileSize}};
 
 pub mod manager;
@@ -92,7 +94,8 @@ impl PageHeader {
     }
 }
 
-pub(crate) struct BlkItem {
+pub(crate) struct BlkItem<MH> {
+    _meta_header: PhantomData<MH>,
     // pub(crate) reserved_header_len: usize,
     pub(crate) data: Vec<u8>,
     // pub(crate) data: &'static [u8],

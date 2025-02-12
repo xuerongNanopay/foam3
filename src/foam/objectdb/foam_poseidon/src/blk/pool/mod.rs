@@ -19,12 +19,12 @@ struct BlkpoolItem {
 /**
  * Each db file has its own block pool.
  */
-struct Blkpool {
+struct Blkpool<MH> {
     blk_size: u32,
-    blk_handle: BlkHandle<PageHeader>,
+    blk_handle: BlkHandle<MH>,
 }
 
-impl Blkpool {
+impl <MH> Blkpool <MH> {
 
     /**
      * Read block.
@@ -43,7 +43,7 @@ impl Blkpool {
     ) -> FPResult<()> {
 
         let addr = BlkAddr::new(addr, self.blk_size);
-        let blk_item: BlkItem;
+        let blk_item: BlkItem<MH>;
 
         'read_blk: loop {
             //MUST TODO
@@ -67,7 +67,7 @@ impl Blkpool {
     /**
      * Read block from pool.
      */
-    fn read_from_pool(&self, addr: BlkAddr) -> FPResult<Option<BlkItem>> {
+    fn read_from_pool(&self, addr: BlkAddr) -> FPResult<Option<BlkItem<MH>>> {
         Err(FP_NO_IMPL)
     }
 
@@ -75,7 +75,7 @@ impl Blkpool {
      * Read block form file.
      * __bm_read -> __wt_bm_read -> __wti_block_read_off -> __wt_read -> fh_read
      */
-    fn blkpool_read_blk(&self, addr: BlkAddr) -> FPResult<BlkItem> {
+    fn blkpool_read_blk(&self, addr: BlkAddr) -> FPResult<BlkItem<MH>> {
         self.blk_handle.read(addr)
     }
 
