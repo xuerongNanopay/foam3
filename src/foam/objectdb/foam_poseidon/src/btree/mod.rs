@@ -4,7 +4,7 @@ use crate::{blk::FP_BLOCK_HEADER_LEN, FP_MIN};
 
 mod btree;
 mod row;
-mod page;
+pub mod page;
 mod tuple;
 mod zone_map;
 mod meta;

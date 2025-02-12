@@ -2,7 +2,7 @@
 
 use meta::BlkHeader;
 
-use crate::{meta::FP_METAFILE, internal::{FPFileSize}};
+use crate::{btree::page::PageHeader, internal::FPFileSize, meta::FP_METAFILE};
 
 pub mod manager;
 pub mod handle;
@@ -71,29 +71,6 @@ impl BlockHeader {
     }
 }
 
-//TODO: removed
-#[repr(C)]
-#[derive(Debug, Default, Clone, Copy)]
-pub(crate) struct PageHeader {
-    record_number: u64, /* For column oriented storage to store the record id of the first tuple in the page */
-    write_epoch: u64,
-    memory_size: u32,
-    entries: u32,
-    overflow_data_len: u32,
-    page_type: u8,
-}
-
-impl PageHeader {
-    fn maybe_convert_endian(&mut self) {
-        if cfg!(target_endian = "big") { 
-            self.record_number = FP_BIT_REVERSE_64!(self.record_number);
-            self.write_epoch = FP_BIT_REVERSE_64!(self.write_epoch);
-            self.memory_size = FP_BIT_REVERSE_32!(self.memory_size);
-            self.entries = FP_BIT_REVERSE_32!(self.entries);
-            self.overflow_data_len = FP_BIT_REVERSE_32!(self.overflow_data_len);
-        }
-    }
-}
 
 pub(crate) struct BlkItem {
     pub(crate) raw: Vec<u8>,

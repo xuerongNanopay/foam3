@@ -1,7 +1,10 @@
 use std::{collections::HashMap, sync::{Arc, RwLock, RwLockWriteGuard}, usize};
 
 use crate::{
-    error::FP_BK_ILLEGAL_CHECKSUM, os::fil::{
+    btree::page::PageHeader, error::FP_BK_ILLEGAL_CHECKSUM, internal::{
+        FPConcurrentHashMap, 
+        FPResult
+    }, os::fil::{
         FPFileSystem, 
         FileHandle, 
         FileSystem, 
@@ -9,13 +12,10 @@ use crate::{
         FP_FS_OPEN_CREATE, 
         FP_FS_OPEN_DURABLE, 
         FP_FS_OPEN_EXCLUSIVE
-    }, internal::{
-        FPConcurrentHashMap, 
-        FPResult
     }, FP_CHECKSUM_EQ, FP_LOG_ERR, FP_STATS_INCR
 };
 
-use super::{addr, handle::{self, BlkHandle}, BlkItem, BlockHeader, BlockRef, PageHeader};
+use super::{addr, handle::{self, BlkHandle}, BlkItem, BlockHeader, BlockRef};
 
 //TODO: drop file object from directory.(block_open.c line28)
 

@@ -59,6 +59,7 @@ impl  Blkpool  {
             //FEAT TODO: matrix
             blk_item = self.blkpool_read_blk(addr)?;
 
+            let page_header = PageHeader::from(&blk_item.raw[..]);
             break 'read_blk;
         }
         Err(FP_NO_IMPL)
