@@ -43,15 +43,21 @@ impl Blkpool {
     ) -> FPResult<()> {
 
         let addr = BlkAddr::new(addr, self.blk_size);
+        let blk_item: BlkItem;
 
         'read_blk: loop {
             //MUST TODO
             // Try read from pool.
-            match self.read_from_pool(&addr)? {
-                Some(todo) => { break 'read_blk; },
+            match self.read_from_pool(addr)? {
+                Some(item) => { 
+                    blk_item = item;
+                    break 'read_blk; 
+                },
                 None => {},
             };
 
+
+            blk_item = self.blkpool_read_blk(addr)?;
 
             break 'read_blk;
         }
@@ -61,7 +67,7 @@ impl Blkpool {
     /**
      * Read block from pool.
      */
-    fn read_from_pool(&self, addr: &BlkAddr) -> FPResult<Option<BlkItem>> {
+    fn read_from_pool(&self, addr: BlkAddr) -> FPResult<Option<BlkItem>> {
         Err(FP_NO_IMPL)
     }
 
@@ -69,7 +75,7 @@ impl Blkpool {
      * Read block form file.
      * __bm_read -> __wt_bm_read -> __wti_block_read_off -> __wt_read -> fh_read
      */
-    fn blkpool_read_blk(&self, addr: &BlkAddr) -> FPResult<BlkItem> {
+    fn blkpool_read_blk(&self, addr: BlkAddr) -> FPResult<BlkItem> {
         self.blk_handle.read(addr)
     }
 

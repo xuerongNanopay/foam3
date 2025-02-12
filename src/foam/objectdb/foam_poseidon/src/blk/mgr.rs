@@ -21,6 +21,6 @@ impl BlkMgr {
         let addr = BlkAddr::new(addr, 4*1024);
 
         //FEAT TODO: multi block handles.
-        self.handle.read(&addr)
+        self.handle.read(addr)
     }
 }

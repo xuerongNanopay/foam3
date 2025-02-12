@@ -69,7 +69,7 @@ impl BlkHandle {
      */
     pub(crate) fn read(
         &self, 
-        addr: &BlkAddr,
+        addr: BlkAddr,
     ) -> FPResult<BlkItem> {
         //NEED TODO:
         //FEAT(chunk cache)
