@@ -29,6 +29,10 @@ struct Blkpool {
 
 impl  Blkpool  {
 
+    pub(crate) fn open() -> FPResult<Blkpool> {
+        Err(FP_NO_IMPL)
+    }
+
     /**
      * Read block.
      * __wt_blkcache_read

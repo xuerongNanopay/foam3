@@ -92,7 +92,7 @@ impl BTree {
     /*
     * Create or reopen a btree.
     */
-    fn new(ctx: &mut Context, flag: BtreeFlag) -> FPResult<()> {
+    fn new(flag: BtreeFlag) -> FPResult<()> {
         Ok(())
     }
 
