@@ -4,10 +4,7 @@ use meta::BlkHeader;
 
 use crate::{btree::page::PageHeader, internal::FPFileSize, meta::FP_METAFILE};
 
-pub mod manager;
 pub mod handle;
-pub mod addr;
-pub mod cache;
 mod pool;
 mod mgr;
 mod meta;

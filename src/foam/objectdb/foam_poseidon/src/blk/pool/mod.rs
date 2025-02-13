@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+mod pool;
+
 use crate::{btree::page::{self, FP_BTREE_PAGE_COMPRESSED}, error::FP_NO_IMPL, internal::FPResult};
 
 use super::{compress::Compressor, handle::BlkHandle, meta::BlkAddr, BlkItem, PageHeader};
@@ -41,21 +43,27 @@ impl  Blkpool  {
     fn read(
         &self,
         addr: &[u8]
-    ) -> FPResult<()> {
+    ) -> FPResult<BlkItem> {
 
         let addr = BlkAddr::new(addr, self.blk_size);
         let mut blk_item: BlkItem;
+        let mut skip_pool_put = false;
+        let skip_decompress = if matches!(self.compressor, None) {
+            true
+        } else {
+            false
+        };
 
         'read_blk: loop {
             //MUST TODO
             // Try read from pool.
-            match self.read_from_pool(addr)? {
-                Some(item) => { 
-                    blk_item = item;
-                    break 'read_blk; 
-                },
-                None => {},
-            };
+            if let Some(item) = self.read_from_pool(addr)? {
+                blk_item = item;
+                skip_pool_put = true;
+                if skip_decompress {
+                    break 'read_blk
+                }
+            }
 
             //FEAT TODO: matrix
             blk_item = self.blkpool_read_blk(addr)?;
@@ -76,12 +84,14 @@ impl  Blkpool  {
                         de_raw[..skip].clone_from_slice(&blk_item.mem[..skip]);
                         //TODO: decompress.
 
+                        //FEAT TODO: matrix for compress ratio.
                     }
                 }
             }
             break 'read_blk;
         }
-        Err(FP_NO_IMPL)
+        
+        Ok(blk_item)
     }
 
     /**
