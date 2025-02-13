@@ -11,6 +11,7 @@ pub mod cache;
 mod pool;
 mod mgr;
 mod meta;
+mod compress;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 
@@ -73,13 +74,13 @@ impl BlockHeader {
 
 
 pub(crate) struct BlkItem {
-    pub(crate) raw: Vec<u8>,
+    pub(crate) mem: Vec<u8>,
     pub(crate) size: usize,
 }
 
 impl BlkItem {
     pub(crate) fn blk_header(&self) -> BlkHeader {
-        let raw_blk_header = &self.raw[FP_SIZE_OF!(PageHeader)..];
+        let raw_blk_header = &self.mem[FP_SIZE_OF!(PageHeader)..];
         BlkHeader::from(raw_blk_header)
     }
 }

@@ -102,8 +102,7 @@ impl BlkHandle {
         }
 
         Ok(BlkItem{
-            // blk_header,
-            raw: buf.data,
+            mem: buf.data,
             size: buf.size,
         })
     }

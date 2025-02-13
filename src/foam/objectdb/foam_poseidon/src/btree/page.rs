@@ -26,15 +26,15 @@ pub(crate) const FP_BTREE_PAGE_UNUSED:     PageFlag = 0x01 << 2;
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub(crate) struct PageHeader {
-    record_number: u64, /* column-store */
-    write_epoch: u64,
-    mem_size: u32,
-    v: PageHeaderV,
-    r#type: u8,
+    pub(crate) record_number: u64, /* column-store */
+    pub(crate) write_epoch: u64,
+    pub(crate) mem_size: u32,
+    pub(crate) v: PageHeaderV,
+    pub(crate) r#type: u8,
 
-    flags: PageFlag,
-    unused: u8,
-    version: u8,
+    pub(crate) flags: PageFlag,
+    pub(crate) unused: u8,
+    pub(crate) version: u8,
 }
 
 impl PageHeader {

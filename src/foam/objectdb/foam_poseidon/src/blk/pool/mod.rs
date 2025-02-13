@@ -1,8 +1,8 @@
 #![allow(unused)]
 
-use crate::{error::FP_NO_IMPL, internal::FPResult};
+use crate::{btree::page::{self, FP_BTREE_PAGE_COMPRESSED}, error::FP_NO_IMPL, internal::FPResult};
 
-use super::{handle::BlkHandle, meta::BlkAddr, BlkItem, PageHeader};
+use super::{compress::Compressor, handle::BlkHandle, meta::BlkAddr, BlkItem, PageHeader};
 
 #[derive(Default, Clone, Copy)]
 enum BlkpoolType {
@@ -22,6 +22,7 @@ struct BlkpoolItem {
 struct Blkpool {
     blk_size: u32,
     blk_handle: BlkHandle,
+    compressor: Option<Box<dyn Compressor>>
 }
 
 impl  Blkpool  {
@@ -43,7 +44,7 @@ impl  Blkpool  {
     ) -> FPResult<()> {
 
         let addr = BlkAddr::new(addr, self.blk_size);
-        let blk_item: BlkItem;
+        let mut blk_item: BlkItem;
 
         'read_blk: loop {
             //MUST TODO
@@ -59,7 +60,25 @@ impl  Blkpool  {
             //FEAT TODO: matrix
             blk_item = self.blkpool_read_blk(addr)?;
 
-            let page_header = PageHeader::from(&blk_item.raw[..]);
+            let page_header = PageHeader::from(&blk_item.mem[..]);
+
+            //FEAT TODO: decrypt.
+
+            //MUST TODO: store in cash
+
+            if FP_BIT_IST!(page_header.flags, FP_BTREE_PAGE_COMPRESSED) {
+                match &self.compressor {
+                    None => panic!("Miss compressor for compressed page."),
+                    Some(compressor) => {
+                        let mut de_raw = Vec::<u8>::with_capacity(page_header.mem_size as usize);
+                        //TODO: don't hard code.
+                        let skip = 64usize;
+                        de_raw[..skip].clone_from_slice(&blk_item.mem[..skip]);
+                        //TODO: decompress.
+
+                    }
+                }
+            }
             break 'read_blk;
         }
         Err(FP_NO_IMPL)
