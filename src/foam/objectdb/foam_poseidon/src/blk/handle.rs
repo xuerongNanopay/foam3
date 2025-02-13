@@ -8,7 +8,7 @@ use crate::fil::handle::FilHandle;
 use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::internal::{FPFileSize, FPResult};
-use crate::util::{checksum, hash_city};
+use crate::util::{checksum};
 use std::collections::LinkedList;
 use std::io::Read;
 use std::marker::PhantomData;
@@ -57,6 +57,16 @@ pub(crate) struct BlkHandle {
 }
 
 impl BlkHandle {
+
+    /**
+     * Open a block handle.
+     */
+    pub(crate) fn open(filename:&str, block_size: u32) -> FPResult<BlkHandle> {
+        let name = filename.to_owned();
+
+        Err(FP_NO_IMPL)
+    }
+
     fn write_size(&self, len: usize) {
         
     }

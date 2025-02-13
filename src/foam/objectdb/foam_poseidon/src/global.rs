@@ -14,5 +14,3 @@ struct Global {
     // file_system: Option<Arc<FPFileSystem>>,
 }
 
-
-

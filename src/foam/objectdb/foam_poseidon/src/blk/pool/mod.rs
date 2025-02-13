@@ -2,7 +2,7 @@
 
 mod pool;
 
-use crate::{btree::page::{self, FP_BTREE_PAGE_COMPRESSED}, error::FP_NO_IMPL, internal::FPResult};
+use crate::{btree::page::{self, FP_BTREE_PAGE_COMPRESSED}, error::FP_NO_IMPL, internal::FPResult, FP_INFO};
 
 use super::{compress::Compressor, handle::BlkHandle, meta::BlkAddr, BlkItem, PageHeader};
 
@@ -29,7 +29,16 @@ struct Blkpool {
 
 impl  Blkpool  {
 
-    pub(crate) fn open() -> FPResult<Blkpool> {
+    /**
+     * Open a file.
+     */
+    pub(crate) fn open(
+        uri: &str,
+        block_size: u32,
+    ) -> FPResult<Blkpool> {
+        FP_INFO!("open: {}", uri);
+
+        let blk_handle = BlkHandle::open(uri, block_size)?;
         Err(FP_NO_IMPL)
     }
 

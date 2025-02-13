@@ -7,6 +7,7 @@ mod session;
 mod util;
 #[macro_use]
 mod error;
+#[macro_use]
 mod internal;
 #[macro_use]
 mod global;
@@ -14,8 +15,6 @@ mod test;
 mod meta;
 #[macro_use]
 mod stats;
-// #[macro_use]
-mod log;
 mod context;
 mod scheme;
 mod cursor;

@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fs::{self, File}, io::{Error, Read, Seek, SeekFrom, Write}, mem, path::Path, sync::{Arc, RwLock, Weak}};
 
-use crate::{error::*, internal::*, util::hash_city, FP_IO_ERR_RET};
+use crate::{error::*, internal::*, util::hash::city_hash, FP_IO_ERR_RET};
 
 use super::*;
 
@@ -96,7 +96,7 @@ impl FileSystem for DefaultFileSystem {
         let fd = DefaultFileHandle{
             name: String::from(name),
             fd: RwLock::new(FP_IO_ERR_RET!(File::create_new(name))),
-            name_hash: hash_city::city_hash_64(name, name.len()),
+            name_hash: city_hash::city_hash64(name.as_bytes()),
             written: 0,
             last_sync: 0,
             file_type,

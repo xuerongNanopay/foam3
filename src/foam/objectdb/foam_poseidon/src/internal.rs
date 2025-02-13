@@ -20,3 +20,17 @@ pub type FPFileSize = u64;
 pub type FPFileBuf = Vec<u8>;
 
 pub type FPConcurrentHashMap<K, V> = RwLock<HashMap<K, V>>;
+
+#[macro_export]
+macro_rules! FP_INFO {
+    ($($arg:tt)*) => {
+        println!("file: {} | line: {} | message: {}", file!(), line!(), format!($($arg)*));   
+    };
+}
+
+#[macro_export]
+macro_rules! FP_ERROR {
+    ($($arg:tt)*) => {
+        println!("file: {} | line: {} | message: {}", file!(), line!(), format!($($arg)*))   
+    };
+}
