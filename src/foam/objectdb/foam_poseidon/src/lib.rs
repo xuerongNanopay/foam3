@@ -25,7 +25,7 @@ mod gcc;
 mod fil;
 
 #[no_mangle]
-pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
+pub extern "C" fn Java_foam_posei_Poseidon_addNumbers(
     _env: *mut std::ffi::c_void,
     _class: *mut std::ffi::c_void,
     a: i32,
@@ -35,7 +35,7 @@ pub extern "C" fn Java_foam_poseidon_Poseidon_addNumbers(
 }
 
 #[no_mangle]
-pub extern "C" fn Java_foam_poseidon_Poseidon_mulNumbers(
+pub extern "C" fn Java_foam_posei_Poseidon_mulNumbers(
     _env: *mut std::ffi::c_void,
     _class: *mut std::ffi::c_void,
     a: i32,
