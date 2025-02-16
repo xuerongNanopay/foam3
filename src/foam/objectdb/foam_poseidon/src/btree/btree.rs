@@ -42,6 +42,31 @@ pub const FP_BTREE_IN_MEMORY: BtreeFlag = 1 << 14;  /* In-Memory */
 pub const FP_BTREE_RECOVER:   BtreeFlag = 1 << 15;  /* Recover */
 pub const FP_BTREE_VERIFY:    BtreeFlag = 1 << 16;  /* Verify */
 
+pub(crate) struct BTreeBuilder {
+    
+}
+
+impl BTreeBuilder {
+    pub(crate) fn new() -> Self {
+        Self {
+
+        }
+    }
+
+    pub(crate) fn open_or_create(self) -> FPResult<BTree> {
+        Err(FP_NO_IMPL)
+    }
+
+    fn open(self) -> FPResult<BTree> {
+        Err(FP_NO_IMPL)
+    }
+
+    fn create(self) -> FPResult<BTree> {
+        Err(FP_NO_IMPL)
+    }
+}
+
+
 #[repr(C)]
 pub(crate) struct BTree {
     initial: AtomicBool,
@@ -89,10 +114,14 @@ pub(crate) struct BTree {
  */
 impl BTree {
 
+    pub(crate) fn builder() -> BTreeBuilder {
+        BTreeBuilder::new()
+    }
+
     /*
     * Create or reopen a btree.
     */
-    fn new(flag: BtreeFlag) -> FPResult<()> {
+    fn open(flag: BtreeFlag) -> FPResult<()> {
         Ok(())
     }
 

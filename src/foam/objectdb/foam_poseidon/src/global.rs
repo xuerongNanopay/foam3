@@ -14,9 +14,12 @@ struct Global {
     // file_system: Option<Arc<FPFileSystem>>,
 }
 
+pub(crate) type FPOSEI = Option<FPosei>;
+
+
 /**
  * Global Interface/Context.
  */
-struct FPosei {
-
+pub struct FPosei {
+    
 }

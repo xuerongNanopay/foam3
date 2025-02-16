@@ -2,7 +2,7 @@
 
 use meta::BlkHeader;
 
-use crate::{btree::page::PageHeader, internal::FPFileSize, meta::FP_METAFILE};
+use crate::{btree::page::PageHeader, meta::FP_METAFILE};
 
 pub mod handle;
 mod pool;
@@ -41,14 +41,14 @@ impl FileHeader {
     }
 }
 
-#[repr(C)]
-#[derive(Debug, Default, Clone, Copy)]
-pub(crate) struct BlockRef {
-    source_id: u32,
-    offset: FPFileSize, /* offset in file */
-    size: FPFileSize, /* size of a block in file */
-    checksum: u32,
-}
+// #[repr(C)]
+// #[derive(Debug, Default, Clone, Copy)]
+// pub(crate) struct BlockRef {
+//     source_id: u32,
+//     offset: FPFileSize, /* offset in file */
+//     size: FPFileSize, /* size of a block in file */
+//     checksum: u32,
+// }
 
 
 #[repr(C)]

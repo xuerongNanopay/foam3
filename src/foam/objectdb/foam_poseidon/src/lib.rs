@@ -48,7 +48,6 @@ pub extern "C" fn Java_foam_posei_Poseidon_mulNumbers(
 mod tests {
     #[test]
     fn it_works() {
-        // let result = add_numbers(2, 2);
-        // assert_eq!(result, 4);
+
     }
 }

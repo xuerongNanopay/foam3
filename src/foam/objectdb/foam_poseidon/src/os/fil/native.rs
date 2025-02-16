@@ -83,7 +83,7 @@ impl FileSystem for DefaultFileSystem {
         Ok(())
     }
 
-    fn size(&self, name: &str) -> FPResult<FPFileSize> {
+    fn size(&self, name: &str) -> FPResult<u64> {
         let s = FP_IO_ERR_RET!(fs::metadata(name));
         Ok(s.len())
     }
@@ -134,7 +134,7 @@ pub struct DefaultFileHandle {
     file_type: FileType,
     name_hash: u64,
     last_sync: u64,
-    written: FPFileSize,
+    written: u64,
     fd: RwLock<std::fs::File>,
 }
 
@@ -146,7 +146,7 @@ impl FileHandle for DefaultFileHandle {
         Ok(())
     }
 
-    fn read_exact(&self, offset: FPFileSize, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)> {
+    fn read_exact(&self, offset: u64, len: u64) -> FPResult<(Vec<u8>, u64)> {
 
         //TODO: add verbose debug
         //TODO: use read_vectored when len is more than 1GB
@@ -167,7 +167,7 @@ impl FileHandle for DefaultFileHandle {
         Ok((buffer, len))
     }
 
-    // fn read(&self, offset: FPFileSize, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize> {
+    // fn read(&self, offset: u64, len: u64, buf: &mut [u8]) -> FPResult<u64> {
 
     //     //TODO: add verbose debug
     //     //TODO: use read_vectored when len is more than 1GB
@@ -189,7 +189,7 @@ impl FileHandle for DefaultFileHandle {
     // }
 
 
-    fn write(&self, offset: FPFileSize, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
+    fn write(&self, offset: u64, len: u64, buffer: &[u8]) -> FPResult<()> {
         //TODO: add verbose debug
 
         let mut fd = self.fd.write().unwrap();
@@ -209,7 +209,7 @@ impl FileHandle for DefaultFileHandle {
     /**
      * Return size of file.
      */
-    fn size(&self) -> FPResult<FPFileSize> {
+    fn size(&self) -> FPResult<u64> {
         let fd = self.fd.read().unwrap();
         let metadata = FP_IO_ERR_RET!(fd.metadata());
         Ok(metadata.len())

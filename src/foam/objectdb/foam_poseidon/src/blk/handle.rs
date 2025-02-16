@@ -7,7 +7,7 @@ use crate::fil::handle::native::NativeFilHandle;
 use crate::fil::handle::FilHandle;
 use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
-use crate::internal::{FPFileSize, FPResult};
+use crate::internal::{FPResult};
 use crate::util::{checksum};
 use std::collections::LinkedList;
 use std::io::Read;
@@ -16,11 +16,11 @@ use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 struct BlockOpenCfg {
-    allocation_size: FPFileSize,
+    allocation_size: u64,
     alloc_first: bool,
     os_cache_max: usize,
     os_cache_dirty_max: usize,
-    extend_len: FPFileSize,
+    extend_len: u64,
     access_mode: fil::AccessMode,
 }
 
@@ -34,15 +34,15 @@ pub(crate) struct BlkHandle {
     source_id: u32,
 
     pub file_handle: Arc<FPFileHandle>,  /* underline file handle */
-    pub(crate) size: FPFileSize,         /* File size */
-    extend_size: FPFileSize,             /* File extended size */
-    extend_len: FPFileSize,              /* File extend chunk size */
+    pub(crate) size: u64,         /* File size */
+    extend_size: u64,             /* File extended size */
+    extend_len: u64,              /* File extend chunk size */
 
     sync_on_checkpoint: bool,     /* fsync the handle after the next checkpoint */
     remote: bool,                 /* remove handler */
     readonly: bool,               /* underline file is read only */
 
-    pub(crate) allocation_size: FPFileSize,
+    pub(crate) allocation_size: u64,
     alloc_first: AtomicBool,
 
     // os_cache: usize,              

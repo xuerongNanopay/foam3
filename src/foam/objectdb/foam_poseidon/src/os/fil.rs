@@ -101,7 +101,7 @@ pub trait FileSystem {
     /**
      * Return size of file
      */
-    fn size(&self, name: &str) -> FPResult<FPFileSize> {
+    fn size(&self, name: &str) -> FPResult<u64> {
         Err(FP_NO_IMPL)
     }
 
@@ -134,21 +134,21 @@ pub trait FileHandle {
     /**
      * POSIX only
      */
-    fn advise(&self, offset: FPFileSize, len: FPFileSize, advice: i32) -> FPResult<()> {
+    fn advise(&self, offset: u64, len: u64, advice: i32) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
-    fn extend(&self, offset: FPFileSize) -> FPResult<()> {
+    fn extend(&self, offset: u64) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Extend the file.
      */
-    fn extend_nolock(&self, offset: FPFileSize) -> FPResult<()> {
+    fn extend_nolock(&self, offset: u64) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 
@@ -166,21 +166,21 @@ pub trait FileHandle {
     /**
      * Read from file.
      */
-    fn read_exact(&self, offset: FPFileSize, len: FPFileSize) -> FPResult<(FPFileBuf, FPFileSize)>  {
+    fn read_exact(&self, offset: u64, len: u64) -> FPResult<(Vec<u8>, u64)>  {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Read from file.
      */
-    fn read(&self, offset: FPFileSize, len: FPFileSize, buf: &mut [u8]) -> FPResult<FPFileSize>  {
+    fn read(&self, offset: u64, len: u64, buf: &mut [u8]) -> FPResult<Vec<u8>>  {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Return size of file.
      */
-    fn size(&self) -> FPResult<FPFileSize> {
+    fn size(&self) -> FPResult<u64> {
         Err(FP_NO_IMPL)
     }
 
@@ -201,14 +201,14 @@ pub trait FileHandle {
     /**
      * Truncate file.
      */
-    fn truncate(&self, offset: FPFileSize) -> Result<FPFileBuf, FPErr> {
+    fn truncate(&self, offset: u64) -> Result<u64, FPErr> {
         Err(FP_NO_IMPL)
     }
 
     /**
      * Write to a file.
      */
-    fn write(&self, offset: FPFileSize, len: FPFileSize, buffer: &FPFileBuf) -> FPResult<()> {
+    fn write(&self, offset: u64, len: u64, buffer: &[u8]) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
 

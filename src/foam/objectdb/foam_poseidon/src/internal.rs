@@ -16,10 +16,10 @@ use std::{collections::HashMap, sync::{Arc, RwLock}, u64};
 pub type FPErr = i32;
 pub type FPResult<T> = Result<T, FPErr>;
 
-pub type FPFileSize = u64;
-pub type FPFileBuf = Vec<u8>;
 
 pub type FPConcurrentHashMap<K, V> = RwLock<HashMap<K, V>>;
+
+
 
 #[macro_export]
 macro_rules! FP_INFO {
@@ -34,3 +34,4 @@ macro_rules! FP_ERROR {
         println!("file: {} | line: {} | message: {}", file!(), line!(), format!($($arg)*))   
     };
 }
+
