@@ -11,7 +11,7 @@ pub(crate) const FP_TXN_ID_MIN:     FPTxnId = 1;
 pub(crate) const FP_TXN_ID_MAX:     FPTxnId = u64::MAX - 10;
 pub(crate) const FP_TXN_ID_ABORTED: FPTxnId = u64::MAX;
 
-use std::{collections::HashMap, sync::{Arc, RwLock}, u64};
+use std::{collections::HashMap, sync::{Arc, Mutex, RwLock}, u64};
 
 pub type FPErr = i32;
 pub type FPResult<T> = Result<T, FPErr>;
@@ -19,7 +19,9 @@ pub type FPResult<T> = Result<T, FPErr>;
 
 pub type FPConcurrentHashMap<K, V> = RwLock<HashMap<K, V>>;
 
-
+pub(crate) type FPRwLock<T> = RwLock<T>;
+pub(crate) type FPMutex<T> = Mutex<T>;
+pub(crate) type FPSpin<T> = Mutex<T>;
 
 #[macro_export]
 macro_rules! FP_INFO {

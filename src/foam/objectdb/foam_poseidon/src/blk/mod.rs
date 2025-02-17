@@ -9,6 +9,7 @@ mod pool;
 mod mgr;
 mod meta;
 mod compress;
+pub(crate) mod util;
 
 static FP_BLOCK_INVALID_OFFSET: u64 = 0;
 

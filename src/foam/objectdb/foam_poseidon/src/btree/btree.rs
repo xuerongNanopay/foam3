@@ -5,7 +5,7 @@ pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
-use crate::{cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, scheme::key::KeyOrd, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IST, FP_SIZE_OF};
+use crate::{cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, internal::{FPResult, FPRwLock}, scheme::key::KeyOrd, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IST, FP_SIZE_OF};
 
 use super::{page::{Page, PageRefAddr, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
@@ -66,8 +66,6 @@ impl BTreeBuilder {
     }
 }
 
-
-#[repr(C)]
 pub(crate) struct BTree {
     initial: AtomicBool,
 
@@ -84,6 +82,8 @@ pub(crate) struct BTree {
     pub(crate) key_cmp_fn: Option<Box<dyn KeyOrd>>,
     pub(crate) lower_bound: CursorItem,
     pub(crate) upper_bound: CursorItem,
+
+    page_cache: Option<Arc<FPRwLock<u32>>>
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,
