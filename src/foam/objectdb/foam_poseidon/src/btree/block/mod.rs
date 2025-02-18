@@ -1,7 +1,7 @@
 #![allow(unused)]
 
-mod manager;
-mod cache;
+pub(crate) mod manager;
+pub(crate) mod cache;
 
 struct Block {
 

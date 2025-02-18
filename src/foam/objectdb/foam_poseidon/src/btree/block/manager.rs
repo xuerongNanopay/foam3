@@ -5,7 +5,7 @@ use crate::{error::FP_NO_IMPL, internal::FPResult};
 /**
  * Block manager that manager block access for btree.
  */
-trait BlockManager {
+pub(crate) trait BlockManager {
     fn close(&mut self) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }

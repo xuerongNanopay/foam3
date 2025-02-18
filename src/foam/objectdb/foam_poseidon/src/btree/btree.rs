@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, internal::{FPResult, FPRwLock}, scheme::key::KeyOrd, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IST, FP_SIZE_OF};
 
-use super::{buf::BufferPool, page::{Page, PageReadingState, PageRef, PageRefAddr, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
+use super::{block::manager::BlockManager, buf::BufferPool, page::{Page, PageReadingState, PageRef, PageRefAddr, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
 
 enum BTreeStoreOriented {
@@ -100,7 +100,8 @@ pub(crate) struct BTree {
     pub(crate) lower_bound: CursorItem,
     pub(crate) upper_bound: CursorItem,
 
-    page_cache: Option<Arc<FPRwLock<u32>>>
+    page_cache: Option<Arc<FPRwLock<u32>>>,
+    block_manager: Box<dyn BlockManager>,
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,
