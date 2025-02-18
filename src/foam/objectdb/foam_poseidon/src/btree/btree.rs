@@ -1,7 +1,6 @@
 #![allow(unused)]
 
 pub mod btree_cursor;
-pub mod btree_dao;
 
 use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Weak}, task::Context};
 
@@ -101,7 +100,7 @@ pub(crate) struct BTree {
     pub(crate) upper_bound: CursorItem,
 
     page_cache: Option<Arc<FPRwLock<u32>>>,
-    block_manager: Box<dyn BlockManager>,
+    block_manager: BlockManager,
     // k_format: String,
     // v_format: String,
     // fixed_length_field_size: u8,

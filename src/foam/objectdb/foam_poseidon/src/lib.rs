@@ -18,7 +18,7 @@ mod stats;
 mod context;
 mod scheme;
 mod cursor;
-mod dao;
+mod file;
 mod support;
 mod evict;
 mod gcc;

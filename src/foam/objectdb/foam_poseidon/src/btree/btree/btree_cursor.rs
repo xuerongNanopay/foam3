@@ -2,9 +2,9 @@
 
 use std::{cell::UnsafeCell, ptr, sync::Arc};
 
-use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, dao::DAO, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IST, FP_BIT_SET, FP_MIN};
+use crate::{btree::{lex_prefix_cmp, lex_skip_cmp, page::PageIndex, BtreeInsert, BtreeInsertList, BtreeReadFlag, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_RETRY_OK, FP_BTREE_LEX_PREFIX_CMP_MAX_LEN, FP_BTREE_MAX_KV_SIZE, FP_RECORD_NUMBER_OOB}, cursor::{CursorFlag, CursorItem, ICursor, CURSOR_BOUND_LOWER, CURSOR_BOUND_LOWER_INCLUSIVE, CURSOR_BOUND_UPPER, CURSOR_BOUND_UPPER_INCLUSIVE}, error::{FP_NO_IMPL, FP_NO_SUPPORT}, misc::FP_GIGABYTE, internal::FPResult, util::ptr::layout_ptr::LayoutPtr, FP_BIT_CLR, FP_BIT_IST, FP_BIT_SET, FP_MIN};
 
-use super::{btree_dao::BTreeDAO, BTree, BTreeType, Page, PageRef, PageType};
+use super::{BTree, BTreeType, Page, PageRef, PageType};
 
 struct BtreeCursorState {
     key: CursorItem,
@@ -44,10 +44,9 @@ pub const FP_BTREE_CURSOR_POSITION_MASK: BtreeCursorFlag =
 /**
  * Btree cursor.
  */
-pub(crate) struct BtreeCursor<'a, 'c> {
+pub(crate) struct BtreeCursor<'a> {
     pub(crate) icur: &'a ICursor,
     btree: UnsafeCell<BTree>,
-    btree_dao: &'c BTreeDAO<'c>,
 
     // Date Source.
     pub(crate) data_source: *mut(),
@@ -66,7 +65,7 @@ pub(crate) struct BtreeCursor<'a, 'c> {
     pub(crate) page_ref: *mut PageRef,
 }
 
-impl BtreeCursor<'_, '_> {
+impl BtreeCursor<'_,> {
     pub fn get_tree(&self) -> &BTree {
         unsafe {
             &*self.btree.get()   
@@ -95,7 +94,7 @@ impl BtreeCursor<'_, '_> {
         self.size_check(&self.icur.value)?;
 
         // Bulk-load only available before the first insert.
-        self.btree_dao.get_btree().disable_bulk_load();
+        // self.btree_dao.get_btree().disable_bulk_load();
 
         //TODO: support append for column stored.
 
@@ -141,7 +140,7 @@ impl BtreeCursor<'_, '_> {
         }
 
         /* Check if block hanlder can wactually write. */
-        self.btree_dao.write_size(item.len())?;
+        // self.btree_dao.write_size(item.len())?;
 
         Ok(())
     }
