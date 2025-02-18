@@ -2,7 +2,7 @@
 
 use crate::{error::FP_NO_IMPL, internal::FPResult};
 
-trait File {
+pub(crate) trait File {
     fn close(&mut self) -> FPResult<()> {
         Err(FP_NO_IMPL)
     }
