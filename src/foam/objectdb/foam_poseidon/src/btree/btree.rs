@@ -78,6 +78,8 @@ impl BTreeBuilder {
     }
 
     fn create(self) -> FPResult<BTree> {
+        let block_manager = BlockManager::new(&self.name).unwrap();
+        
         Err(FP_NO_IMPL)
     }
 }
@@ -85,7 +87,7 @@ impl BTreeBuilder {
 pub(crate) struct BTree {
     initial: AtomicBool,
 
-    store_oriented: BTreeStoreOriented,
+    // store_oriented: BTreeStoreOriented,
 
     /* Store oriented: row, var length column, fix length column */
     pub(crate) r#type: BTreeType,
@@ -95,11 +97,11 @@ pub(crate) struct BTree {
 
     pub(crate) flags: BtreeFlag,
 
-    pub(crate) key_cmp_fn: Option<Box<dyn KeyOrd>>,
-    pub(crate) lower_bound: CursorItem,
-    pub(crate) upper_bound: CursorItem,
+    // pub(crate) key_cmp_fn: Option<Box<dyn KeyOrd>>,
+    // pub(crate) lower_bound: CursorItem,
+    // pub(crate) upper_bound: CursorItem,
 
-    page_cache: Option<Arc<FPRwLock<u32>>>,
+    // page_cache: Option<Arc<FPRwLock<u32>>>,
     block_manager: BlockManager,
     // k_format: String,
     // v_format: String,

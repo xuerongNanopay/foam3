@@ -1,5 +1,15 @@
 #![allow(unused)]
 
+pub static FP_KILOBYTE: u64 = 1024;
+pub static FP_MEGABYTE: u64 = 1048576;
+pub static FP_GIGABYTE: u64 = 1073741824;
+pub static FP_TERABYTE: u64 = 1099511627776;
+pub static FP_PETABYTE: u64 = 1125899906842624;
+pub static FP_EXABYTE:  u64 = 1152921504606846976;
+
+pub static FP_DAY:    u64 = 86400;
+pub static FP_MINITE: u64 = 60;
+
 pub(crate) type FPTimeStamp = u64;
 pub(crate) const FP_TIME_STAMP_NONE: FPTimeStamp = 0;
 pub(crate) const FP_TIME_STAMP_MIN:  FPTimeStamp = 1;

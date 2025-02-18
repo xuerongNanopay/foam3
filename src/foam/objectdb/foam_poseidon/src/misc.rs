@@ -1,15 +1,5 @@
 #![allow(unused)]
 
-pub static FP_KILOBYTE: usize = 1024;
-pub static FP_MEGABYTE: usize = 1048576;
-pub static FP_GIGABYTE: usize = 1073741824;
-pub static FP_TERABYTE: usize = 1099511627776;
-pub static FP_PETABYTE: usize = 1125899906842624;
-pub static FP_EXABYTE:  usize = 1152921504606846976;
-
-pub static FP_DAY:    usize = 86400;
-pub static FP_MINITE: usize = 60;
-
 #[macro_export]
 macro_rules! FP_MIN {
     ($a:expr, $b:expr) => {
