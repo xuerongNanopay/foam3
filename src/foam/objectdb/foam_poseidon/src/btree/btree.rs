@@ -7,7 +7,7 @@ use std::{mem::ManuallyDrop, ptr, str::FromStr, sync::{atomic::{AtomicBool, Atom
 
 use crate::{cursor::CursorItem, error::{FP_BT_PAGE_READ_NOT_FOUND, FP_BT_PAGE_READ_RETRY, FP_NO_IMPL, FP_NO_SUPPORT}, internal::{FPResult, FPRwLock}, scheme::key::KeyOrd, util::ptr::layout_ptr::LayoutPtr, FP_ALLOC, FP_BIT_IST, FP_SIZE_OF};
 
-use super::{page::{Page, PageRefAddr, PageReadingState, PageRef, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
+use super::{buf::BufferPool, page::{Page, PageReadingState, PageRef, PageRefAddr, PageRefKey, PageRefState, PageRefType, PageType}, row::RowKeyMem, BtreeReadFlag, FP_BTEE_READ_CACHE_ONLY, FP_BTEE_READ_NEED_ONCE, FP_BTEE_READ_NO_SPLIT, FP_BTEE_READ_NO_WAIT, FP_BTEE_READ_OVER_CACHE, FP_BTEE_READ_SKIP_DELETED};
 
 
 enum BTreeStoreOriented {
@@ -26,10 +26,11 @@ impl std::fmt::Display for BTreeStoreOriented {
     }
 }
 
-#[repr(C)]
+#[derive(Default)]
 pub(crate) enum BTreeType {
     ColumnFix,
     ColumnVar,
+    #[default]
     Row,
 }
 
@@ -42,15 +43,31 @@ pub const FP_BTREE_IN_MEMORY: BtreeFlag = 1 << 14;  /* In-Memory */
 pub const FP_BTREE_RECOVER:   BtreeFlag = 1 << 15;  /* Recover */
 pub const FP_BTREE_VERIFY:    BtreeFlag = 1 << 16;  /* Verify */
 
+#[derive(Default)]
 pub(crate) struct BTreeBuilder {
-    
+    name: String,
+    buffer_pool: Option<Arc<BufferPool>>,
+    btree_type: BTreeType,
+    btree_flag: BtreeFlag,
+    //TODO: blk_handle builder.
 }
 
 impl BTreeBuilder {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(
+        uri: &str,
+    ) -> Self {
         Self {
-
+            name: uri.to_owned(),
+            ..Default::default()
         }
+    }
+
+    fn set_buffer_pool(&mut self, buffer_pool: Arc<BufferPool>) {
+        self.buffer_pool = Some(buffer_pool);
+    }
+
+    fn set_btree_type(&mut self, btree_type: BTreeType) {
+        self.btree_type = btree_type;
     }
 
     pub(crate) fn open_or_create(self) -> FPResult<BTree> {
@@ -114,8 +131,8 @@ pub(crate) struct BTree {
  */
 impl BTree {
 
-    pub(crate) fn builder() -> BTreeBuilder {
-        BTreeBuilder::new()
+    pub(crate) fn builder(name: &str) -> BTreeBuilder {
+        BTreeBuilder::new(name)
     }
 
     /*
