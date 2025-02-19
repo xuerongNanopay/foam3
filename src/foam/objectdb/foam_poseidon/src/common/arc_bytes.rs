@@ -3,12 +3,13 @@
 use core::fmt;
 use std::{io, ops::{Deref, Range}, sync::Arc};
 
-pub(crate) struct ShareBytes {
+#[derive(Clone)]
+pub(crate) struct ArcBytes {
     data: &'static[u8],
     inner: Arc<dyn Deref<Target = [u8]> + Sync>
 }
 
-impl ShareBytes {
+impl ArcBytes {
     pub(crate) fn empty() -> Self {
         Self::new(Arc::new(Vec::<u8>::with_capacity(0)))
     }
@@ -118,7 +119,7 @@ impl ShareBytes {
     }
 }
 
-impl fmt::Debug for ShareBytes {
+impl fmt::Debug for ArcBytes {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // We truncate the bytes in order to make sure the debug string
         // is not too long.
@@ -127,39 +128,39 @@ impl fmt::Debug for ShareBytes {
         } else {
             self.as_slice()
         };
-        write!(f, "ShareBytes({bytes_truncated:?}, len={})", self.len())
+        write!(f, "ArcBytes({bytes_truncated:?}, len={})", self.len())
     }
 }
 
-impl PartialEq for ShareBytes {
-    fn eq(&self, other: &ShareBytes) -> bool {
+impl PartialEq for ArcBytes {
+    fn eq(&self, other: &ArcBytes) -> bool {
         self.as_slice() == other.as_slice()
     }
 }
 
-impl Eq for ShareBytes {}
+impl Eq for ArcBytes {}
 
-impl PartialEq<[u8]> for ShareBytes {
+impl PartialEq<[u8]> for ArcBytes {
     fn eq(&self, other: &[u8]) -> bool {
         self.as_slice() == other
     }
 }
 
-impl PartialEq<str> for ShareBytes {
+impl PartialEq<str> for ArcBytes {
     fn eq(&self, other: &str) -> bool {
         self.as_slice() == other.as_bytes()
     }
 }
 
-impl<'a, T: ?Sized> PartialEq<&'a T> for ShareBytes
-where ShareBytes: PartialEq<T>
+impl<'a, T: ?Sized> PartialEq<&'a T> for ArcBytes
+where ArcBytes: PartialEq<T>
 {
     fn eq(&self, other: &&'a T) -> bool {
         *self == **other
     }
 }
 
-impl Deref for ShareBytes {
+impl Deref for ArcBytes {
     type Target = [u8];
 
     #[inline]
@@ -168,14 +169,14 @@ impl Deref for ShareBytes {
     }
 }
 
-impl AsRef<[u8]> for ShareBytes {
+impl AsRef<[u8]> for ArcBytes {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_slice()
     }
 }
 
-impl io::Read for ShareBytes {
+impl io::Read for ArcBytes {
     #[inline]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let data_len = self.data.len();
