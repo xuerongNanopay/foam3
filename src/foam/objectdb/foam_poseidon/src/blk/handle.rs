@@ -3,8 +3,8 @@
 use super::meta::{BlkAddr, BlkHeader, FP_BLK_HEADER_CKSUM_INCL_DATA_MK};
 use super::*;
 use crate::error::*;
-use crate::fil::handle::native::NativeFilHandle;
-use crate::fil::handle::FilHandle;
+// use crate::fil::handle::native::NativeFilHandle;
+// use crate::fil::handle::FilHandle;
 use crate::meta::*;
 use crate::os::fil::{self, AccessMode, FPFileHandle, FPFileSystem, FileHandle, FileSystem, FileType};
 use crate::internal::{FPResult};
@@ -15,112 +15,112 @@ use std::marker::PhantomData;
 use std::sync::{Mutex, Arc};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
-struct BlockOpenCfg {
-    allocation_size: u64,
-    alloc_first: bool,
-    os_cache_max: usize,
-    os_cache_dirty_max: usize,
-    extend_len: u64,
-    access_mode: fil::AccessMode,
-}
+// struct BlockOpenCfg {
+//     allocation_size: u64,
+//     alloc_first: bool,
+//     os_cache_max: usize,
+//     os_cache_dirty_max: usize,
+//     extend_len: u64,
+//     access_mode: fil::AccessMode,
+// }
 
 
-/**
- * Block; reference a single file.
- * Not physical representation of page.
- */
-pub(crate) struct BlkHandle {
-    name: String,   /* Name */
-    source_id: u32,
+// /**
+//  * Block; reference a single file.
+//  * Not physical representation of page.
+//  */
+// pub(crate) struct BlkHandle {
+//     name: String,   /* Name */
+//     source_id: u32,
 
-    pub file_handle: Arc<FPFileHandle>,  /* underline file handle */
-    pub(crate) size: u64,         /* File size */
-    extend_size: u64,             /* File extended size */
-    extend_len: u64,              /* File extend chunk size */
+//     pub file_handle: Arc<FPFileHandle>,  /* underline file handle */
+//     pub(crate) size: u64,         /* File size */
+//     extend_size: u64,             /* File extended size */
+//     extend_len: u64,              /* File extend chunk size */
 
-    sync_on_checkpoint: bool,     /* fsync the handle after the next checkpoint */
-    remote: bool,                 /* remove handler */
-    readonly: bool,               /* underline file is read only */
+//     sync_on_checkpoint: bool,     /* fsync the handle after the next checkpoint */
+//     remote: bool,                 /* remove handler */
+//     readonly: bool,               /* underline file is read only */
 
-    pub(crate) allocation_size: u64,
-    alloc_first: AtomicBool,
+//     pub(crate) allocation_size: u64,
+//     alloc_first: AtomicBool,
 
-    // os_cache: usize,              
-    // os_cache_max: usize,
-    // os_cache_dirty_max: usize,
+//     // os_cache: usize,              
+//     // os_cache_max: usize,
+//     // os_cache_dirty_max: usize,
 
-    // block_header_size: u32,
-    // file_handle
-    fil_handle: Box<dyn FilHandle>,
-    blk_unit: u64, /* Base block unit, 4KB in default. */ 
+//     // block_header_size: u32,
+//     // file_handle
+//     // fil_handle: Box<dyn FilHandle>,
+//     blk_unit: u64, /* Base block unit, 4KB in default. */ 
 
-}
+// }
 
-impl BlkHandle {
+// impl BlkHandle {
 
-    /**
-     * Open a block handle.
-     */
-    pub(crate) fn open(filename:&str, block_size: u32) -> FPResult<BlkHandle> {
-        let name = filename.to_owned();
+//     /**
+//      * Open a block handle.
+//      */
+//     pub(crate) fn open(filename:&str, block_size: u32) -> FPResult<BlkHandle> {
+//         let name = filename.to_owned();
 
-        Err(FP_NO_IMPL)
-    }
+//         Err(FP_NO_IMPL)
+//     }
 
-    fn write_size(&self, len: usize) {
+//     fn write_size(&self, len: usize) {
         
-    }
+//     }
 
-    /**
-     * __wti_block_read_off
-     * 1. Retry read from filHandle.
-     * 2. Deserialization.
-     */
-    pub(crate) fn read(
-        &self, 
-        addr: BlkAddr,
-    ) -> FPResult<BlkItem> {
-        //NEED TODO:
-        //FEAT(chunk cache)
+//     /**
+//      * __wti_block_read_off
+//      * 1. Retry read from filHandle.
+//      * 2. Deserialization.
+//      */
+//     pub(crate) fn read(
+//         &self, 
+//         addr: BlkAddr,
+//     ) -> FPResult<BlkItem> {
+//         //NEED TODO:
+//         //FEAT(chunk cache)
 
-        if addr.size < self.blk_unit {
-            return Err(FP_BLK_HDL_READ_ILL_BLK_SIZE);
-        }
+//         if addr.size < self.blk_unit {
+//             return Err(FP_BLK_HDL_READ_ILL_BLK_SIZE);
+//         }
 
-        //FEAT TODO: read bandwidth.
-        let mut buf = self.fil_handle.read(addr.file_offset, addr.size)?;
-        let blk = &mut buf.data[..];
-        let raw_blk_header = &blk[FP_SIZE_OF!(PageHeader)..];
-        let blk_header = BlkHeader::from(raw_blk_header);
+//         //FEAT TODO: read bandwidth.
+//         let mut buf = self.fil_handle.read(addr.file_offset, addr.size)?;
+//         let blk = &mut buf.data[..];
+//         let raw_blk_header = &blk[FP_SIZE_OF!(PageHeader)..];
+//         let blk_header = BlkHeader::from(raw_blk_header);
 
-        if blk_header.checksum == addr.checksum {   
-            let header = FP_REINTERPRET_CAST_BUF_MUT!(blk, BlkHeader);
-            let size = if FP_BIT_IST!(header.flags, FP_BLK_HEADER_CKSUM_INCL_DATA_MK) {
-                addr.size
-            } else {
-                //FEAT TODO: once implementing compression.
-                addr.size
-            };
+//         if blk_header.checksum == addr.checksum {   
+//             let header = FP_REINTERPRET_CAST_BUF_MUT!(blk, BlkHeader);
+//             let size = if FP_BIT_IST!(header.flags, FP_BLK_HEADER_CKSUM_INCL_DATA_MK) {
+//                 addr.size
+//             } else {
+//                 //FEAT TODO: once implementing compression.
+//                 addr.size
+//             };
 
-            header.checksum = 0;
+//             header.checksum = 0;
 
-            //NEED TODO: checksum.
-            if !self.verify_checksum(blk, size as usize, addr.checksum) {
-                return Err(FP_BLK_HDL_READ_ILL_CHECKSUM);
-            }
+//             //NEED TODO: checksum.
+//             if !self.verify_checksum(blk, size as usize, addr.checksum) {
+//                 return Err(FP_BLK_HDL_READ_ILL_CHECKSUM);
+//             }
 
-        }
+//         }
 
-        Ok(BlkItem{
-            mem: buf.data,
-            size: buf.size,
-        })
-    }
+//         Ok(BlkItem{
+//             mem: buf.data,
+//             size: buf.size,
+//         })
+//     }
 
-    fn verify_checksum(&self, buf: &[u8], size: usize, expect: u32) -> bool {
-        checksum::crc32(&buf[..size]) == expect
-    }
-}
+//     fn verify_checksum(&self, buf: &[u8], size: usize, expect: u32) -> bool {
+//         checksum::crc32(&buf[..size]) == expect
+//     }
+// }
 
 
 // /**

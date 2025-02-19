@@ -22,7 +22,7 @@ mod file;
 mod support;
 mod evict;
 mod gcc;
-mod fil;
+mod worm;
 
 #[no_mangle]
 pub extern "C" fn Java_foam_posei_Poseidon_addNumbers(

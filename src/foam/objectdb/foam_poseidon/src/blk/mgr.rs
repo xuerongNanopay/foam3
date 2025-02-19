@@ -2,25 +2,25 @@
 
 use crate::{error::FP_NO_IMPL, internal::FPResult};
 
-use super::{handle::BlkHandle, meta::BlkAddr, BlkItem};
+// use super::{handle::BlkHandle, meta::BlkAddr, BlkItem};
 
-/**
- * Block manager.
- */
-struct BlkMgr {
-    handle: BlkHandle,
-}
+// /**
+//  * Block manager.
+//  */
+// struct BlkMgr {
+//     handle: BlkHandle,
+// }
 
-impl  BlkMgr  {
-    /**
-     * __wt_bm_read
-     * 1. convert addr to BlkAddr
-     * 2. read Block from handle.
-     */
-    fn read(&self, addr: &[u8]) -> FPResult<BlkItem> {
-        let addr = BlkAddr::new(addr, 4*1024);
+// impl  BlkMgr  {
+//     /**
+//      * __wt_bm_read
+//      * 1. convert addr to BlkAddr
+//      * 2. read Block from handle.
+//      */
+//     fn read(&self, addr: &[u8]) -> FPResult<BlkItem> {
+//         let addr = BlkAddr::new(addr, 4*1024);
 
-        //FEAT TODO: multi block handles.
-        self.handle.read(addr)
-    }
-}
+//         //FEAT TODO: multi block handles.
+//         self.handle.read(addr)
+//     }
+// }
