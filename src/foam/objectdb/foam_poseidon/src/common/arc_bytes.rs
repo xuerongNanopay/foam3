@@ -11,15 +11,15 @@ pub(crate) struct ArcBytes {
 
 impl ArcBytes {
     pub(crate) fn empty() -> Self {
-        Self::new(Arc::new(Vec::<u8>::with_capacity(0)))
+        Self::new(&[][..])
     }
 
-    pub(crate) fn new (
-        data_holder: Arc<dyn Deref<Target = [u8]> + Sync>
+    pub(crate) fn new<T: Deref<Target = [u8]> + 'static + Send + Sync> (
+        inner_data: T
     ) -> Self {
-        let inner = data_holder.clone();
-        let bytes:&[u8] = data_holder.deref();
-        /* Skip compile check. */
+        let inner = Arc::new(inner_data);
+        let bytes:&[u8] = inner.deref();
+        /* Suppress compile check. */
         let data = unsafe { &*(bytes as *const [u8]) };
 
         Self {
