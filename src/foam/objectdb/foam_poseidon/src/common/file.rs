@@ -6,13 +6,13 @@ use async_trait::async_trait;
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_IMPL}, internal::FPResult};
 
-use super::{ArcBytes, Length};
+use super::{ArcBytes, HasLength};
 
 #[async_trait]
-pub(crate) trait FileHandle: 'static + Send + Sync + Length + fmt::Debug {
-    fn read(&self, range: Range<u64>) -> FPResult<ArcBytes>;
+pub(crate) trait FileHandle: 'static + Send + Sync + HasLength + fmt::Debug {
+    fn read(&self, range: Range<usize>) -> FPResult<ArcBytes>;
 
-    async fn read_async(&self, range: Range<u64>) -> FPResult<ArcBytes> {
+    async fn read_async(&self, range: Range<usize>) -> FPResult<ArcBytes> {
         Err(FP_NO_IMPL)
     }
 }
@@ -33,8 +33,8 @@ impl FileWrapper {
 
 #[async_trait]
 impl FileHandle for FileWrapper {
-    fn read(&self, range: Range<u64>) -> FPResult<ArcBytes> {
-        let file_len = self.len() as u64;
+    fn read(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+        let file_len = self.len();
 
         let start = range.start;
         let end = FP_MIN!(file_len, range.end);
@@ -48,15 +48,27 @@ impl FileHandle for FileWrapper {
         use std::io::{Read, Seek, SeekFrom};
         /* Avoid reset seek */
         let mut file = FP_IO_ERR_RET!(self.file.try_clone());
-        FP_IO_ERR_RET!(file.seek(SeekFrom::Start(start)));
+        FP_IO_ERR_RET!(file.seek(SeekFrom::Start(start as u64)));
         FP_IO_ERR_RET!(file.read_exact(&mut buffer));
 
         Ok(ArcBytes::new(buffer))
     }
 }
 
-impl Length for FileWrapper {
+impl HasLength for FileWrapper {
     fn len(&self) -> usize {
         self.len as usize
+    }
+}
+
+#[async_trait]
+impl FileHandle for &'static [u8] {
+    fn read(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+        let bytes = &self[range];
+        Ok(ArcBytes::new(bytes))
+    }
+
+    async fn read_async(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+        Ok(self.read(range)?)
     }
 }
