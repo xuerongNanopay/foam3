@@ -2,10 +2,10 @@
 
 use std::ops::Deref;
 
-pub(crate) use self::arc_bytes::{ArcBytes};
+pub(crate) use self::bytes::{ByteSlice};
 
 pub mod file;
-mod arc_bytes;
+mod bytes;
 
 pub(crate) trait HasLength {
     fn len(&self) -> usize;

@@ -1,18 +1,18 @@
 #![allow(unused)]
 
-use std::{fmt, fs::File, ops::Range};
+use std::{fmt, fs::File, ops::Range, sync::Arc};
 
 use async_trait::async_trait;
 
 use crate::{error::{FP_ILLEGAL_ARGUMENT, FP_NO_IMPL}, internal::FPResult};
 
-use super::{ArcBytes, HasLength};
+use super::{ByteSlice, HasLength};
 
 #[async_trait]
 pub(crate) trait FileHandle: 'static + Send + Sync + HasLength + fmt::Debug {
-    fn read(&self, range: Range<usize>) -> FPResult<ArcBytes>;
+    fn read(&self, range: Range<usize>) -> FPResult<ByteSlice>;
 
-    async fn read_async(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+    async fn read_async(&self, range: Range<usize>) -> FPResult<ByteSlice> {
         Err(FP_NO_IMPL)
     }
 }
@@ -33,7 +33,7 @@ impl FileWrapper {
 
 #[async_trait]
 impl FileHandle for FileWrapper {
-    fn read(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+    fn read(&self, range: Range<usize>) -> FPResult<ByteSlice> {
         let file_len = self.len();
 
         let start = range.start;
@@ -51,7 +51,7 @@ impl FileHandle for FileWrapper {
         FP_IO_ERR_RET!(file.seek(SeekFrom::Start(start as u64)));
         FP_IO_ERR_RET!(file.read_exact(&mut buffer));
 
-        Ok(ArcBytes::new(buffer))
+        Ok(ByteSlice::new(buffer))
     }
 }
 
@@ -63,12 +63,27 @@ impl HasLength for FileWrapper {
 
 #[async_trait]
 impl FileHandle for &'static [u8] {
-    fn read(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+    fn read(&self, range: Range<usize>) -> FPResult<ByteSlice> {
         let bytes = &self[range];
-        Ok(ArcBytes::new(bytes))
+        Ok(ByteSlice::new(bytes))
     }
 
-    async fn read_async(&self, range: Range<usize>) -> FPResult<ArcBytes> {
+    async fn read_async(&self, range: Range<usize>) -> FPResult<ByteSlice> {
         Ok(self.read(range)?)
+    }
+}
+
+/**
+ * Read from underline file handle.
+ */
+#[derive(Clone)]
+pub struct FileSlice {
+    data: Arc<dyn FileHandle>,
+    range: Range<usize>,
+}
+
+impl fmt::Debug for FileSlice {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FileSlice({:?}, {:?})", &self.data, self.range)
     }
 }
