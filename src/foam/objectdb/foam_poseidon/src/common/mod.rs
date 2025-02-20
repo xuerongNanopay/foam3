@@ -15,6 +15,7 @@ pub(crate) trait HasLength {
 }
 
 impl<T: Deref<Target = [u8]>> HasLength for T {
+    #[inline(always)]
     fn len(&self) -> usize {
         self.deref().len()
     }

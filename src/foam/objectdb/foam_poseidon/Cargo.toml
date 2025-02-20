@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.86"
+stable_deref_trait = "1.2.0"
 
 [lib]
 crate-type = ["cdylib"]
