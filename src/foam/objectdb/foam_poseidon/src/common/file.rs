@@ -84,14 +84,14 @@ pub struct FileSlice {
 }
 
 impl FileSlice {
-    pub(crate) fn new(file_handle: Arc<dyn File>) -> Self {
-        
-    }
+    // pub(crate) fn new(file_handle: Arc<dyn FileHandle>) -> Self {
+
+    // }
 }
 
 impl fmt::Debug for FileSlice {
     #[inline(always)]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "FileSlice({:?}, {:?})", &self.data, self.range)
+        write!(f, "FileSlice({:?}, {:?})", &self.file_handle, self.range)
     }
 }

@@ -3,6 +3,8 @@
 use core::fmt;
 use std::{io, ops::{Deref, Range}, sync::Arc};
 
+use stable_deref_trait::StableDeref;
+
 #[derive(Clone)]
 pub(crate) struct ByteSlice {
     data: &'static[u8],
@@ -14,7 +16,7 @@ impl ByteSlice {
         Self::new(&[][..])
     }
 
-    pub(crate) fn new<T: Deref<Target = [u8]> + 'static + Send + Sync> (
+    pub(crate) fn new<T: StableDeref + Deref<Target = [u8]> + 'static + Send + Sync> (
         inner_data: T
     ) -> Self {
         let inner = Arc::new(inner_data);
