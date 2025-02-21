@@ -22,7 +22,6 @@ mod file;
 mod support;
 mod evict;
 mod gcc;
-mod worm;
 mod common;
 
 #[no_mangle]
