@@ -19,7 +19,8 @@ foam.POM({
     { name: 'src/foam/u2/wizard/pom' },
     { name: 'src/foam/u2/address/pom' },
     { name: 'src/io/c9/ace/pom' },
-    { name: 'webroot/pom' }
+    { name: 'src/foam/dao/lsmt/pom' },
+    { name: 'webroot/pom' },
   ],
   copy: [
     { source: 'webroot', targetDir: 'webroot' }
