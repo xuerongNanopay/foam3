@@ -8,5 +8,8 @@ foam.POM({
   name: "lsmt",
   files: [
     { name: "LSMTDAO", flags: "java" },
+  ],
+    javaFiles: [
+    { name: "utils/btree/BTree" },
   ]
 });
