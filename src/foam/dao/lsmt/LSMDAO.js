@@ -6,7 +6,11 @@
 
 foam.CLASS({
   package: 'foam.dao.lsmt',
-  name: 'LSMTDAO',
+  name: 'LSMDAO',
+
+  documentation: `
+    The DAO use LSM-Tree under the hook for data persistent.
+  `,
   
   properties: [
     {
