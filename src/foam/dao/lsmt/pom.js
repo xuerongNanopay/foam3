@@ -7,9 +7,10 @@
 foam.POM({
   name: "lsmt",
   files: [
-    { name: "LSMTDAO", flags: "java" },
+    { name: "LSMDAO", flags: "java" },
   ],
     javaFiles: [
-    { name: "utils/btree/COWBTree" },
+    { name: "btree/COWBTree" },
+    { name: "utils/BulkIterator" },
   ]
 });
