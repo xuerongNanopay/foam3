@@ -27,4 +27,15 @@ public interface BulkIterator<V> {
         return (V) src[cursor++];
     }
   }
+
+    public static <V> ArrayIterator<V> of(Object[] src) {
+    return of(src, 0);
+  }
+
+  public static <V> ArrayIterator<V> of(Object[] src, int offset) {
+    ArrayIterator<V> ret = new ArrayIterator<>();
+    ret.src = src;
+    ret.cursor = offset;
+    return ret;
+  }
 }
