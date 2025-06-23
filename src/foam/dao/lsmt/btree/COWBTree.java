@@ -7,6 +7,8 @@ package foam.dao.lsmt.btree;
 
 import java.util.*;
 
+import foam.dao.lsmt.utils.BulkIterator;
+
 /**
  * Copy-on-Write Btree.
  */
@@ -26,12 +28,17 @@ public class COWBTree {
     return new Object[]{ val };
   }
 
-  // public static Object[] build(Collection source) {
-  //   if ( source.size() == 0 ) return EMPTY_LEAF;
-  //   // if ( source.size() <= MAX_KEYS ) return buildLeaf();
+  public static <V> Object[] build(BulkIterator<V> source, int size) {
+    if ( size == 0 ) return EMPTY_LEAF;
+    if ( size <= MAX_KEYS ) return buildLeaf(source, size);
 
-  //   return buildRoot();
-  // }
+    // return buildRoot();
+    return null;
+  }
+
+  private static <V> Object[] buildLeaf(BulkIterator<V> source, int dize) {
+    return null;
+  }
 
   // private static Object[] buildLeaf(Collection source) {
   //   Object[] values = new Object[source.size() | 1]; // odd-length array.
