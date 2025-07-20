@@ -12,15 +12,16 @@ import foam.dao.lsmt.utils.BulkIterator;
 /**
  * Copy-on-Write Btree.
  *  - Force the tree element to odd for better balance and code simplicity.
+ *  - Max support elements size is: height * FANOUT_SHIFT < 32.
  */
 
-public class COWBTree {
+public class BTree {
 
   //TODO: configure FANOUT_SHIFT.
   public static final int FANOUT_SHIFT = 5;
-  private static final int FANOUT_FACTOR = 1 << FANOUT_SHIFT;
-  public static final int MIN_NODE_KEYS = FANOUT_FACTOR / 2 - 1;
-  public static final int MAX_NODE_KEYS = FANOUT_FACTOR - 1;
+  private static final int FANOUT = 1 << FANOUT_SHIFT;
+  public static final int MIN_NODE_KEYS = FANOUT / 2 - 1;
+  public static final int MAX_NODE_KEYS = FANOUT - 1;
 
   private static final Object[] EMPTY_LEAF = new Object[1];
 
@@ -48,7 +49,10 @@ public class COWBTree {
   }
 
   private static <V> Object[] buildRoot(BulkIterator<V> source, int size) {
-    int minHeight = minHeight(size);
+    int requireHeight = minHeight(size);
+
+    assert requireHeight > 1;
+    assertTreeLimit(requireHeight, FANOUT_SHIFT);
 
     throw new RuntimeException("TODO");
   }
@@ -76,10 +80,17 @@ public class COWBTree {
   private static Object[] build;
 
   /**
+   * The tree can support up to 2^(fanoutShift*height) elements.
+   */
+  private static void assertTreeLimit(int height, int fanoutShift) {
+    assert height * fanoutShift < 32;
+  }
+
+  /**
    * Calculate the minimum tree height required for given size.
    */
   private static int minHeight(int size) {
-    throw new RuntimeException("TODO");
+    return heightAtSize(size, FANOUT_SHIFT);
   }
 
   private static int heightAtSize(int size, int fanoutShift) {
