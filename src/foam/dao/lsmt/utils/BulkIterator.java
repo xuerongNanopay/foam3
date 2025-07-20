@@ -8,7 +8,7 @@ package foam.dao.lsmt.utils;
 
 public interface BulkIterator<V> {
 
-  void load(Object[] dest, int offset, int size);
+  void store(Object[] dest, int offset, int size);
   V next();
 
   public static class ArrayIterator<V> implements BulkIterator<V> {
@@ -16,7 +16,7 @@ public interface BulkIterator<V> {
     private Object[] src;
     private int cursor;
 
-    public void load(Object[] dest, int offset, int size) {
+    public void store(Object[] dest, int offset, int size) {
       System.arraycopy(src, cursor, dest, offset, size);
       cursor += size;
     }
