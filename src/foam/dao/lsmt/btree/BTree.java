@@ -52,7 +52,7 @@ public class BTree {
     int requireHeight = minHeight(size);
 
     assert requireHeight > 1;
-    assertTreeLimit(requireHeight, FANOUT_SHIFT);
+    assertHardLimit(requireHeight, FANOUT_SHIFT);
 
     throw new RuntimeException("TODO");
   }
@@ -80,10 +80,25 @@ public class BTree {
   private static Object[] build;
 
   /**
-   * The tree can support up to 2^(fanoutShift*height) elements.
+   * Hard limit of the tree:
+   *  - The tree can support up to 2^(fanoutShift*height) elements.
    */
-  private static void assertTreeLimit(int height, int fanoutShift) {
+  private static void assertHardLimit(int height, int fanoutShift) {
     assert height * fanoutShift < 32;
+  }
+
+  /**
+   * Caculate the number of nodes in a full tree with given height.
+   */
+  private static int fullTreeSize(int height) {
+    return fullTreeSize(height, FANOUT_SHIFT);
+  }
+
+  /**
+   * Caculate the number of nodes in a full tree with given height.
+   */
+  private static int fullTreeSize(int height, int fanoutShift) {
+    return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
   /**
