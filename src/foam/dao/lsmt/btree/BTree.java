@@ -87,17 +87,14 @@ public class BTree {
     assert height * fanoutShift < 32;
   }
 
-  /**
-   * Caculate the number of nodes in a full tree with given height and default fanout_shift.
-   */
-  private static int fullTreeSize(int height) {
-    return fullTreeSize(height, FANOUT_SHIFT);
+  private static int fullNodeSize(int height) {
+    return fullNodeSize(height, FANOUT_SHIFT);
   }
 
   /**
-   * Caculate the number of nodes in a full tree with given height and fanout_shift.
+   * Caculate the number of nodes(internal+leaf) in a full tree with given height and default fanout_shift.
    */
-  private static int fullTreeSize(int height, int fanoutShift) {
+  private static int fullNodeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
@@ -105,10 +102,10 @@ public class BTree {
    * Calculate the minimum tree height required for given size.
    */
   private static int minHeight(int size) {
-    return heightAtSize(size, FANOUT_SHIFT);
+    return fullTreeHeight(size, FANOUT_SHIFT);
   }
 
-  private static int heightAtSize(int size, int fanoutShift) {
+  private static int fullTreeHeight(int size, int fanoutShift) {
     int v = 64 - Long.numberOfLeadingZeros(size);
     return (fanoutShift - 1 + v) / fanoutShift;
   }
