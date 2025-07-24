@@ -49,10 +49,10 @@ public class BTree {
   }
 
   private static <V> Object[] buildRoot(BulkIterator<V> source, int size) {
-    int requireHeight = minHeight(size);
+    int requireHeight = requireHeight(size);
 
     assert requireHeight > 1;
-    assertHardLimit(requireHeight, FANOUT_SHIFT);
+    assertHeight(requireHeight);
 
     throw new RuntimeException("TODO");
   }
@@ -83,18 +83,37 @@ public class BTree {
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
    */
-  private static void assertHardLimit(int height, int fanoutShift) {
+  private static void assertHeight(int height) {
+    assertHeight(height, FANOUT_SHIFT);
+  }
+  /**
+   * Hard limit of the tree:
+   *  - The tree can support up to 2^(fanoutShift*height) elements.
+   */
+  private static void assertHeight(int height, int fanoutShift) {
     assert height * fanoutShift < 32;
   }
 
-  private static int fullNodeSize(int height) {
-    return fullNodeSize(height, FANOUT_SHIFT);
+  private static int requireHeight(int size) {
+    return requireHeight(size, FANOUT_SHIFT);
+  }
+
+  /**
+   * Calculate the minimum requirement of full tree height.
+   */
+  private static int requireHeight(int size, int fanoutShift) {
+    int  v = 64 - Long.numberOfLeadingZeros(size);
+    return (fanoutShift - 1 +  v) / fanoutShift;
+  }
+
+  private static int fullTreeNode(int height) {
+    return fullTreeNode(height, FANOUT_SHIFT);
   }
 
   /**
    * Caculate the number of nodes(internal+leaf) in a full tree with given height and default fanout_shift.
    */
-  private static int fullNodeSize(int height, int fanoutShift) {
+  private static int fullTreeNode(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
