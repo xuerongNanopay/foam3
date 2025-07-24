@@ -88,14 +88,14 @@ public class BTree {
   }
 
   /**
-   * Caculate the number of nodes in a full tree with given height.
+   * Caculate the number of nodes in a full tree with given height and default fanout_shift.
    */
   private static int fullTreeSize(int height) {
     return fullTreeSize(height, FANOUT_SHIFT);
   }
 
   /**
-   * Caculate the number of nodes in a full tree with given height.
+   * Caculate the number of nodes in a full tree with given height and fanout_shift.
    */
   private static int fullTreeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
