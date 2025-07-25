@@ -101,6 +101,7 @@ public class BTree {
 
   /**
    * Calculate the minimum require height of a full tree filled by given size.
+   * The calculate is a good enough estimation.
    */
   private static int requireHeight(int size, int fanoutShift) {
     int  v = 64 - Long.numberOfLeadingZeros(size);
@@ -113,6 +114,7 @@ public class BTree {
 
   /**
    * Caculate the number of key-value pairs in a full tree with given height and default fanout_shift.
+   * The calculate is a good enough estimation.
    */
   private static int maxTreeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
