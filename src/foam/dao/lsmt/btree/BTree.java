@@ -49,6 +49,7 @@ public class BTree {
   }
 
   private static <V> Object[] buildRoot(BulkIterator<V> source, int size) {
+
     int requireHeight = requireHeight(size);
 
     assert requireHeight > 1;
@@ -99,21 +100,21 @@ public class BTree {
   }
 
   /**
-   * Calculate the minimum requirement of full tree height.
+   * Calculate the minimum require height of a full tree filled by given size.
    */
   private static int requireHeight(int size, int fanoutShift) {
     int  v = 64 - Long.numberOfLeadingZeros(size);
     return (fanoutShift - 1 +  v) / fanoutShift;
   }
 
-  private static int fullTreeNode(int height) {
-    return fullTreeNode(height, FANOUT_SHIFT);
+  private static int maxTreeSize(int height) {
+    return maxTreeSize(height, FANOUT_SHIFT);
   }
 
   /**
-   * Caculate the number of nodes(internal+leaf) in a full tree with given height and default fanout_shift.
+   * Caculate the number of key-value pairs in a full tree with given height and default fanout_shift.
    */
-  private static int fullTreeNode(int height, int fanoutShift) {
+  private static int maxTreeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
