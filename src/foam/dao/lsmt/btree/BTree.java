@@ -33,22 +33,22 @@ public class BTree {
     return new Object[]{ val };
   }
 
-  public static <V> Object[] build(BulkIterator<V> source, int size) {
+  public static <V> Object[] build(BulkIterator<V> sortedBulk, int size) {
     if ( size == 0 ) return EMPTY_LEAF;
-    if ( size <= MAX_NODE_KEYS ) return buildLeaf(source, size);
+    if ( size <= MAX_NODE_KEYS ) return buildLeaf(sortedBulk, size);
 
     // return buildRoot();
     throw new RuntimeException("TODO");
   }
 
-  private static <V> Object[] buildLeaf(BulkIterator<V> source, int size) {
+  private static <V> Object[] buildLeaf(BulkIterator<V> sortedBulk, int size) {
 
     Object[] vals = new Object[size | 1]; /* force tree node element to be odd. */
-    source.store(vals, 0, size);
+    sortedBulk.store(vals, 0, size);
     return vals;
   }
 
-  private static <V> Object[] buildRoot(BulkIterator<V> source, int size) {
+  private static <V> Object[] buildRoot(BulkIterator<V> sortedBulk, int size) {
 
     int requireHeight = requireHeight(size);
 
@@ -58,7 +58,7 @@ public class BTree {
     throw new RuntimeException("TODO");
   }
 
-  private static <V> Object[] buildMostlyFullTree(BulkIterator<V> source, int childSize, int size, int height) {
+  private static <V> Object[] buildMostlyFullTree(BulkIterator<V> sortedBulk, int childSize, int size, int height) {
 
     assert childSize <= MAX_NODE_KEYS + 1;
 
@@ -119,22 +119,4 @@ public class BTree {
   private static int maxTreeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
-
-  /**
-   * Calculate the minimum tree height required for given size.
-   */
-  private static int minHeight(int size) {
-    return fullTreeHeight(size, FANOUT_SHIFT);
-  }
-
-  private static int fullTreeHeight(int size, int fanoutShift) {
-    int v = 64 - Long.numberOfLeadingZeros(size);
-    return (fanoutShift - 1 + v) / fanoutShift;
-  }
-
-  // private static Object[] buildLeaf(Collection source) {
-  //   Object[] values = new Object[source.size() | 1]; // odd-length array.
-
-    
-  // }
 }
