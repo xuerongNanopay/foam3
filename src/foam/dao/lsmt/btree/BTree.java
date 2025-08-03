@@ -11,8 +11,11 @@ import foam.dao.lsmt.utils.BulkIterator;
 
 /**
  * Copy-on-Write Btree.
- *  - Force the tree element to odd for better balance and code simplicity.
+ *  - Functional programing:
+ *      1. No in place update.
+ *      2. Mutation will clone from leaf to root. CAS on the root node.
  *  - Max support elements size is: height * FANOUT_SHIFT < 32.
+ *  - Reading are thread safe.
  */
 
 public class BTree {
