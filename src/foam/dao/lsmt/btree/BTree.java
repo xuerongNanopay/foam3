@@ -23,8 +23,8 @@ public class BTree {
   //TODO: configure FANOUT_SHIFT.
   public static final int FANOUT_SHIFT = 5;
   private static final int FANOUT = 1 << FANOUT_SHIFT;
-  public static final int MIN_NODE_KEYS = FANOUT / 2 - 1;
-  public static final int MAX_NODE_KEYS = FANOUT - 1;
+  public static final int MIN_TUPLES = FANOUT / 2 - 1;
+  public static final int MAX_TUPLES = FANOUT - 1;
 
   private static final Object[] EMPTY_LEAF = new Object[1];
 
@@ -38,7 +38,7 @@ public class BTree {
 
   public static <V> Object[] build(BulkIterator<V> sortedBulk, int size) {
     if ( size == 0 ) return EMPTY_LEAF;
-    if ( size <= MAX_NODE_KEYS ) return buildLeaf(sortedBulk, size);
+    if ( size <= MAX_TUPLES ) return buildLeaf(sortedBulk, size);
 
     // return buildRoot();
     throw new RuntimeException("TODO");
@@ -46,7 +46,7 @@ public class BTree {
 
   private static <V> Object[] buildLeaf(BulkIterator<V> sortedBulk, int size) {
 
-    Object[] vals = new Object[size | 1]; /* force tree node element to be odd. */
+    Object[] vals = new Object[size | 1]; /* Leaf node must be odd. */
     sortedBulk.store(vals, 0, size);
     return vals;
   }
@@ -61,21 +61,26 @@ public class BTree {
     throw new RuntimeException("TODO");
   }
 
-  private static <V> Object[] buildMostlyFullTree(BulkIterator<V> sortedBulk, int childSize, int size, int height) {
+  /**
+   * Build a full balance BTree from input.
+   */
+  private static <V> Object[] buildDenseTree(BulkIterator<V> sortedBulk, int descentSize, int size, int height) {
 
-    assert childSize <= MAX_NODE_KEYS + 1;
+    assert descentSize <= MAX_TUPLES + 1;
 
-    Object[] node = new Object[childSize * 2];
+    Object[] node = new Object[descentSize * 2]; /* Internal node must be even. */
 
     if ( height == 2 ) {
 
       int remaining = size;
-      int threshold = MAX_NODE_KEYS + 1 + MIN_NODE_KEYS;
+      int threshold = MAX_TUPLES + 1 + MIN_TUPLES;
       int i = 0;
 
-      if ( remaining > MAX_NODE_KEYS ) {
+      if ( remaining > MAX_TUPLES ) {
 
       }
+    } else {
+
     }
 
     throw new RuntimeException("TODO");
