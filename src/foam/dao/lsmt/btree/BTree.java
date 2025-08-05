@@ -14,7 +14,7 @@ import foam.dao.lsmt.utils.BulkIterator;
  *  - Functional programing:
  *      1. No in place update.
  *      2. Mutation will clone from leaf to root. CAS on the root node.
- *  - Max support elements size is: height * FANOUT_SHIFT < 32.
+ *  - Max support tuple size is: height * FANOUT_SHIFT < 32.
  *  - Reading are thread safe.
  */
 
@@ -36,7 +36,7 @@ public class BTree {
     return new Object[]{ val };
   }
 
-  public static <V> Object[] build(BulkIterator<V> sortedBulk, int size) {
+  public static <T> Object[] build(BulkIterator<T> sortedBulk, int size) {
     if ( size == 0 ) return EMPTY_LEAF;
     if ( size <= MAX_TUPLES ) return buildLeaf(sortedBulk, size);
 
@@ -44,14 +44,14 @@ public class BTree {
     throw new RuntimeException("TODO");
   }
 
-  private static <V> Object[] buildLeaf(BulkIterator<V> sortedBulk, int size) {
+  private static <T> Object[] buildLeaf(BulkIterator<T> sortedBulk, int size) {
 
     Object[] vals = new Object[size | 1]; /* Leaf node must be odd. */
     sortedBulk.store(vals, 0, size);
     return vals;
   }
 
-  private static <V> Object[] buildRoot(BulkIterator<V> sortedBulk, int size) {
+  private static <T> Object[] buildRoot(BulkIterator<T> sortedBulk, int size) {
 
     int requireHeight = requireHeight(size);
 
@@ -64,7 +64,7 @@ public class BTree {
   /**
    * Build a full balance BTree from input.
    */
-  private static <V> Object[] buildDenseTree(BulkIterator<V> sortedBulk, int descentSize, int size, int height) {
+  private static <T> Object[] buildDenseTree(BulkIterator<T> sortedBulk, int descentSize, int size, int height) {
 
     assert descentSize <= MAX_TUPLES + 1;
 
