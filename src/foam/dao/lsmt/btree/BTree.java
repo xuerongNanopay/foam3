@@ -64,26 +64,32 @@ public class BTree {
   /**
    * Build a full balance BTree from input.
    */
-  private static <T> Object[] buildDenseTree(BulkIterator<T> sortedBulk, int descentSize, int size, int height) {
+  private static <T> Object[] buildDenseTree(BulkIterator<T> sortedBulk, int internalSize, int size, int height) {
 
-    assert descentSize <= MAX_TUPLES + 1;
+    assert internalSize <= MAX_TUPLES + 1;
 
     /**
      * Internal node must be even
-     * First Half: store tuples, also serve as key in the internal node.
-     * Second Halh: store pointer to descent node + last element is Zone Map.
+     * [0 ... internalSize-1]: store tuples, also serve as key(post) for the internal node.
+     * [internalSize ... internalSize*2-2]: store pointerto the descend nodes.
+     * [internalSize*2-1]: ZoneMap.
      */
-    Object[] internal = new Object[descentSize * 2];
+    Object[] internal = new Object[internalSize * 2];
+    int descentStart = internalSize - 1; /* descent start from second half of internal array. */
 
     if ( height == 2 ) {
 
       int remaining = size;
-      // int threshold = MAX_TUPLES + 1 + MIN_TUPLES;
       int i = 0;
 
       while ( remaining >= MAX_TUPLES ) {
-        
+        internal[descentStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+        internal[i] = sortedBulk.next();
+        i++;
       }
+      internal[descentStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      i++;
+      assert i == internalSize;
     } else {
 
     }
