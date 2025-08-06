@@ -68,16 +68,21 @@ public class BTree {
 
     assert descentSize <= MAX_TUPLES + 1;
 
-    Object[] node = new Object[descentSize * 2]; /* Internal node must be even. */
+    /**
+     * Internal node must be even
+     * First Half: store tuples, also serve as key in the internal node.
+     * Second Halh: store pointer to descent node + last element is Zone Map.
+     */
+    Object[] internal = new Object[descentSize * 2];
 
     if ( height == 2 ) {
 
       int remaining = size;
-      int threshold = MAX_TUPLES + 1 + MIN_TUPLES;
+      // int threshold = MAX_TUPLES + 1 + MIN_TUPLES;
       int i = 0;
 
-      if ( remaining > MAX_TUPLES ) {
-
+      while ( remaining >= MAX_TUPLES ) {
+        
       }
     } else {
 
