@@ -95,6 +95,7 @@ public class BTree {
     }
 
     //TODO: add ZoneMap in internalSize*2-1
+    internal[internalSize*2 + 1] = new ZoneMap();
     return internal;
   }
 
