@@ -91,10 +91,11 @@ public class BTree {
       i++;
       assert i == internalSize;
     } else {
-
+      throw new RuntimeException("TODO: height > 2");
     }
 
-    throw new RuntimeException("TODO");
+    //TODO: add ZoneMap in internalSize*2-1
+    return internal;
   }
 
   private static Object[] build;
