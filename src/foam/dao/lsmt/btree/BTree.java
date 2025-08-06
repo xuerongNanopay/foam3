@@ -62,7 +62,7 @@ public class BTree {
   }
 
   /**
-   * Build a full balance BTree from input.
+   * Build a dense BTree from input.
    */
   private static <T> Object[] buildDenseTree(BulkIterator<T> sortedBulk, int internalSize, int size, int height) {
 
