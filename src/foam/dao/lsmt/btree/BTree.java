@@ -51,7 +51,7 @@ public class BTree {
     return vals;
   }
 
-  private static <T> Object[] buildRoot(BulkIterator<T> sortedBulk, int size) {
+  private static <T> Object[] buildTree(BulkIterator<T> sortedBulk, int size) {
 
     int requireHeight = requireHeight(size);
 
@@ -64,14 +64,14 @@ public class BTree {
   /**
    * Build a dense BTree from input.
    */
-  private static <T> Object[] buildDenseTree(BulkIterator<T> sortedBulk, int internalSize, int size, int height) {
+  private static <T> Object[] buildTree(BulkIterator<T> sortedBulk, int internalSize, int size, int height) {
 
     assert internalSize <= MAX_TUPLES + 1;
 
     /**
      * Internal Node Layout:
      * - an internal node must be even.
-     * - internalSize: the number of children of current internal node.
+     * - internalSize: the number of descendants of current internal node.
      * - layout:
      *   - [0 ... internalSize-1]: store tuples, also serve as key(post) for the internal node.
      *   - [internalSize ... internalSize*2-2]: store pointerto the descend nodes.
@@ -96,6 +96,8 @@ public class BTree {
       assert i == internalSize;
     } else {
       height--;
+      int fullDescantSize = maxTreeSize(height);
+      int fullGrandDescantSize = maxTreeSize(height-1);
 
       // int descentSize = maxTreeSize();
       throw new RuntimeException("TODO: height > 2");
