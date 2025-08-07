@@ -71,6 +71,7 @@ public class BTree {
     /**
      * Internal Node Layout:
      * - an internal node must be even.
+     * - internalSize: the number of children of current internal node.
      * - layout:
      *   - [0 ... internalSize-1]: store tuples, also serve as key(post) for the internal node.
      *   - [internalSize ... internalSize*2-2]: store pointerto the descend nodes.
