@@ -96,7 +96,7 @@ public class BTree {
     } else {
       height--;
 
-      int descentSize = maxTreeSize();
+      // int descentSize = maxTreeSize();
       throw new RuntimeException("TODO: height > 2");
     }
 
@@ -127,7 +127,13 @@ public class BTree {
       }
       internal[descentStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
     } else {
-
+      int i = 0;
+      while ( i < descentStart ) {
+        internal[descentStart+i] = buildFullTree(sortedBulk, height-1);
+        internal[i] = sortedBulk.next();
+        i++;
+      }
+      internal[descentStart + i] = buildFullTree(sortedBulk, height-1);
     }
 
     internal[FANOUT*2-1] = new ZoneMap();
