@@ -78,7 +78,7 @@ public class BTree {
      *   - [internalSize*2-1]: ZoneMap.
      */
     Object[] internal = new Object[internalSize * 2];
-    int descentStart = internalSize - 1; /* descent start from second half of internal array. */
+    int descendStart = internalSize - 1; /* descend start from second half of internal array. */
 
     if ( height == 2 ) {
 
@@ -86,24 +86,24 @@ public class BTree {
 
       int i = 0;
       while ( remaining >= MAX_TUPLES ) {
-        internal[descentStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+        internal[descendStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
         i++;
       }
-      internal[descentStart + i] = buildLeaf(sortedBulk, remaining);
+      internal[descendStart + i] = buildLeaf(sortedBulk, remaining);
       i++;
 
       assert i == internalSize;
     } else {
       height--;
-      int fullDescantSize = maxTreeSize(height);
-      int fullGrandDescantSize = maxTreeSize(height-1);
+      int fullDescandSize = maxTreeSize(height);
+      int fullGrandDescandSize = maxTreeSize(height-1);
 
       int remaining = size;
 
 
-      // int descentSize = maxTreeSize();
+      // int descendSize = maxTreeSize();
       throw new RuntimeException("TODO: height > 2");
     }
 
@@ -119,7 +119,7 @@ public class BTree {
    */
   private static <T> Object[] buildFullTree(BulkIterator<T> sortedBulk, int height) {
 
-    int descentStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
+    int descendStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
     /**
      * full size node.
      *  - MAX_TUPLES keys + (MAX_TUPLES+1) descendants + ZoneMap.
@@ -128,20 +128,20 @@ public class BTree {
 
     if ( height == 2 ) {
       int i = 0;
-      while ( i < descentStart ) {
-        internal[descentStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      while ( i < descendStart ) {
+        internal[descendStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[descentStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      internal[descendStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
     } else {
       int i = 0;
-      while ( i < descentStart ) {
-        internal[descentStart+i] = buildFullTree(sortedBulk, height-1);
+      while ( i < descendStart ) {
+        internal[descendStart+i] = buildFullTree(sortedBulk, height-1);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[descentStart + i] = buildFullTree(sortedBulk, height-1);
+      internal[descendStart + i] = buildFullTree(sortedBulk, height-1);
     }
 
     internal[FANOUT*2-1] = new ZoneMap();
