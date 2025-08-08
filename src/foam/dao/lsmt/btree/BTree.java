@@ -83,8 +83,8 @@ public class BTree {
     if ( height == 2 ) {
 
       int remaining = size;
-      int i = 0;
 
+      int i = 0;
       while ( remaining >= MAX_TUPLES ) {
         internal[descentStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
@@ -93,11 +93,15 @@ public class BTree {
       }
       internal[descentStart + i] = buildLeaf(sortedBulk, remaining);
       i++;
+
       assert i == internalSize;
     } else {
       height--;
       int fullDescantSize = maxTreeSize(height);
       int fullGrandDescantSize = maxTreeSize(height-1);
+
+      int remaining = size;
+
 
       // int descentSize = maxTreeSize();
       throw new RuntimeException("TODO: height > 2");
@@ -111,6 +115,7 @@ public class BTree {
   /**
    * Build a full tree with given heigh.
    *  - require the sortedBulk has enough tuples to build a full tree.
+   *  - full tree size == 1<<(height*fanout_shift) - 1
    */
   private static <T> Object[] buildFullTree(BulkIterator<T> sortedBulk, int height) {
 
