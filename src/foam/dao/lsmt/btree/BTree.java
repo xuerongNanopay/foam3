@@ -85,7 +85,7 @@ public class BTree {
       int remaining = size;
 
       int i = 0;
-      while ( remaining >= MAX_TUPLES ) {
+      while ( remaining >= MAX_TUPLES + 1 ) {
         internal[descendStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
@@ -97,10 +97,17 @@ public class BTree {
       assert i == internalSize;
     } else {
       height--;
-      int fullDescandSize = maxTreeSize(height);
-      int fullGrandDescandSize = maxTreeSize(height-1);
+      int fullDescendSize = maxTreeSize(height);
+      int fullGrandDescendSize = maxTreeSize(height-1);
 
       int remaining = size;
+      
+      int i = 0;
+      while ( remaining >= fullDescendSize + 1 ) {
+        internal[descendStart] = buildFullTree(sortedBulk, height);
+        internal[i] = sortedBulk.next();
+        remaining -= fullDescendSize + 1;
+      }
 
 
       // int descendSize = maxTreeSize();
