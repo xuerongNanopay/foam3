@@ -107,11 +107,14 @@ public class BTree {
         internal[descendStart] = buildFullTree(sortedBulk, height);
         internal[i] = sortedBulk.next();
         remaining -= fullDescendSize + 1;
+        i++;
       }
 
+      int grandDescendInternalSize = remaining / (fullGrandDescendSize + 1) + 1;
+      internal[descendStart+i] = buildTree(sortedBulk, grandDescendInternalSize, remaining, height);
+      i++;
 
-      // int descendSize = maxTreeSize();
-      throw new RuntimeException("TODO: height > 2");
+      assert i == internalSize;
     }
 
     //TODO: add ZoneMap in internalSize*2-1
