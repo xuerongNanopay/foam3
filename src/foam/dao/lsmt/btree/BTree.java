@@ -200,7 +200,7 @@ public class BTree {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
-  private static int getLeafKeyEnd(Object[] node) {
+  private static int getNodeKeyEnd(Object[] node) {
     if ( isLeaf(node) ) return getLeafKeyEnd(node);
     return getInternalKeyEnd(node);
   }
