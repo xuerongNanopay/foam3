@@ -199,4 +199,24 @@ public class BTree {
   private static int maxTreeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
+
+  private static int getLeafKeyEnd(Object[] node) {
+    if ( isLeaf(node) ) return getLeafKeyEnd(node);
+    return getInternalKeyEnd(node);
+  }
+
+  private static int getLeafKeyEnd(Object[] node) {
+    int length = node.length;
+    return node[length-1] == null ? length - 1 : length; /* Leaf is made up to be odd, if it is even. */
+  }
+
+  private static int getInternalKeyEnd(Object[] node) {
+    return (node.length / 2) - 1; /* internal node size must be even. */
+  }
+
+  private static boolean isLeaf(Object[] node) {
+    return ( node.length & 1 ) == 1;
+  }
+
+
 }
