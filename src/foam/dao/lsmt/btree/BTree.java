@@ -181,6 +181,10 @@ public class BTree {
     return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
   }
 
+  // public static Object[] updateLeaves(Object[] oldNode, Object[] newNode, Comparator<? super Compare> Comparator) {
+  //   return null;
+  // }
+
   /**
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
@@ -239,5 +243,8 @@ public class BTree {
     return ( node.length & 1 ) == 1;
   }
 
-
+  private static int leafSize(Object[] leaf) {
+    int length = node.length;
+    return node[length-1] == null ? length - 1 : length;
+  }
 }
