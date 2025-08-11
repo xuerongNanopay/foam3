@@ -176,6 +176,11 @@ public class BTree {
     }
   }
 
+  private static <T> int findInNode(Object[] node, T key, Comparator<? super T> comparator) {
+    int keyEndIdx = getNodeKeyEnd(node);
+    return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
+  }
+
   /**
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
