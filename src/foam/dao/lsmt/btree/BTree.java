@@ -158,8 +158,6 @@ public class BTree {
     return internal;
   }
 
-  private static Object[] build;
-
   /**
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
