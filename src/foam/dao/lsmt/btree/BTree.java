@@ -158,6 +158,24 @@ public class BTree {
     return internal;
   }
 
+  private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
+    while ( true ) {
+      int keyEndIdx = getNodeKeyEnd(node);
+      int i = Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator); /* find matched tuple in the key range. */
+
+      if ( i >= 0 ) {
+        return (T) node[i];
+      }
+
+      if ( isLeaf(node) ) {
+        return null;
+      }
+
+      i = -1 - i;
+      node = (Object[]) node[keyEndIdx + i];
+    }
+  }
+
   /**
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
