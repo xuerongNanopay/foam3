@@ -244,7 +244,16 @@ public class BTree {
   }
 
   private static int leafSize(Object[] leaf) {
-    int length = node.length;
-    return node[length-1] == null ? length - 1 : length;
+    int length = leaf.length;
+    return leaf[length-1] == null ? length - 1 : length;
+  }
+
+  private static class NodeBuilder {
+
+    int height;
+    int size;
+    Object[] buffer;
+
+    
   }
 }
