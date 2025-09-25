@@ -57,8 +57,8 @@ CMD ["-dc"]
 #       1. run with args specified in the CMD:
 #           docker run -p 8080:8080 -p 8000:8000 -v "${PWD}:/home/foam_user/foam" --name c_dev_foam i_dev_foam
 #       2. run with custom args:
-#           docker run -p 8080:8080 -p 8000:8000 -v "${PWD}:/home/foam_user/foam" --name c_dev_nbp i_dev_foam -Japi,nbp,nbp_qa,scotiabank -dc
+#           docker run -p 8080:8080 -p 8000:8000 -v "${PWD}:/home/foam_user/foam" --name c_dev_nbp i_dev_foam -Jdemo -dc
 #       3. run with same journal directory with host machine.
-#           docker run -p 8080:8080 -p 8000:8000 -v "${PWD}:/home/foam_user/foam" -v "/opt/foam-full:/opt/foam-full" --name c_dev_nbp_sync_journal i_dev_foam -Japi,nbp,nbp_qa,scotiabank -dc
+#           docker run -p 8080:8080 -p 8000:8000 -v "${PWD}:/home/foam_user/foam" -v "/opt/foam-full:/opt/foam-full" --name c_dev_nbp_sync_journal i_dev_foam -Jdemo -dc
 #       3. create test container.
 #           docker run -v "${PWD}:/home/foam_user/foam" --name c_dev_foam_test i_dev_foam -ct
