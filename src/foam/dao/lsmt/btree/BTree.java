@@ -167,7 +167,7 @@ public class BTree {
         return (T) node[i];
       }
 
-      if ( isLeaf(node) ) {
+      if ( isLeafNode(node) ) {
         return null;
       }
 
@@ -226,7 +226,7 @@ public class BTree {
   }
 
   private static int getNodeKeyEnd(Object[] node) {
-    if ( isLeaf(node) ) return getLeafKeyEnd(node);
+    if ( isLeafNode(node) ) return getLeafKeyEnd(node);
     return getInternalKeyEnd(node);
   }
 
@@ -239,7 +239,7 @@ public class BTree {
     return (node.length / 2) - 1; /* internal node size must be even. */
   }
 
-  private static boolean isLeaf(Object[] node) {
+  private static boolean isLeafNode(Object[] node) {
     return ( node.length & 1 ) == 1;
   }
 
@@ -254,6 +254,6 @@ public class BTree {
     int size;
     Object[] buffer;
 
-    
+    Object[] overflowBuffer;
   }
 }
