@@ -160,7 +160,7 @@ public class BTree {
 
   private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
     while ( true ) {
-      int keyEndIdx = getNodeKeyEnd(node);
+      int keyEndIdx = getKeyEnd(node);
       int i = Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator); /* find matched tuple in the key range. */
 
       if ( i >= 0 ) {
@@ -177,7 +177,7 @@ public class BTree {
   }
 
   private static <T> int findInNode(Object[] node, T key, Comparator<? super T> comparator) {
-    int keyEndIdx = getNodeKeyEnd(node);
+    int keyEndIdx = getKeyEnd(node);
     return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
   }
 
@@ -225,7 +225,7 @@ public class BTree {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
-  private static int getNodeKeyEnd(Object[] node) {
+  private static int getKeyEnd(Object[] node) {
     if ( isLeafNode(node) ) return getLeafKeyEnd(node);
     return getInternalKeyEnd(node);
   }
