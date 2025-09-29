@@ -68,7 +68,7 @@ public class BTree {
   /**
    * Build a dense BTree from input.
    */
-  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int size, int height) {
+  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int tupleSize, int height) {
 
     assert childSize <= MAX_TUPLES + 1;
 
@@ -82,7 +82,7 @@ public class BTree {
      */
     if ( height == 2 ) {
 
-      int remaining = size;
+      int remaining = tupleSize;
       int cutoff = MAX_TUPLES + 1 + MIN_TUPLES;
 
       int i = 0;
@@ -101,7 +101,7 @@ public class BTree {
       int fullDescendSize = maxTreeSize(height);
       int fullGrandDescendSize = maxTreeSize(height-1);
 
-      int remaining = size;
+      int remaining = tupleSize;
       
       int i = 0;
       while ( remaining >= fullDescendSize + 1 ) {
