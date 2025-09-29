@@ -115,24 +115,30 @@ public class BTree {
       
       int i = 0;
       while ( remaining >= cutoff ) {
-        internal[childOffset] = buildFullTree(sortedBulk, height);
+        internal[childOffset + i] = buildFullTree(sortedBulk, height);
         internal[i] = sortedBulk.next();
         remaining -= maxChildTupleSize + 1;
         i++;
       }
 
       if ( remaining > maxChildTupleSize ) {
-        //TODO
+        int grandChildSize = remaining / ((maxGrandChildTupleSize + 1) * 2); // == remaining / (maxGrandChildTupleSize + 1 ) / 2
+        int grandChildTupleSize = grandChildSize * (maxGrandChildTupleSize+1) - 1;
+        internal[childOffset + i] = denselyBuild(sortedBulk, grandChildSize, grandChildTupleSize, height);
+        internal[i] = sortedBulk.next();
+        remaining -= grandChildTupleSize + 1;
+        i++;
       }
 
-      int grandDescendInternalSize = remaining / (maxGrandChildTupleSize + 1) + 1;
-      internal[childOffset+i] = denselyBuild(sortedBulk, grandDescendInternalSize, remaining, height);
+      int grandChildSize = remaining / (maxGrandChildTupleSize + 1) + 1;
+      assert grandChildSize >= MIN_TUPLES + 1;
+      int grandChildTupleSize = remaining;
+      internal[childOffset + i] = denselyBuild(sortedBulk, grandChildSize, grandChildTupleSize, height);
       i++;
 
       assert i == childSize;
     }
 
-    //TODO: add ZoneMap in childSize*2-1
     internal[childSize*2 - 1] = new ZoneMap();
     return internal;
   }
