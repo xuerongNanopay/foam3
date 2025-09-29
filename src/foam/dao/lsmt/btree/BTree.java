@@ -66,7 +66,10 @@ public class BTree {
   }
 
   /**
-   * Build a dense BTree from input.
+   * Build a dense BTree from top to bottom with given height.
+   * @childSize: the number of children required for the internal node at given height.
+   * @tupleSize: the number of tuples stored in the tree with given height.
+   * Caller is responsible to pass the correct childSize and height for the given tuples.
    */
   private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int tupleSize, int height) {
 
