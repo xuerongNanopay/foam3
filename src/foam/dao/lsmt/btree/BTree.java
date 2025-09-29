@@ -11,11 +11,15 @@ import foam.dao.lsmt.utils.BulkIterator;
 
 /**
  * Copy-on-Write Btree.
- *  - Functional programing:
- *      1. No in place update.
- *      2. Mutation will clone from leaf to root. CAS on the root node.
- *  - Max support tuple size is: height * FANOUT_SHIFT < 32.
- *  - Reading are thread safe.
+ *  - No in-place update. Caller should use CAS for thread-safe.
+ *  - Max support child size is limited by: tree_height * FANOUT_SHIFT < 32.
+ *  - key and value doesn't not seperate, they are wrapped in the Object.
+ *  - The entire btree is structed in Object array.
+ *    - The leaf array must be ODD in length.(if the size of leaf is even, it will append extra NULL element at the end.)
+ *    - The internal array must be EVEN in length. The last element in the internal array will be zoom map.
+ *        - layout: [key1, key2, ... keyN, child1, child2, .... childN+1, ZoomMap]
+ *        - child is reference to sub tree(reference to Object Array).
+ *        - algorithm will guarantee the child size is ODD, in order to make sure the array length of internal node is EVEN.
  */
 
 public class BTree {
@@ -64,28 +68,25 @@ public class BTree {
   /**
    * Build a dense BTree from input.
    */
-  private static <T> Object[] buildTree(BulkIterator<T> sortedBulk, int internalSize, int size, int height) {
+  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int size, int height) {
 
-    assert internalSize <= MAX_TUPLES + 1;
+    assert childSize <= MAX_TUPLES + 1;
+
+    Object[] internal = new Object[childSize * 2];
+    int descendStart = childSize - 1; /* descend start from second half of internal array. */
 
     /**
-     * Internal Node Layout:
-     * - an internal node must be even.
-     * - internalSize: the number of descendants of current internal node.
-     * - layout:
-     *   - [0 ... internalSize-1]: store tuples, also serve as key(post) for the internal node.
-     *   - [internalSize ... internalSize*2-2]: store pointerto the descend nodes.
-     *   - [internalSize*2-1]: ZoneMap.
+     * cutoff serves two purposes:
+     *  1. guarantee there is enough element in the last child(last leaf or last sub-tree). (Make sure ODD children in the internal node.)
+     *  2. make sure that last child is still likely balance.
      */
-    Object[] internal = new Object[internalSize * 2];
-    int descendStart = internalSize - 1; /* descend start from second half of internal array. */
-
     if ( height == 2 ) {
 
       int remaining = size;
+      int cutoff = MAX_TUPLES + 1 + MIN_TUPLES;
 
       int i = 0;
-      while ( remaining >= MAX_TUPLES + 1 ) {
+      while ( remaining >= cutoff ) {
         internal[descendStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
@@ -94,7 +95,7 @@ public class BTree {
       internal[descendStart + i] = buildLeaf(sortedBulk, remaining);
       i++;
 
-      assert i == internalSize;
+      assert i == childSize;
     } else {
       height--;
       int fullDescendSize = maxTreeSize(height);
@@ -111,14 +112,14 @@ public class BTree {
       }
 
       int grandDescendInternalSize = remaining / (fullGrandDescendSize + 1) + 1;
-      internal[descendStart+i] = buildTree(sortedBulk, grandDescendInternalSize, remaining, height);
+      internal[descendStart+i] = denselyBuild(sortedBulk, grandDescendInternalSize, remaining, height);
       i++;
 
-      assert i == internalSize;
+      assert i == childSize;
     }
 
-    //TODO: add ZoneMap in internalSize*2-1
-    internal[internalSize*2 - 1] = new ZoneMap();
+    //TODO: add ZoneMap in childSize*2-1
+    internal[childSize*2 - 1] = new ZoneMap();
     return internal;
   }
 
