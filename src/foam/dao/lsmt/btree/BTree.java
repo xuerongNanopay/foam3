@@ -73,7 +73,7 @@ public class BTree {
     assert childSize <= MAX_TUPLES + 1;
 
     Object[] internal = new Object[childSize * 2];
-    int descendStart = childSize - 1; /* descend start from second half of internal array. */
+    int childOffset = childSize - 1; /* descend start from second half of internal array. */
 
     /**
      * cutoff serves two purposes:
@@ -87,32 +87,43 @@ public class BTree {
 
       int i = 0;
       while ( remaining >= cutoff ) {
-        internal[descendStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+        internal[childOffset + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
         i++;
       }
-      internal[descendStart + i] = buildLeaf(sortedBulk, remaining);
+      if ( remaining > cutoff ) {
+        int leafTupleSize = remaining/2;
+        internal[childOffset+i] = buildLeaf(sortedBulk, leafTupleSize);
+        remaining -= leafTupleSize + 1;
+        i++;
+      }
+      internal[childOffset + i] = buildLeaf(sortedBulk, remaining);
       i++;
 
       assert i == childSize;
     } else {
-      height--;
-      int fullDescendSize = maxTreeSize(height);
-      int fullGrandDescendSize = maxTreeSize(height-1);
+      --height;
+      int maxChildTupleSize = maxTreeSize(height);
+      int maxGrandChildTupleSize = maxTreeSize(height-1);
 
       int remaining = tupleSize;
+      int cutoff = maxChildTupleSize + 1 + MIN_TUPLES * (maxGrandChildTupleSize + 1);
       
       int i = 0;
-      while ( remaining >= fullDescendSize + 1 ) {
-        internal[descendStart] = buildFullTree(sortedBulk, height);
+      while ( remaining >= cutoff ) {
+        internal[childOffset] = buildFullTree(sortedBulk, height);
         internal[i] = sortedBulk.next();
-        remaining -= fullDescendSize + 1;
+        remaining -= maxChildTupleSize + 1;
         i++;
       }
 
-      int grandDescendInternalSize = remaining / (fullGrandDescendSize + 1) + 1;
-      internal[descendStart+i] = denselyBuild(sortedBulk, grandDescendInternalSize, remaining, height);
+      if ( remaining > maxChildTupleSize ) {
+        //TODO
+      }
+
+      int grandDescendInternalSize = remaining / (maxGrandChildTupleSize + 1) + 1;
+      internal[childOffset+i] = denselyBuild(sortedBulk, grandDescendInternalSize, remaining, height);
       i++;
 
       assert i == childSize;
