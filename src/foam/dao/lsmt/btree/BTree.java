@@ -60,7 +60,9 @@ public class BTree {
     int requireHeight = requireHeight(size);
 
     assert requireHeight > 1;
-    assertHardHeight(requireHeight);
+    assertHeight(requireHeight);
+
+
 
     throw new RuntimeException("TODO");
   }
@@ -150,7 +152,7 @@ public class BTree {
    */
   private static <T> Object[] buildFullTree(BulkIterator<T> sortedBulk, int height) {
 
-    int descendStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
+    int childStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
     /**
      * full size node.
      *  - MAX_TUPLES keys + (MAX_TUPLES+1) descendants + ZoneMap.
@@ -159,20 +161,20 @@ public class BTree {
 
     if ( height == 2 ) {
       int i = 0;
-      while ( i < descendStart ) {
-        internal[descendStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      while ( i < childStart ) {
+        internal[childStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[descendStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      internal[childStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
     } else {
       int i = 0;
-      while ( i < descendStart ) {
-        internal[descendStart+i] = buildFullTree(sortedBulk, height-1);
+      while ( i < childStart ) {
+        internal[childStart+i] = buildFullTree(sortedBulk, height-1);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[descendStart + i] = buildFullTree(sortedBulk, height-1);
+      internal[childStart + i] = buildFullTree(sortedBulk, height-1);
     }
 
     internal[FANOUT*2-1] = new ZoneMap();
@@ -210,14 +212,14 @@ public class BTree {
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
    */
-  private static void assertHardHeight(int height) {
-    assertHardHeight(height, FANOUT_SHIFT);
+  private static void assertHeight(int height) {
+    assertHeight(height, FANOUT_SHIFT);
   }
   /**
    * Hard limit of the tree:
    *  - The tree can support up to 2^(fanoutShift*height) elements.
    */
-  private static void assertHardHeight(int height, int fanoutShift) {
+  private static void assertHeight(int height, int fanoutShift) {
     assert height * fanoutShift < 32;
   }
 
