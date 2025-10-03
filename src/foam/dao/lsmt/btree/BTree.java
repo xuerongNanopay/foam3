@@ -19,7 +19,7 @@ import foam.dao.lsmt.utils.BulkIterator;
  *    - The internal array must be EVEN in length. The last element in the internal array will be zoom map.
  *        - layout: [key1, key2, ... keyN, child1, child2, .... childN+1, ZoomMap]
  *        - child is reference to sub tree(reference to Object Array).
- *        - algorithm will guarantee the child size is ODD, in order to make sure the array length of internal node is EVEN.
+ *        - algorithm will guarantee the child size is ODD and key size is child size - 1, in order to make sure the array length of internal node is EVEN.
  */
 
 public class BTree {
@@ -27,8 +27,8 @@ public class BTree {
   //TODO: configure FANOUT_SHIFT.
   public static final int FANOUT_SHIFT = 5;
   private static final int FANOUT = 1 << FANOUT_SHIFT;
-  public static final int MIN_TUPLES = FANOUT / 2 - 1;
-  public static final int MAX_TUPLES = FANOUT - 1;
+  public static final int MIN_KEYS = FANOUT / 2 - 1;
+  public static final int MAX_KEYS = FANOUT - 1;
 
   private static final Object[] EMPTY_LEAF = new Object[1];
 
@@ -42,7 +42,7 @@ public class BTree {
 
   public static <T> Object[] build(BulkIterator<T> sortedBulk, int size) {
     if ( size == 0 ) return EMPTY_LEAF;
-    if ( size <= MAX_TUPLES ) return buildLeaf(sortedBulk, size);
+    if ( size <= MAX_KEYS ) return buildLeaf(sortedBulk, size);
 
     // return buildRoot();
     throw new RuntimeException("TODO");
@@ -55,27 +55,28 @@ public class BTree {
     return vals;
   }
 
-  private static <T> Object[] buildTree(BulkIterator<T> sortedBulk, int size) {
+  private static <T> Object[] buildInternal(BulkIterator<T> sortedBulk, int size) {
 
-    int requireHeight = requireHeight(size);
+    int height = requireHeight(size);
 
-    assert requireHeight > 1;
-    assertHeight(requireHeight);
+    assert height > 1;
+    assertHeight(height);
 
+    int maxChildTupleSize = maxTreeSize(height-1);
+    int childSize = size / (maxChildTupleSize + 1) + 1;
 
-
-    throw new RuntimeException("TODO");
+    return denselyBuild(sortedBulk, childSize, size, height);
   }
 
   /**
    * Build a dense BTree from top to bottom with given height.
    * @childSize: the number of children required for the internal node at given height.
-   * @tupleSize: the number of tuples stored in the tree with given height.
+   * @size: the number of tuples stored in the tree with given height from sortedBulk.
    * Caller is responsible to pass the correct childSize and height for the given tuples.
    */
-  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int tupleSize, int height) {
+  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int size, int height) {
 
-    assert childSize <= MAX_TUPLES + 1;
+    assert childSize <= MAX_KEYS + 1;
 
     Object[] internal = new Object[childSize * 2];
     int childOffset = childSize - 1; /* descend start from second half of internal array. */
@@ -87,14 +88,14 @@ public class BTree {
      */
     if ( height == 2 ) {
 
-      int remaining = tupleSize;
-      int cutoff = MAX_TUPLES + 1 + MIN_TUPLES;
+      int remaining = size;
+      int cutoff = MAX_KEYS + 1 + MIN_KEYS;
 
       int i = 0;
       while ( remaining >= cutoff ) {
-        internal[childOffset + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+        internal[childOffset + i] = buildLeaf(sortedBulk, MAX_KEYS);
         internal[i] = sortedBulk.next();
-        remaining -= MAX_TUPLES + 1;
+        remaining -= MAX_KEYS + 1;
         i++;
       }
       if ( remaining > cutoff ) {
@@ -112,8 +113,8 @@ public class BTree {
       int maxChildTupleSize = maxTreeSize(height);
       int maxGrandChildTupleSize = maxTreeSize(height-1);
 
-      int remaining = tupleSize;
-      int cutoff = maxChildTupleSize + 1 + MIN_TUPLES * (maxGrandChildTupleSize + 1);
+      int remaining = size;
+      int cutoff = maxChildTupleSize + 1 + MIN_KEYS * (maxGrandChildTupleSize + 1);
       
       int i = 0;
       while ( remaining >= cutoff ) {
@@ -133,7 +134,7 @@ public class BTree {
       }
 
       int grandChildSize = remaining / (maxGrandChildTupleSize + 1) + 1;
-      assert grandChildSize >= MIN_TUPLES + 1;
+      assert grandChildSize >= MIN_KEYS + 1;
       int grandChildTupleSize = remaining;
       internal[childOffset + i] = denselyBuild(sortedBulk, grandChildSize, grandChildTupleSize, height);
       i++;
@@ -152,21 +153,21 @@ public class BTree {
    */
   private static <T> Object[] buildFullTree(BulkIterator<T> sortedBulk, int height) {
 
-    int childStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
+    int childStart = MAX_KEYS; /* child reference begin at (FANOUT-1/MAX_KEYS) position in the array */
     /**
      * full size node.
-     *  - MAX_TUPLES keys + (MAX_TUPLES+1) descendants + ZoneMap.
+     *  - MAX_KEYS keys + (MAX_KEYS+1) descendants + ZoneMap.
      */
     Object[] internal = new Object[FANOUT*2];
 
     if ( height == 2 ) {
       int i = 0;
       while ( i < childStart ) {
-        internal[childStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
+        internal[childStart+i] = buildLeaf(sortedBulk, MAX_KEYS);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[childStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      internal[childStart + i] = buildLeaf(sortedBulk, MAX_KEYS);
     } else {
       int i = 0;
       while ( i < childStart ) {
