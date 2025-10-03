@@ -41,11 +41,11 @@ public class BTree {
   }
 
   public static <T> Object[] build(BulkIterator<T> sortedBulk, int size) {
+    assert size >= 0;
+
     if ( size == 0 ) return EMPTY_LEAF;
     if ( size <= MAX_KEYS ) return buildLeaf(sortedBulk, size);
-
-    // return buildRoot();
-    throw new RuntimeException("TODO");
+    return buildInternal(sortedBulk, size);
   }
 
   private static <T> Object[] buildLeaf(BulkIterator<T> sortedBulk, int size) {
