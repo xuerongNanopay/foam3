@@ -182,6 +182,10 @@ public class BTree {
     return internal;
   }
 
+  public static <C> void update(Object[] tree, Object[] update, Comparator<? super C> comparator) {
+
+  }
+
   private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
     while ( true ) {
       int keyEndIdx = getKeyEnd(node);
@@ -191,7 +195,7 @@ public class BTree {
         return (T) node[i];
       }
 
-      if ( isLeafNode(node) ) {
+      if ( isLeaf(node) ) {
         return null;
       }
 
@@ -250,7 +254,7 @@ public class BTree {
   }
 
   private static int getKeyEnd(Object[] node) {
-    if ( isLeafNode(node) ) return getLeafKeyEnd(node);
+    if ( isLeaf(node) ) return getLeafKeyEnd(node);
     return getInternalKeyEnd(node);
   }
 
@@ -263,7 +267,11 @@ public class BTree {
     return (node.length / 2) - 1; /* internal node size must be even. */
   }
 
-  private static boolean isLeafNode(Object[] node) {
+  public static boolean isEmpty(Object[] tree) {
+    return tree == EMPTY_LEAF;
+  }
+
+  public static boolean isLeaf(Object[] node) {
     return ( node.length & 1 ) == 1;
   }
 
