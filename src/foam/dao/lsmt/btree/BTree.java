@@ -182,8 +182,32 @@ public class BTree {
     return internal;
   }
 
-  public static <C> void update(Object[] tree, Object[] update, Comparator<? super C> comparator) {
+  public static <C> Object[] update(Object[] oNode, Object[] nNode, Comparator<? super C> comparator) {
 
+    if ( isEmpty(nNode) ) return oNode; // return old node if new node is empty.
+
+    if ( isEmpty(oNode) ) return nNode; // return new node if old node is empty.
+
+
+    // Both new and old nodes are leaf.
+    if ( isLeaf(nNode) && isLeaf(oNode) ) {
+
+    }
+
+    return null;
+  }
+
+  //TODO: improve performance.
+  public static <C> Object[] updateLeaves(Object[] oLeaf, Object[] nLeaf, Comparator<? super C> comparator) {
+
+    //TODO: merge oLeaf and nLeaf and sort user comparator.
+
+    return null;
+  }
+
+  public static <C> Object[] mergeLeaves(Object[] oleaf, Object[] nLeaf, Comparator<? super C> comparator) {
+
+    return null;
   }
 
   private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
