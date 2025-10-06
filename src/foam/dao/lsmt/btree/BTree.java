@@ -329,12 +329,24 @@ public class BTree {
     return leaf[length-1] == null ? length - 1 : length;
   }
 
-  private static class NodeBuilder {
+  private static abstract class NodeBuilder {
 
-    int height;
+    final int height;
+    final NodeBuilder child;
     int size;
     Object[] buffer;
 
-    Object[] overflowBuffer;
+    NodeBuilder(NodeBuilder child) {
+      this.height = child == null ? 1 : child.height;
+      this.child = child;
+    }
+  }
+
+  private static class LeafBuilder extends NodeBuilder {
+
+    LeafBuilder() {
+      super(null);
+      this.buffer = new Object[MAX_KEYS];
+    }
   }
 }
