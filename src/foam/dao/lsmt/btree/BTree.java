@@ -13,13 +13,14 @@ import foam.dao.lsmt.utils.BulkIterator;
  * Copy-on-Write Btree.
  *  - No in-place update. Caller should use CAS for thread-safe.
  *  - Max support child size is limited by: tree_height * FANOUT_SHIFT < 32.
- *  - key and value doesn't not seperate, they are wrapped in the Object.
+ *  - key and value doesn't not seperate, they are wrapped in the Object(We called it Tuple).
+ *  - Tuple is comparable.
  *  - The entire btree is structed in Object array.
  *    - The leaf array must be ODD in length.(if the size of leaf is even, it will append extra NULL element at the end.)
  *    - The internal array must be EVEN in length. The last element in the internal array will be zoom map.
- *        - layout: [key1, key2, ... keyN, child1, child2, .... childN+1, ZoomMap]
+ *        - layout: [tuple1, tuple2, ... tupleN, child1, child2, .... childN+1, ZoomMap]
  *        - child is reference to sub tree(reference to Object Array).
- *        - algorithm will guarantee the child size is ODD and key size is child size - 1, in order to make sure the array length of internal node is EVEN.
+ *        - algorithm will guarantee the child size is ODD and tuple size is child size - 1, in order to make sure the array length of internal node is EVEN.
  */
 
 public class BTree {
@@ -27,8 +28,8 @@ public class BTree {
   //TODO: configure FANOUT_SHIFT.
   public static final int FANOUT_SHIFT = 5;
   private static final int FANOUT = 1 << FANOUT_SHIFT;
-  public static final int MIN_KEYS = FANOUT / 2 - 1;
-  public static final int MAX_KEYS = FANOUT - 1;
+  public static final int MIN_TUPLES = FANOUT / 2 - 1;
+  public static final int MAX_TUPLES = FANOUT - 1;
 
   private static final Object[] EMPTY_LEAF = new Object[1];
 
@@ -44,7 +45,7 @@ public class BTree {
     assert size >= 0;
 
     if ( size == 0 ) return EMPTY_LEAF;
-    if ( size <= MAX_KEYS ) return buildLeaf(sortedBulk, size);
+    if ( size <= MAX_TUPLES ) return buildLeaf(sortedBulk, size);
     return buildInternal(sortedBulk, size);
   }
 
@@ -76,7 +77,7 @@ public class BTree {
    */
   private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int size, int height) {
 
-    assert childSize <= MAX_KEYS + 1;
+    assert childSize <= MAX_TUPLES + 1;
 
     Object[] internal = new Object[childSize * 2];
     int childOffset = childSize - 1; /* descend start from second half of internal array. */
@@ -89,13 +90,13 @@ public class BTree {
     if ( height == 2 ) {
 
       int remaining = size;
-      int cutoff = MAX_KEYS + 1 + MIN_KEYS;
+      int cutoff = MAX_TUPLES + 1 + MIN_TUPLES;
 
       int i = 0;
       while ( remaining >= cutoff ) {
-        internal[childOffset + i] = buildLeaf(sortedBulk, MAX_KEYS);
+        internal[childOffset + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
-        remaining -= MAX_KEYS + 1;
+        remaining -= MAX_TUPLES + 1;
         i++;
       }
       if ( remaining > cutoff ) {
@@ -114,7 +115,7 @@ public class BTree {
       int maxGrandChildTupleSize = maxTreeSize(height-1);
 
       int remaining = size;
-      int cutoff = maxChildTupleSize + 1 + MIN_KEYS * (maxGrandChildTupleSize + 1);
+      int cutoff = maxChildTupleSize + 1 + MIN_TUPLES * (maxGrandChildTupleSize + 1);
       
       int i = 0;
       while ( remaining >= cutoff ) {
@@ -134,7 +135,7 @@ public class BTree {
       }
 
       int grandChildSize = remaining / (maxGrandChildTupleSize + 1) + 1;
-      assert grandChildSize >= MIN_KEYS + 1;
+      assert grandChildSize >= MIN_TUPLES + 1;
       int grandChildTupleSize = remaining;
       internal[childOffset + i] = denselyBuild(sortedBulk, grandChildSize, grandChildTupleSize, height);
       i++;
@@ -153,21 +154,21 @@ public class BTree {
    */
   private static <T> Object[] buildFullTree(BulkIterator<T> sortedBulk, int height) {
 
-    int childStart = MAX_KEYS; /* child reference begin at (FANOUT-1/MAX_KEYS) position in the array */
+    int childStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
     /**
      * full size node.
-     *  - MAX_KEYS keys + (MAX_KEYS+1) descendants + ZoneMap.
+     *  - MAX_TUPLES keys + (MAX_TUPLES+1) descendants + ZoneMap.
      */
     Object[] internal = new Object[FANOUT*2];
 
     if ( height == 2 ) {
       int i = 0;
       while ( i < childStart ) {
-        internal[childStart+i] = buildLeaf(sortedBulk, MAX_KEYS);
+        internal[childStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[childStart + i] = buildLeaf(sortedBulk, MAX_KEYS);
+      internal[childStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
     } else {
       int i = 0;
       while ( i < childStart ) {
@@ -346,7 +347,11 @@ public class BTree {
 
     LeafBuilder() {
       super(null);
-      this.buffer = new Object[MAX_KEYS];
+      this.buffer = new Object[MAX_TUPLES];
+    }
+
+    final void addTuple(Object newTuple) {
+
     }
   }
 }
