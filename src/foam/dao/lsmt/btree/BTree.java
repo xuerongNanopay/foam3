@@ -205,8 +205,33 @@ public class BTree {
     return null;
   }
 
-  public static <C> Object[] mergeLeaves(Object[] oleaf, Object[] nLeaf, Comparator<? super C> comparator) {
+  public static <C, O extends C, N extends C> List mergeLeaves(Object[] oLeaf, Object[] nLeaf, Comparator<? super C> comparator) {
 
+    int oSize = leafSize(oLeaf);
+    int nSize = leafSize(nLeaf);
+
+    int oi = 0;
+    int ni = 0;
+
+    var tmp = new ArrayList();
+
+    while ( oi < oSize && ni < nSize ) {
+      int c = comparator.compare((O) oLeaf[oi], (C) nLeaf[ni]);
+
+      if ( c < 0) {
+        tmp.add(oLeaf[oi++]);
+      } else if ( c == 0 ) {
+        tmp.add(nLeaf[ni++]);
+        oi++;
+      } else {
+        tmp.add(nLeaf[ni++]);
+      }
+    }
+
+    while ( oi < oSize ) tmp.add(oLeaf[oi++]);
+    while ( ni < nSize ) tmp.add(nLeaf[ni++]);
+
+    
     return null;
   }
 
