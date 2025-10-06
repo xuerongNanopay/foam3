@@ -334,12 +334,18 @@ public class BTree {
 
     final int height;
     final NodeBuilder child;
-    int size;
+    int limit;
     Object[] buffer;
+    Object[] batchBuffer;
+    Object batchNextTuple;
 
     NodeBuilder(NodeBuilder child) {
       this.height = child == null ? 1 : child.height;
       this.child = child;
+    }
+
+    final boolean isBatchFull() {
+      return batchNextTuple != null;
     }
   }
 
@@ -351,6 +357,26 @@ public class BTree {
     }
 
     final void addTuple(Object newTuple) {
+      if ( limit == MAX_TUPLES ) {
+        batch(newTuple);
+      } else {
+        buffer[limit++] = newTuple;
+      }
+    }
+
+    void batch(Object newTuple) {
+      if ( isBatchFull() ){
+        batchUpdate();
+      }
+
+      batchBuffer = buffer;
+      batchNextTuple = newTuple;
+      
+      buffer = new Object[MAX_TUPLES];
+      limit = 0;
+    }
+
+    void batchUpdate() {
 
     }
   }
