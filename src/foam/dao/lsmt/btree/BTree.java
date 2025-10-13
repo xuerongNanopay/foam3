@@ -334,7 +334,7 @@ public class BTree {
 
     final int height;
     final NodeBuilder child;
-    int limit;
+    int bufferCount;
     Object[] buffer;
     Object[] batchBuffer;
     Object batchNextTuple;
@@ -344,9 +344,11 @@ public class BTree {
       this.child = child;
     }
 
-    final boolean isBatchFull() {
+    final boolean isReadyForBathUpdate() {
       return batchNextTuple != null;
     }
+
+    // final
   }
 
   private static class LeafBuilder extends NodeBuilder {
@@ -357,15 +359,15 @@ public class BTree {
     }
 
     final void addTuple(Object newTuple) {
-      if ( limit == MAX_TUPLES ) {
+      if ( bufferCount == MAX_TUPLES ) {
         batch(newTuple);
       } else {
-        buffer[limit++] = newTuple;
+        buffer[bufferCount++] = newTuple;
       }
     }
 
     void batch(Object newTuple) {
-      if ( isBatchFull() ){
+      if ( isReadyForBathUpdate() ){
         batchUpdate();
       }
 
@@ -373,11 +375,21 @@ public class BTree {
       batchNextTuple = newTuple;
       
       buffer = new Object[MAX_TUPLES];
-      limit = 0;
+      bufferCount = 0;
     }
 
     void batchUpdate() {
 
     }
+  }
+
+  private static class InternalBuilder extends NodeBuilder {
+
+    InternalBuilder(NodeBuilder child) {
+      super(child);
+      buffer = new Object[2 * (MAX_TUPLES + 1)];
+    }
+
+
   }
 }
