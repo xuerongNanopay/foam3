@@ -236,6 +236,10 @@ public class BTree {
     return null;
   }
 
+  private static <C> int search(Comparator<? super C> comparator, Object[] node, int from , int to, C key) {
+    return Arrays.binarySearch((C[])node, from, to, key, comparator);
+  }
+
   private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
     while ( true ) {
       int keyEndIdx = getKeyEnd(node);
