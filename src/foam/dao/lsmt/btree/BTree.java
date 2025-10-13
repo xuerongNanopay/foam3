@@ -198,10 +198,14 @@ public class BTree {
     return null;
   }
 
-  //TODO: improve performance.
-  public static <C> Object[] updateLeaves(Object[] oLeaf, Object[] nLeaf, Comparator<? super C> comparator) {
+  public static <C, OLD extends C, NEW extends C> Object[] updateLeaves(Object[] oldLeaf, Object[] newLeaf, Comparator<? super C> comparator) {
 
     //TODO: merge oLeaf and nLeaf and sort user comparator.
+    int oldIdx = -1;
+    int oldSize = leafSize(oldLeaf);
+
+
+    //OPTIMIZE: skip elements in the oldLeaf that are less and equal to the elements in the newLeaf.
 
     return null;
   }
@@ -385,6 +389,10 @@ public class BTree {
     void batchUpdate() {
 
     }
+
+    Object[] build() {
+      return null;
+    }
   }
 
   private static class InternalBuilder extends NodeBuilder {
@@ -395,5 +403,36 @@ public class BTree {
     }
 
 
+  }
+
+  private static class TreeBuilder<T> extends LeafBuilder implements AutoCloseable {
+
+    TreeBuilder() {
+
+    }
+
+    final LeafBuilder leaf() {
+      return this;
+    }
+
+    void add(T tuple) {
+      leaf().addTuple(tuple);
+    }
+
+    void add(Object[] tuples, int offset, int size) {
+      //TODO: add copy method on LeafBuilder.
+      for ( int i = 0 ; i < size ; i++ ) {
+        leaf().addTuple(tuples[offset+i]);
+      }
+    }
+
+    Object[] build() {
+      return leaf().build();
+    }
+
+    @Override
+    public void close() {
+
+    }
   }
 }
