@@ -6,6 +6,7 @@
 package foam.dao.lsmt.btree;
 
 import java.util.*;
+import java.util.function.Function;
 
 import foam.dao.lsmt.utils.BulkIterator;
 
@@ -198,14 +199,45 @@ public class BTree {
     return null;
   }
 
-  public static <C, OLD extends C, NEW extends C> Object[] updateLeaves(Object[] oldLeaf, Object[] newLeaf, Comparator<? super C> comparator) {
+  public static <C, EXIST extends C, INSERT extends C> Object[] updateLeaves(Object[] existLeaf, Object[] insertLeaf, Comparator<? super C> comparator, TransformFunction<EXIST, INSERT> transform) {
 
     //TODO: merge oLeaf and nLeaf and sort user comparator.
-    int oldIdx = -1;
-    int oldSize = leafSize(oldLeaf);
+    int existIdx = 0;
+    int existSize = leafSize(existLeaf);
+    // EXIST existTuple = (EXIST) existLeaf[0];
 
+    int insertIdx = 0;
+    int insertSize = leafSize(insertLeaf);
+    // INSERT insertTuple = (INSERT) insertLeaf[0];
 
-    //OPTIMIZE: skip elements in the oldLeaf that are less and equal to the elements in the newLeaf.
+    //OPTIMIZE: skip elements in the existLeaf that are less and equal to the elements in the insertLeaf.
+
+    try ( TreeBuilder<EXIST> builder = new TreeBuilder() ) {
+
+      while ( existIdx < existSize && insertIdx < insertSize ) {
+        EXIST existTuple = (EXIST) existLeaf[existIdx];
+        INSERT insertTuple = (INSERT) insertLeaf[insertIdx];
+
+        int c = comparator.compare(existTuple, insertTuple);
+        if ( c == 0 ) {
+          builder.add(transform.merge(existTuple, insertTuple));
+          existTuple = (EXIST) existLeaf[++existIdx];
+          insertTuple = (INSERT) insertLeaf[++insertIdx];
+        } else if ( c < 0 ) {
+          builder.add(existTuple);
+          existTuple = (EXIST) existLeaf[++existIdx];
+        } else {
+          builder.add(transform.insert(insertTuple));
+          insertTuple = (INSERT) insertLeaf[++insertIdx];
+        }
+      }
+
+      if ( existIdx < existSize ) {
+        builder.add((EXIST[]) existLeaf, existIdx, existSize-existIdx);
+      } else if ( insertIdx < insertSize ) {
+        builder.add((INSERT[]) insertLeaf, insertIdx,insertSize-insertIdx, transform);
+      }
+    }
 
     return null;
   }
@@ -405,7 +437,7 @@ public class BTree {
 
   }
 
-  private static class TreeBuilder<T> extends LeafBuilder implements AutoCloseable {
+  private static class TreeBuilder<E> extends LeafBuilder implements AutoCloseable {
 
     TreeBuilder() {
 
@@ -415,14 +447,20 @@ public class BTree {
       return this;
     }
 
-    void add(T tuple) {
+    void add(E tuple) {
       leaf().addTuple(tuple);
     }
 
-    void add(Object[] tuples, int offset, int size) {
+    void add(E[] tuples, int offset, int size) {
       //TODO: add copy method on LeafBuilder.
       for ( int i = 0 ; i < size ; i++ ) {
         leaf().addTuple(tuples[offset+i]);
+      }
+    }
+
+    <I> void add(I[] tuples, int offset, int size, TransformFunction<E, I> transfer) {
+      for ( int i = 0 ; i < size ; i++ ) {
+        leaf().addTuple(transfer.insert(tuples[offset+i]));
       }
     }
 
@@ -434,5 +472,11 @@ public class BTree {
     public void close() {
 
     }
+  }
+
+  public interface TransformFunction<EXIST, INSERT>
+  {
+    EXIST insert(INSERT insertTuple);
+    EXIST merge(EXIST existTuple, INSERT insertTuple);
   }
 }
