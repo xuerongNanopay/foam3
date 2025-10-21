@@ -376,16 +376,16 @@ public class BTree {
     final NodeBuilder child;
     int bufferCount;
     Object[] buffer;
-    Object[] batchBuffer;
-    Object batchNextTuple;
+    Object[] overflowBuffer;
+    Object overflowLastTuple;
 
     NodeBuilder(NodeBuilder child) {
       this.height = child == null ? 1 : child.height;
       this.child = child;
     }
 
-    final boolean isReadyForBathUpdate() {
-      return batchNextTuple != null;
+    final boolean hasOverflow() {
+      return overflowLastTuple != null;
     }
 
     // final
@@ -400,30 +400,34 @@ public class BTree {
 
     final void addTuple(Object newTuple) {
       if ( bufferCount == MAX_TUPLES ) {
-        batch(newTuple);
+        overflow(newTuple);
       } else {
         buffer[bufferCount++] = newTuple;
       }
     }
 
-    void batch(Object newTuple) {
-      if ( isReadyForBathUpdate() ){
-        batchUpdate();
+    void overflow(Object newTuple) {
+      if ( hasOverflow() ){
+        propagateOverflow();
       }
 
-      batchBuffer = buffer;
-      batchNextTuple = newTuple;
+      overflowBuffer = buffer;
+      overflowLastTuple = newTuple;
       
       buffer = new Object[MAX_TUPLES];
       bufferCount = 0;
     }
 
-    void batchUpdate() {
+    void propagateOverflow() {
 
     }
 
     Object[] build() {
       return null;
+    }
+
+    Object[] flush() {
+      throw new RuntimeException("TODO: flush implement");
     }
   }
 
