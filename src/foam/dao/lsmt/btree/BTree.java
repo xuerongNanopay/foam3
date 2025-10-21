@@ -388,7 +388,39 @@ public class BTree {
       return overflowLastTuple != null;
     }
 
-    // final
+    /**
+     * A utility method for shadow comparing a range of two Object arrays.
+     */
+    static boolean areShadowIdentical(Object[] a, int aFrom, Object[] b, int bFrom, int size) {
+      for ( int i = 0 ; i < size ; i++ ) 
+        if ( a[aFrom + i] != b[bFrom + i] )
+          return false;
+      return true;
+    }
+
+    /**
+     * A utility method for shadow comparing a range of two Object arrays.
+     */
+    static boolean areShadowIdentical(Object[] a, Object[] b, int from, int size) {
+      return areShadowIdentical(a, from, b, from, size);
+    }
+
+    /**
+     * A utility method for comparing a range of two int arrays.
+     */
+    static boolean areIdentical(int[] a, int aFrom, int[] b, int bFrom, int size) {
+      for ( int i = 0 ; i < size ; i++ ) 
+        if ( a[aFrom + i] != b[bFrom + i] )
+          return false;
+      return true;
+    }
+
+    /**
+     * A utility method for comparing a range of two int arrays.
+     */
+    static boolean areIdentical(int[] a, int[] b, int from, int size) {
+      return areIdentical(a, from, b, from, size);
+    }
   }
 
   private static class LeafBuilder extends NodeBuilder {
