@@ -8,6 +8,6 @@ foam.POM({
   name: 'ANTLR',
   files: [
     { name: 'ANTLR4' },
-    { name: "lexer_antlr4",       flags: "antlr" },
+    { name: "lexer_antlr4",       flags: "antlr4" },
   ]
 });

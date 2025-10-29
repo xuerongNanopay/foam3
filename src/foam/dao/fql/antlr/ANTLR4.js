@@ -18,7 +18,7 @@ foam.CLASS({
   ]
 });
 
-foam.ANTLR = function(model) {
+foam.ANTLR4 = function(model) {
 //   var compiler = foam.xsd.XSDCompiler.create(model);
 //   // console.log('***************************************** XSD COMPILER ', model.xsdPath, model.files);
 //   if ( compiler.xsdPath && compiler.files.length > 0 ) {

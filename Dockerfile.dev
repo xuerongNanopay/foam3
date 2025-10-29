@@ -7,8 +7,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 RUN apt-get update && apt-get install -y git && apt-get clean
 RUN git config --global safe.directory '*'
 RUN apt-get update && apt-get install -y jq && apt-get clean
+RUN apt-get update && apt-get install -y curl && apt-get clean
 
 # Install antlr4
+RUN curl -L -o /usr/local/lib/antlr-4.13.1-complete.jar \
+    https://www.antlr.org/download/antlr-4.13.1-complete.jar
+
+RUN echo 'alias antlr4="java -jar /usr/local/lib/antlr-4.13.1-complete.jar"' >> ~/.bashrc
+ENV CLASSPATH=".:/usr/local/lib/antlr-4.13.1-complete.jar"
 
 
 RUN useradd -rm -d /home/foam_user -s /usr/bin/zsh -g root -G sudo -u 1000 foam_user
