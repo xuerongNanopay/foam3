@@ -6,6 +6,11 @@
 
 foam.POM({
   name: "fql",
+
+  projects: [
+    { name: 'antlr/pom' },
+  ],
+
   files: [
     // { name: "LSMDAO", flags: "java" },
   ],
