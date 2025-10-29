@@ -5,7 +5,7 @@
  */
 foam.CLASS({
   package: 'foam.dao.fql.antlr',
-  name: 'ANTLRCompiler',
+  name: 'ANTLR4Compiler',
 
   properties: [
     {
@@ -32,4 +32,4 @@ foam.ANTLR = function(model) {
   console.log("hahah .moel: " + model.antlr);
 };
 
-foam.flags['antlr'] = true;
+foam.flags['antlr4'] = true;
