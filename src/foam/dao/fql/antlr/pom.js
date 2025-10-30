@@ -6,8 +6,13 @@
 
 foam.POM({
   name: 'ANTLR',
+
+  setFlags: {
+    web: false
+  },
+
   files: [
     { name: 'ANTLR4' },
-    { name: "lexer_antlr4",       flags: "antlr4" },
+    { name: "FqlParser",       flags: "antlr4" },
   ]
 });

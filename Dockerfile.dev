@@ -10,12 +10,13 @@ RUN apt-get update && apt-get install -y jq && apt-get clean
 RUN apt-get update && apt-get install -y curl && apt-get clean
 
 # Install antlr4
-RUN curl -L -o /usr/local/lib/antlr-4.13.1-complete.jar \
-    https://www.antlr.org/download/antlr-4.13.1-complete.jar
+ENV ANTLR_VERSION=4.13.1
+RUN curl -L -o /usr/local/lib/antlr-${ANTLR_VERSION}-complete.jar \
+    https://www.antlr.org/download/antlr-${ANTLR_VERSION}-complete.jar
 
-RUN echo 'alias antlr4="java -jar /usr/local/lib/antlr-4.13.1-complete.jar"' >> ~/.bashrc
-ENV CLASSPATH=".:/usr/local/lib/antlr-4.13.1-complete.jar"
-
+RUN echo '#!/bin/sh' > /usr/local/bin/antlr4 && \
+    echo 'exec java -jar /usr/local/lib/antlr-4.13.1-complete.jar "$@"' >> /usr/local/bin/antlr4 && \
+    chmod +x /usr/local/bin/antlr4
 
 RUN useradd -rm -d /home/foam_user -s /usr/bin/zsh -g root -G sudo -u 1000 foam_user
 # Allow user add journal directory.

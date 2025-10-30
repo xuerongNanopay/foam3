@@ -8,28 +8,34 @@ foam.CLASS({
   name: 'ANTLR4Compiler',
 
   properties: [
-    {
-      name: 'antlr',
-    },
+    'package',
+    'name',
+    'antlr'
   ],
 
   methods: [
+    function compile() {
+      const { execSync } = require('child_process');
+      const fs = require('fs');
+      const path = require('path');
 
+      const antlr4Dir = X.builddir + '/antlr4/' + this.package.replaceAll('.', '_');
+      fs.mkdirSync(antlr4Dir, { recursive: true });
+      console.log('aaaa: ' + this.package);
+      const antlr4Filename = this.name + '.g4';
+      const filePath = path.join(antlr4Dir, antlr4Filename);
+      console.log("aaaa: " + filePath);
+      console.log(X.outdir)
+      fs.writeFileSync(filePath, this.antlr.trim());
+      console.log(`${antlr4Dir + '/' + this.package.replaceAll('.', '_')}`);
+      execSync(`antlr4 ${filePath}`);
+    }
   ]
 });
 
 foam.ANTLR4 = function(model) {
-//   var compiler = foam.xsd.XSDCompiler.create(model);
-//   // console.log('***************************************** XSD COMPILER ', model.xsdPath, model.files);
-//   if ( compiler.xsdPath && compiler.files.length > 0 ) {
-//     compiler.compileAll();
-//   } else if ( compiler.xsd ) {
-//     compiler.compile();
-//   } else {
-//     // console.log('****************************************************************** XSD ERROR');
-//     throw new Error("compiler neither xsd or xsdPath set");
-//   }
-  console.log("hahah .moel: " + model.antlr);
+  var compiler = foam.dao.fql.antlr.ANTLR4Compiler.create(model);
+  compiler.compile();
 };
 
 foam.flags['antlr4'] = true;
