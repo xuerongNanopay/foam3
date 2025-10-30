@@ -21,15 +21,27 @@ foam.CLASS({
 
       const antlr4Dir = X.builddir + '/antlr4/' + this.package.replaceAll('.', '_');
       fs.mkdirSync(antlr4Dir, { recursive: true });
-      console.log('aaaa: ' + this.package);
+
       const antlr4Filename = this.name + '.g4';
       const filePath = path.join(antlr4Dir, antlr4Filename);
-      console.log("aaaa: " + filePath);
-      console.log(X.outdir)
+
       fs.writeFileSync(filePath, this.antlr.trim());
       console.log(`${antlr4Dir + '/' + this.package.replaceAll('.', '_')}`);
       execSync(`antlr4 ${filePath}`);
-    }
+
+      const javaPath = path.join(X.builddir, 'src/java', this.package.replaceAll('.', '/'))
+      fs.mkdirSync(javaPath, { recursive: true });
+
+      const javaFiles = fs.readdirSync(antlr4Dir);
+
+      for ( const file of javaFiles ) {
+        if ( file.endsWith('.java') ) {
+          const srcPath = path.join(antlr4Dir, file);
+          const destPath = path.join(javaPath, file);
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    },
   ]
 });
 
