@@ -34,11 +34,14 @@ foam.CLASS({
 
       const javaFiles = fs.readdirSync(antlr4Dir);
 
+      console.log("aaaaa", X.javaFiles)
       for ( const file of javaFiles ) {
         if ( file.endsWith('.java') ) {
           const srcPath = path.join(antlr4Dir, file);
           const destPath = path.join(javaPath, file);
-          fs.copyFileSync(srcPath, destPath);
+          fs.renameSync(srcPath, destPath);
+          const outFile = X.outdir + path.sep + this.package.replaceAll(/\./g, path.sep) + "/" + file;
+          X.javaFiles.push(outFile);
         }
       }
     },

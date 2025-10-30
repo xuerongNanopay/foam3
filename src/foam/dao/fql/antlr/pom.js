@@ -14,5 +14,9 @@ foam.POM({
   files: [
     { name: 'ANTLR4' },
     { name: "FqlParser",       flags: "antlr4" },
-  ]
+  ],
+
+  javaDependencies: [
+    'org.antlr:antlr4-runtime:4.13.2'
+  ],
 });
