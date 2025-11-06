@@ -131,7 +131,7 @@ foam.CLASS({
       });
 
       logger.info("initialize", "cronjobs", "complete");
-
+      if ( 1 == 1) return;
       while ( true ) {
         long delay = getCronDelay();
         if ( getEnabled() ) {

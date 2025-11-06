@@ -244,6 +244,8 @@ public class MDAO
       plan = index_.planSelect(state, sink, skip, limit, order, simplePredicate);
     }
 
+    System.out.println("AAAAA1 plan class: `" + plan.getClass().getName() + "`, cost: `" + plan.cost() + "`, predicate: `" + predicate + "`");
+
     if ( state != null && simplePredicate != null && simplePredicate != MLang.TRUE && plan.cost() > 10 && plan.cost() >= index_.size(state) ) {
       pm = new PM(this.getClass(), "MDAO:UnindexedSelect:" + getOf().getId());
       if ( ! unindexed_.contains(getOf().getId()) ) {

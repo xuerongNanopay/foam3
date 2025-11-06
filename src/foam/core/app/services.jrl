@@ -67,14 +67,6 @@ p({
   }
 })
 
-p({
-  "class": "foam.core.boot.CSpec",
-  "name": "healthHeartbeatMonitor",
-  "lazy": false,
-  "service": {
-    class: "foam.core.app.HealthHeartbeatMonitor",
-  }
-})
 
 p({
   "class":"foam.core.boot.CSpec",

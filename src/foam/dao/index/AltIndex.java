@@ -18,7 +18,7 @@ public class AltIndex
 {
   public final static int GOOD_ENOUGH_PLAN_COST = 10;
 
-  protected ArrayList<Index> delegates_ = new ArrayList();
+  public ArrayList<Index> delegates_ = new ArrayList();
 
   public AltIndex(Index... indices) {
     for ( int i = 0 ; i < indices.length ; i++ )
@@ -146,7 +146,7 @@ public class AltIndex
     for ( int i = 0 ; i < delegates_.size() && i < s.length ; i++ ) {
       try {
       SelectPlan plan = delegates_.get(i).planSelect(s[i], sink, skip, limit, order, predicate);
-
+      System.out.println("AAAAA index: `" + delegates_.get(i) + "`, cost: `" + plan.cost() + "`, predicate: `" + predicate + "`");
       if ( plan.cost() < bestPlan.cost() ) {
         bestPlan  = plan;
         bestState = s[i];
