@@ -203,11 +203,11 @@ public class BTree {
 
     //TODO: merge oLeaf and nLeaf and sort user comparator.
     int existIdx = 0;
-    int existSize = leafSize(existLeaf);
+    int existSize = sizeOfLeaf(existLeaf);
     // EXIST existTuple = (EXIST) existLeaf[0];
 
     int insertIdx = 0;
-    int insertSize = leafSize(insertLeaf);
+    int insertSize = sizeOfLeaf(insertLeaf);
     // INSERT insertTuple = (INSERT) insertLeaf[0];
 
     //OPTIMIZE: skip elements in the existLeaf that are less and equal to the elements in the insertLeaf.
@@ -244,8 +244,8 @@ public class BTree {
 
   public static <C, O extends C, N extends C> List mergeLeaves(Object[] oLeaf, Object[] nLeaf, Comparator<? super C> comparator) {
 
-    int oSize = leafSize(oLeaf);
-    int nSize = leafSize(nLeaf);
+    int oSize = sizeOfLeaf(oLeaf);
+    int nSize = sizeOfLeaf(nLeaf);
 
     int oi = 0;
     int ni = 0;
@@ -365,9 +365,9 @@ public class BTree {
     return ( node.length & 1 ) == 1;
   }
 
-  private static int leafSize(Object[] leaf) {
-    int length = leaf.length;
-    return leaf[length-1] == null ? length - 1 : length;
+  static int sizeOfLeaf(Object[] leaf) {
+    int l = leaf.length;
+    return leaf[l-1] == null ? l - 1 : l;
   }
 
   private static abstract class NodeBuilder {

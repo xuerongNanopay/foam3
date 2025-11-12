@@ -12,7 +12,7 @@ public class BTreeOutputter {
 
   public static String stringify(Object[] btree) {
 
-    if ( isEmpty(btree) ) return "EMPTY";
+    if ( isEmpty(btree) ) return "EMPTY BTREE";
 
     StringBuilder sb = new StringBuilder();
 
@@ -22,5 +22,17 @@ public class BTreeOutputter {
 
   public static void outputNode(StringBuilder sb, Object[] node, int height, String prefix) {
 
+    if ( isLeaf(node) ) {
+      int leafSize = sizeOfLeaf(node);
+
+      sb.append("L: [ ");
+      for ( int i = 0 ; i < leafSize ; i++ ) {
+        sb.append(node[i]);
+        if ( i != leafSize-1 ) sb.append(", "); 
+      }
+      sb.append(" ]\n");
+    } else {
+      sb.append("TODO");
+    }
   }
 }
