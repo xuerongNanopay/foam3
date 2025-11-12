@@ -11,6 +11,7 @@ foam.POM({
   ],
     javaFiles: [
     { name: "btree/BTree" },
+    { name: "btree/BTreeOutputter" },
     { name: "btree/ZoneMap" },
     { name: "utils/BulkIterator" },
     { name: "utils/ArrayUtil" },
