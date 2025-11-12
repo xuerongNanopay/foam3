@@ -9,7 +9,12 @@ foam.POM({
   files: [
     { name: "LSMDAO", flags: "java" },
   ],
-    javaFiles: [
+
+  files: [
+    { name: "btree/BTreeTest",  flags: "java&test" },
+  ],
+
+  javaFiles: [
     { name: "btree/BTree" },
     { name: "btree/BTreeOutputter" },
     { name: "btree/ZoneMap" },

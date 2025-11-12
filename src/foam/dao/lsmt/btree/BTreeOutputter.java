@@ -12,7 +12,7 @@ public class BTreeOutputter {
 
   public static String stringify(Object[] btree) {
 
-    if ( isEmpty(btree) ) return "EMPTY BTREE";
+    if ( isEmpty(btree) ) return "(T:L | S:0 | H:0): { }";
 
     StringBuilder sb = new StringBuilder();
 
