@@ -35,4 +35,12 @@ public class BTreeOutputter {
       sb.append("TODO");
     }
   }
+
+  private static String outputNodeMeta(Object[] node, int height) {
+    if ( isLeaf(node) ) {
+      return String.format("(T:L | S:%,d | H:%d)", -1, height);
+    } else {
+      return String.format("(T:I | S:%,d | H:%d)", -1, height);
+    }
+  }
 }

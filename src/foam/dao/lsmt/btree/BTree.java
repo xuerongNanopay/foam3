@@ -348,13 +348,20 @@ public class BTree {
     return getInternalKeyEnd(node);
   }
 
-  private static int getLeafKeyEnd(Object[] node) {
-    int length = node.length;
-    return node[length-1] == null ? length - 1 : length; /* Leaf is made up to be odd, if it is even. */
+  private static int getLeafKeyEnd(Object[] leaf) {
+    int length = leaf.length;
+    return leaf[length-1] == null ? length - 1 : length; /* Leaf is made up to be odd, if it is even. */
   }
 
-  private static int getInternalKeyEnd(Object[] node) {
-    return (node.length / 2) - 1; /* internal node size must be even. */
+  /**
+   * Exclude end index.
+   */
+  private static int getInternalKeyEnd(Object[] internal) {
+    return (internal.length / 2) - 1; /* internal node size must be even. */
+  }
+
+  static int firstChildOfInternal(Object[] internal) {
+    return getInternalKeyEnd(internal);
   }
 
   public static boolean isEmpty(Object[] tree) {
@@ -368,6 +375,21 @@ public class BTree {
   static int sizeOfLeaf(Object[] leaf) {
     int l = leaf.length;
     return leaf[l-1] == null ? l - 1 : l;
+  }
+
+  /**
+   * Leaf height is 1.
+   */
+  public static int height(Object[] tree) {
+    if ( isLeaf(tree) ) return 1;
+
+    int height = 1;
+    while ( ! isLeaf(tree) ) {
+      tree = (Object[]) tree[firstChildOfInternal(tree)];
+      height++;
+    }
+
+    return height;
   }
 
   private static abstract class NodeBuilder {
