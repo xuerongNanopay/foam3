@@ -12,10 +12,11 @@ public class BTreeOutputter {
 
   public static String stringify(Object[] btree) {
 
-    if ( isEmpty(btree) ) return "(T:L | S:0 | H:0): { }";
+    if ( isEmpty(btree) ) return "(T:L | S:0 | H:0): []";
 
     StringBuilder sb = new StringBuilder();
 
+    outputNode(sb, btree, height(btree), "");
     return sb.toString();
 
   }
@@ -25,7 +26,8 @@ public class BTreeOutputter {
     if ( isLeaf(node) ) {
       int leafSize = sizeOfLeaf(node);
 
-      sb.append("L: [ ");
+      sb.append(outputNodeMeta(node, height));
+      sb.append(": [ ");
       for ( int i = 0 ; i < leafSize ; i++ ) {
         sb.append(node[i]);
         if ( i != leafSize-1 ) sb.append(", "); 
@@ -38,7 +40,7 @@ public class BTreeOutputter {
 
   private static String outputNodeMeta(Object[] node, int height) {
     if ( isLeaf(node) ) {
-      return String.format("(T:L | S:%,d | H:%d)", -1, height);
+      return String.format("(T:L | S:%,d | H:%d)", size(node), height);
     } else {
       return String.format("(T:I | S:%,d | H:%d)", -1, height);
     }

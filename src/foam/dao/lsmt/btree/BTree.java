@@ -392,6 +392,13 @@ public class BTree {
     return height;
   }
 
+  public static int size(Object[] tree) {
+    if ( isLeaf(tree) ) return getKeyEnd(tree);
+
+    //TODO
+    return -1;
+  }
+
   private static abstract class NodeBuilder {
 
     final int height;
