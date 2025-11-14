@@ -20,8 +20,9 @@ foam.CLASS({
         var btree = BTree.empty();
         System.out.println(BTreeOutputter.stringify(btree));
 
-        var bi = BulkIterator.<Integer>of(generateIntegerArray(5));
-        btree = BTree.build(bi, 5);
+        int len = 10;
+        var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
+        btree = BTree.build(bi, len);
         System.out.println(BTreeOutputter.stringify(btree));
 
       `

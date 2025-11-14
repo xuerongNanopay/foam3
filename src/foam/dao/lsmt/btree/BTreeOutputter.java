@@ -34,7 +34,17 @@ public class BTreeOutputter {
       }
       sb.append(" ]\n");
     } else {
-      sb.append("TODO");
+      int tupleCount = intervalTupleSize(node);
+      int childCount = tupleCount+1;
+      //TODO: sizeMap.
+
+      sb.append(outputNodeMeta(node, height));
+      sb.append(": [ ");
+      for ( int i = 0 ; i < tupleCount ; i++ ) {
+        sb.append(node[i]);
+        if ( i != tupleCount-1 ) sb.append(node[i]);
+      }
+      sb.append(" ]\n");
     }
   }
 

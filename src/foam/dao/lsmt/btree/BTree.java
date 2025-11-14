@@ -364,6 +364,10 @@ public class BTree {
     return getInternalKeyEnd(internal);
   }
 
+    static int intervalTupleSize(Object[] internal) {
+      return getInternalKeyEnd(internal);
+    }
+
   public static boolean isEmpty(Object[] tree) {
     return tree == EMPTY_LEAF;
   }
