@@ -103,6 +103,7 @@ public class BTree {
       if ( remaining > MAX_TUPLES ) {
         int leafTupleSize = remaining/2;
         internal[childOffset+i] = buildLeaf(sortedBulk, leafTupleSize);
+        internal[i] = sortedBulk.next();
         remaining -= leafTupleSize + 1;
         i++;
       }
