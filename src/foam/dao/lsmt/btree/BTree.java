@@ -66,7 +66,7 @@ public class BTree {
 
     int maxChildTupleSize = maxTreeSize(height-1);
     int childSize = size / (maxChildTupleSize + 1) + 1;
-
+    System.out.println("" + maxChildTupleSize + ", childSize: " + childSize + ", size:" + size);
     return denselyBuild(sortedBulk, childSize, size, height);
   }
 
@@ -100,7 +100,7 @@ public class BTree {
         remaining -= MAX_TUPLES + 1;
         i++;
       }
-      if ( remaining > cutoff ) {
+      if ( remaining > MAX_TUPLES ) {
         int leafTupleSize = remaining/2;
         internal[childOffset+i] = buildLeaf(sortedBulk, leafTupleSize);
         remaining -= leafTupleSize + 1;
@@ -108,7 +108,7 @@ public class BTree {
       }
       internal[childOffset + i] = buildLeaf(sortedBulk, remaining);
       i++;
-
+      System.out.println("" + i + ", " + childSize);
       assert i == childSize;
     } else {
       --height;

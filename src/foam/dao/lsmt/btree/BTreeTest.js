@@ -20,7 +20,7 @@ foam.CLASS({
         var btree = BTree.empty();
         System.out.println(BTreeOutputter.stringify(btree));
 
-        int len = 10;
+        int len = 32;
         var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
         btree = BTree.build(bi, len);
         System.out.println(BTreeOutputter.stringify(btree));
@@ -34,7 +34,7 @@ foam.CLASS({
       javaCode: `
         var ret = new Object[length];
         for ( int i = 0 ; i < length ; i++ ) {
-          ret[i] = i;
+          ret[i] = i+1;
         }
         return ret;
       `
