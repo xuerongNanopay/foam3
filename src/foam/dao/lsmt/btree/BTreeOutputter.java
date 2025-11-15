@@ -62,7 +62,7 @@ public class BTreeOutputter {
         } else if ( i == childSize-1) {
           sb.append("(" + node[i-1] + ", ⤠)\n");
         } else {
-          sb.append("(" + node[i] + ", " + node[i+1] + ")\n");
+          sb.append("(" + node[i-1] + ", " + node[i] + ")\n");
         }
 
         outputNode(sb, child, depth+1, prefix + childPrefix);
