@@ -44,7 +44,7 @@ public class BTreeOutputter {
       sb.append(": [ ");
       for ( int i = 0 ; i < tupleSize ; i++ ) {
         sb.append(node[i]);
-        if ( i != tupleSize-1 ) sb.append(node[i]);
+        if ( i != tupleSize-1 ) sb.append(", ");
       }
       sb.append(" ]\n");
 
