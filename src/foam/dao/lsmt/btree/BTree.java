@@ -64,7 +64,7 @@ public class BTree {
     assert height > 1;
     assertHeight(height);
 
-    int maxChildTupleSize = maxTreeSize(height-1);
+    int maxChildTupleSize = fullTreeSize(height-1);
     int childSize = size / (maxChildTupleSize + 1) + 1;
     System.out.println("" + maxChildTupleSize + ", childSize: " + childSize + ", size:" + size);
     return denselyBuild(sortedBulk, childSize, size, height);
@@ -82,7 +82,7 @@ public class BTree {
 
     Object[] internal = new Object[childSize * 2];
     int childOffset = childSize - 1; /* descend start from second half of internal array. */
-
+    int[] preSum = new int[childSize];
     /**
      * cutoff serves two purposes:
      *  1. guarantee there is enough element in the last child(last leaf or last sub-tree). (Make sure ODD children in the internal node.)
@@ -98,30 +98,30 @@ public class BTree {
         internal[childOffset + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
-        i++;
+        preSum[i++] = size - (remaining+1);
       }
       if ( remaining > MAX_TUPLES ) {
         int leafTupleSize = remaining/2;
         internal[childOffset+i] = buildLeaf(sortedBulk, leafTupleSize);
         internal[i] = sortedBulk.next();
         remaining -= leafTupleSize + 1;
-        i++;
+        preSum[i++] = size - (remaining+1);
       }
       internal[childOffset + i] = buildLeaf(sortedBulk, remaining);
-      i++;
-      System.out.println("" + i + ", " + childSize);
+      preSum[i++] = size;
+
       assert i == childSize;
     } else {
       --height;
-      int maxChildTupleSize = maxTreeSize(height);
-      int maxGrandChildTupleSize = maxTreeSize(height-1);
+      int maxChildTupleSize = fullTreeSize(height);
+      int maxGrandChildTupleSize = fullTreeSize(height-1);
 
       int remaining = size;
       int cutoff = maxChildTupleSize + 1 + MIN_TUPLES * (maxGrandChildTupleSize + 1);
       
       int i = 0;
       while ( remaining >= cutoff ) {
-        internal[childOffset + i] = buildFullTree(sortedBulk, height);
+        internal[childOffset + i] = fullyBuild(sortedBulk, height);
         internal[i] = sortedBulk.next();
         remaining -= maxChildTupleSize + 1;
         i++;
@@ -145,7 +145,7 @@ public class BTree {
       assert i == childSize;
     }
 
-    internal[childSize*2 - 1] = new ZoneMap();
+    internal[childSize*2 - 1] = new ZoneMap(preSum);
     return internal;
   }
 
@@ -154,7 +154,7 @@ public class BTree {
    *  - require the sortedBulk has enough tuples to build a full tree.
    *  - full tree size == 1<<(height*fanout_shift) - 1
    */
-  private static <T> Object[] buildFullTree(BulkIterator<T> sortedBulk, int height) {
+  private static <T> Object[] fullyBuild(BulkIterator<T> sortedBulk, int height) {
 
     int childStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
     /**
@@ -174,14 +174,14 @@ public class BTree {
     } else {
       int i = 0;
       while ( i < childStart ) {
-        internal[childStart+i] = buildFullTree(sortedBulk, height-1);
+        internal[childStart+i] = fullyBuild(sortedBulk, height-1);
         internal[i] = sortedBulk.next();
         i++;
       }
-      internal[childStart + i] = buildFullTree(sortedBulk, height-1);
+      internal[childStart + i] = fullyBuild(sortedBulk, height-1);
     }
 
-    internal[FANOUT*2-1] = new ZoneMap();
+    // internal[FANOUT*2-1] = new ZoneMap(preSum);
     return internal;
   }
 
@@ -279,7 +279,7 @@ public class BTree {
 
   private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
     while ( true ) {
-      int keyEndIdx = getKeyEnd(node);
+      int keyEndIdx = getTupleEnd(node);
       int i = Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator); /* find matched tuple in the key range. */
 
       if ( i >= 0 ) {
@@ -296,7 +296,7 @@ public class BTree {
   }
 
   private static <T> int findInNode(Object[] node, T key, Comparator<? super T> comparator) {
-    int keyEndIdx = getKeyEnd(node);
+    int keyEndIdx = getTupleEnd(node);
     return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
   }
 
@@ -332,42 +332,50 @@ public class BTree {
     return (fanoutShift - 1 +  v) / fanoutShift;
   }
 
-  private static int maxTreeSize(int height) {
-    return maxTreeSize(height, FANOUT_SHIFT);
+  private static int fullTreeSize(int height) {
+    return fullTreeSize(height, FANOUT_SHIFT);
   }
 
   /**
    * Caculate the number of key-value pairs in a full tree with given height and default fanout_shift.
    * The calculate is a good enough estimation.
    */
-  private static int maxTreeSize(int height, int fanoutShift) {
+  private static int fullTreeSize(int height, int fanoutShift) {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
-  private static int getKeyEnd(Object[] node) {
-    if ( isLeaf(node) ) return getLeafKeyEnd(node);
-    return getInternalKeyEnd(node);
+  private static int getTupleEnd(Object[] node) {
+    if ( isLeaf(node) ) return getLeafTupleEnd(node);
+    return getInternalTupleEnd(node);
   }
 
-  private static int getLeafKeyEnd(Object[] leaf) {
+  private static int getLeafTupleEnd(Object[] leaf) {
     int length = leaf.length;
     return leaf[length-1] == null ? length - 1 : length; /* Leaf is made up to be odd, if it is even. */
+  }
+
+  static int leafTupleSize(Object[] internal) {
+    return getLeafTupleEnd(internal);
   }
 
   /**
    * Exclude end index.
    */
-  private static int getInternalKeyEnd(Object[] internal) {
+  private static int getInternalTupleEnd(Object[] internal) {
     return (internal.length / 2) - 1; /* internal node size must be even. */
   }
 
   static int firstChildOfInternal(Object[] internal) {
-    return getInternalKeyEnd(internal);
+    return getInternalTupleEnd(internal);
   }
 
-    static int intervalTupleSize(Object[] internal) {
-      return getInternalKeyEnd(internal);
-    }
+  static int intervalTupleSize(Object[] internal) {
+    return getInternalTupleEnd(internal);
+  }
+
+  static ZoneMap getZoneMap(Object[] internal) {
+    return (ZoneMap) internal[internal.length-1];
+  }
 
   public static boolean isEmpty(Object[] tree) {
     return tree == EMPTY_LEAF;
@@ -380,6 +388,10 @@ public class BTree {
   static int sizeOfLeaf(Object[] leaf) {
     int l = leaf.length;
     return leaf[l-1] == null ? l - 1 : l;
+  }
+
+  static int sizeOfInternal(Object[] internal) {
+    return getZoneMap(internal).size();
   }
 
   /**
@@ -398,8 +410,9 @@ public class BTree {
   }
 
   public static int size(Object[] tree) {
-    if ( isLeaf(tree) ) return getKeyEnd(tree);
+    if ( isLeaf(tree) ) return getLeafTupleEnd(tree);
 
+    
     //TODO
     return -1;
   }
