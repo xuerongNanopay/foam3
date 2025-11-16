@@ -20,11 +20,11 @@ foam.CLASS({
         var btree = BTree.empty();
         System.out.println(BTreeOutputter.stringify(btree));
 
-        int len = 1024;
+        int len = 32768;
         var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
         btree = BTree.build(bi, len);
-        System.out.println(BTreeOutputter.stringify(btree));
-
+        // System.out.println(BTreeOutputter.stringify(btree));
+        System.out.println("FFFF: " + BTree.find(btree, 11, Integer::compare));
       `
     },
     {
@@ -37,6 +37,14 @@ foam.CLASS({
           ret[i] = i+1;
         }
         return ret;
+      `
+    },
+    {
+      name: 'test1',
+      args: 'Context x',
+      javaCode: `
+        int len = 32768;
+        var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
       `
     }
   ]

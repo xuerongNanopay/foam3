@@ -268,10 +268,10 @@ public class BTree {
     return Arrays.binarySearch((C[])node, from, to, key, comparator);
   }
 
-  private static <T> T find(Object[] node, T key, Comparator<? super T> comparator) {
+  public static <T> T find(Object[] node, T tuple, Comparator<? super T> comparator) {
     while ( true ) {
-      int keyEndIdx = getTupleEnd(node);
-      int i = Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator); /* find matched tuple in the key range. */
+      int tupleEnd = getTupleEnd(node);
+      int i = Arrays.binarySearch((T[]) node, 0, tupleEnd, tuple, comparator); /* find matched tuple in the key range. */
 
       if ( i >= 0 ) {
         return (T) node[i];
@@ -282,7 +282,7 @@ public class BTree {
       }
 
       i = -1 - i;
-      node = (Object[]) node[keyEndIdx + i];
+      node = (Object[]) node[tupleEnd + i];
     }
   }
 
