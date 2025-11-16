@@ -38,8 +38,8 @@ public class BTreeOutputter {
     } else {
       int tupleSize = intervalTupleSize(node);
       int childSize = tupleSize+1;
-      //TODO: size.
 
+      sb.append(prefix).append(indent);
       sb.append(outputNodeMeta(node));
       sb.append(": [ ");
       for ( int i = 0 ; i < tupleSize ; i++ ) {
@@ -50,11 +50,11 @@ public class BTreeOutputter {
 
       for ( int i = 0 ; i < childSize ; i++ ) {
         var child = (Object[]) node[tupleSize+i];
-        prefix = prefix + indent;
+        var carryOverPrefix = prefix + indent;
         var metaPrefix = i == childSize-1 ? "┗ " : "┣ ";
         var childPrefix = i == childSize-1 ? "  " : "┃ ";
 
-        sb.append(prefix)
+        sb.append(carryOverPrefix)
           .append(metaPrefix);
 
         if ( i == 0 ) {
@@ -65,7 +65,7 @@ public class BTreeOutputter {
           sb.append("(" + node[i-1] + ", " + node[i] + ")\n");
         }
 
-        outputNode(sb, child, depth+1, prefix + childPrefix);
+        outputNode(sb, child, depth+1, carryOverPrefix + childPrefix);
       }
     }
   }
