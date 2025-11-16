@@ -74,7 +74,7 @@ public class BTreeOutputter {
     if ( isLeaf(node) ) {
       return String.format("<T:L | S:%,d | H:%d>", size(node), height(node));
     } else {
-      return String.format("<T:I | S:%,d | H:%d>", -1, height(node));
+      return String.format("<T:I | S:%,d | H:%d>", size(node), height(node));
     }
   }
 }

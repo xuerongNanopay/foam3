@@ -16,6 +16,7 @@ import foam.dao.lsmt.utils.BulkIterator;
  *  - Max support child size is limited by: tree_height * FANOUT_SHIFT < 32.
  *  - key and value doesn't not seperate, they are wrapped in the Object(We called it Tuple).
  *  - Tuple is comparable.
+ *  - The full tree size is always ODD.
  *  - The entire btree is structed in Object array.
  *    - The leaf array must be ODD in length.(if the size of leaf is even, it will append extra NULL element at the end.)
  *    - The internal array must be EVEN in length. The last element in the internal array will be zoom map.
@@ -42,7 +43,7 @@ public class BTree {
     return new Object[]{ val };
   }
 
-  public static <T> Object[] build(BulkIterator<T> sortedBulk, int size) {
+  public static <T> Object[] build(BulkIterator<T> sortedBulk, long size) {
     assert size >= 0;
 
     if ( size == 0 ) return EMPTY_LEAF;
@@ -50,39 +51,39 @@ public class BTree {
     return buildInternal(sortedBulk, size);
   }
 
-  private static <T> Object[] buildLeaf(BulkIterator<T> sortedBulk, int size) {
+  private static <T> Object[] buildLeaf(BulkIterator<T> sortedBulk, long size) {
 
-    Object[] vals = new Object[size | 1]; /* Leaf node must be odd. */
-    sortedBulk.store(vals, 0, size);
+    Object[] vals = new Object[((int) size) | 1]; /* Leaf node must be odd. */
+    sortedBulk.store(vals, 0, (int) size);
     return vals;
   }
 
-  private static <T> Object[] buildInternal(BulkIterator<T> sortedBulk, int size) {
+  private static <T> Object[] buildInternal(BulkIterator<T> sortedBulk, long size) {
 
     int height = requireHeight(size);
 
     assert height > 1;
     assertHeight(height);
 
-    int maxChildTupleSize = fullTreeSize(height-1);
-    int childSize = size / (maxChildTupleSize + 1) + 1;
-    System.out.println("" + maxChildTupleSize + ", childSize: " + childSize + ", size:" + size);
-    return denselyBuild(sortedBulk, childSize, size, height);
+    long fullChildSize = fullTreeSize(height-1);
+    int tupleSize = (int) (size / (fullChildSize + 1) + 1);
+
+    return denselyBuild(sortedBulk, tupleSize, size, height);
   }
 
   /**
    * Build a dense BTree from top to bottom with given height.
-   * @childSize: the number of children required for the internal node at given height.
+   * @tupleSize: the number of children required for the current internal\.
    * @size: the number of tuples stored in the tree with given height from sortedBulk.
-   * Caller is responsible to pass the correct childSize and height for the given tuples.
+   * Caller is responsible to pass the correct childTupleSize and height for the given tuples.
    */
-  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int childSize, int size, int height) {
+  private static <T> Object[] denselyBuild(BulkIterator<T> sortedBulk, int tupleSize, long size, int height) {
 
-    assert childSize <= MAX_TUPLES + 1;
+    assert tupleSize <= MAX_TUPLES + 1;
 
-    Object[] internal = new Object[childSize * 2];
-    int childOffset = childSize - 1; /* descend start from second half of internal array. */
-    int[] preSum = new int[childSize];
+    Object[] internal = new Object[tupleSize * 2];
+    int childOffset = tupleSize - 1; /* descend start from second half of internal array. */
+    var preSum = new long[tupleSize];
     /**
      * cutoff serves two purposes:
      *  1. guarantee there is enough element in the last child(last leaf or last sub-tree). (Make sure ODD children in the internal node.)
@@ -90,62 +91,61 @@ public class BTree {
      */
     if ( height == 2 ) {
 
-      int remaining = size;
-      int cutoff = MAX_TUPLES + 1 + MIN_TUPLES;
+      long remaining = size;
+      long fullChildSizeCutOff = MAX_TUPLES + 1 + MIN_TUPLES;
 
       int i = 0;
-      while ( remaining >= cutoff ) {
+      while ( remaining >= fullChildSizeCutOff ) {
         internal[childOffset + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
         preSum[i++] = size - (remaining+1);
       }
       if ( remaining > MAX_TUPLES ) {
-        int leafTupleSize = remaining/2;
-        internal[childOffset+i] = buildLeaf(sortedBulk, leafTupleSize);
+        long leafSize = remaining/2;
+        internal[childOffset+i] = buildLeaf(sortedBulk, leafSize);
         internal[i] = sortedBulk.next();
-        remaining -= leafTupleSize + 1;
+        remaining -= leafSize + 1;
         preSum[i++] = size - (remaining+1);
       }
       internal[childOffset + i] = buildLeaf(sortedBulk, remaining);
       preSum[i++] = size;
 
-      assert i == childSize;
+      assert i == tupleSize;
     } else {
-      --height;
-      int maxChildTupleSize = fullTreeSize(height);
-      int maxGrandChildTupleSize = fullTreeSize(height-1);
+      long fullChildSize = fullTreeSize(--height);
+      long fullGrandChildSize = fullTreeSize(height-1);
 
-      int remaining = size;
-      int cutoff = maxChildTupleSize + 1 + MIN_TUPLES * (maxGrandChildTupleSize + 1);
+      long remaining = size;
+      long fullChildSizeCutOff = fullChildSize + 1 + MIN_TUPLES * (fullGrandChildSize + 1);
       
       int i = 0;
-      while ( remaining >= cutoff ) {
+      while ( remaining >= fullChildSizeCutOff ) {
         internal[childOffset + i] = fullyBuild(sortedBulk, height);
         internal[i] = sortedBulk.next();
-        remaining -= maxChildTupleSize + 1;
-        i++;
+        remaining -= fullChildSize + 1;
+        preSum[i++] = size - (remaining+1);
       }
 
-      if ( remaining > maxChildTupleSize ) {
-        int grandChildSize = remaining / ((maxGrandChildTupleSize + 1) * 2); // == remaining / (maxGrandChildTupleSize + 1 ) / 2
-        int grandChildTupleSize = grandChildSize * (maxGrandChildTupleSize+1) - 1;
-        internal[childOffset + i] = denselyBuild(sortedBulk, grandChildSize, grandChildTupleSize, height);
+      if ( remaining > fullChildSize ) {
+        long grandChildTupleSize = remaining / ((fullGrandChildSize + 1) * 2); // remaingin / fullGrandChildSize + 1 / 2
+        long grandChildSize = grandChildTupleSize * (fullGrandChildSize+1) - 1;
+        internal[childOffset + i] = denselyBuild(sortedBulk, (int) grandChildTupleSize, grandChildSize, height);
         internal[i] = sortedBulk.next();
-        remaining -= grandChildTupleSize + 1;
-        i++;
+        remaining -= grandChildSize + 1;
+        preSum[i++] = size - (remaining+1);
       }
 
-      int grandChildSize = remaining / (maxGrandChildTupleSize + 1) + 1;
-      assert grandChildSize >= MIN_TUPLES + 1;
-      int grandChildTupleSize = remaining;
-      internal[childOffset + i] = denselyBuild(sortedBulk, grandChildSize, grandChildTupleSize, height);
-      i++;
+      long grandChildTupleSize = remaining / (fullGrandChildSize + 1) + 1;
+      assert grandChildTupleSize >= MIN_TUPLES + 1;
+      long grandChildSize = remaining;
+      internal[childOffset + i] = denselyBuild(sortedBulk, (int) grandChildTupleSize, grandChildSize, height);
+      preSum[i++] = size;
 
-      assert i == childSize;
+      assert i == tupleSize;
     }
 
-    internal[childSize*2 - 1] = new ZoneMap(preSum);
+    internal[tupleSize*2 - 1] = new ZoneMap(preSum);
     return internal;
   }
 
@@ -319,7 +319,7 @@ public class BTree {
     assert height * fanoutShift < 32;
   }
 
-  private static int requireHeight(int size) {
+  private static int requireHeight(long size) {
     return requireHeight(size, FANOUT_SHIFT);
   }
 
@@ -327,12 +327,12 @@ public class BTree {
    * Calculate the minimum require height of a full tree filled by given size.
    * The calculate is a good enough estimation.
    */
-  private static int requireHeight(int size, int fanoutShift) {
+  private static int requireHeight(long size, int fanoutShift) {
     int  v = 64 - Long.numberOfLeadingZeros(size);
     return (fanoutShift - 1 +  v) / fanoutShift;
   }
 
-  private static int fullTreeSize(int height) {
+  private static long fullTreeSize(int height) {
     return fullTreeSize(height, FANOUT_SHIFT);
   }
 
@@ -340,8 +340,8 @@ public class BTree {
    * Caculate the number of key-value pairs in a full tree with given height and default fanout_shift.
    * The calculate is a good enough estimation.
    */
-  private static int fullTreeSize(int height, int fanoutShift) {
-    return ( 1 << ( height * fanoutShift ) ) - 1;
+  private static long fullTreeSize(int height, int fanoutShift) {
+    return ( 1L << ( height * fanoutShift ) ) - 1;
   }
 
   private static int getTupleEnd(Object[] node) {
@@ -390,7 +390,7 @@ public class BTree {
     return leaf[l-1] == null ? l - 1 : l;
   }
 
-  static int sizeOfInternal(Object[] internal) {
+  static long sizeOfInternal(Object[] internal) {
     return getZoneMap(internal).size();
   }
 
@@ -409,12 +409,9 @@ public class BTree {
     return height;
   }
 
-  public static int size(Object[] tree) {
+  public static long size(Object[] tree) {
     if ( isLeaf(tree) ) return getLeafTupleEnd(tree);
-
-    
-    //TODO
-    return -1;
+    return sizeOfInternal(tree);
   }
 
   private static abstract class NodeBuilder {
