@@ -72,9 +72,9 @@ public class BTreeOutputter {
 
   private static String outputNodeMeta(Object[] node) {
     if ( isLeaf(node) ) {
-      return String.format("<T:L | S:%,d | H:%d>", size(node), height(node));
+      return String.format("<S:%,d | H:%d>", size(node), height(node));
     } else {
-      return String.format("<T:I | S:%,d | H:%d>", size(node), height(node));
+      return String.format("<T:%d | | S:%,d | H:%d>", intervalTupleSize(node), size(node), height(node));
     }
   }
 }
