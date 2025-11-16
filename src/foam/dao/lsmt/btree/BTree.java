@@ -35,6 +35,8 @@ public class BTree {
 
   private static final Object[] EMPTY_LEAF = new Object[1];
 
+  private static final int[][] FULL_PRE_SUM_CACHE = fullPreSumCache(FANOUT_SHIFT);
+
   public static Object[] empty() {
     return EMPTY_LEAF;
   }
@@ -152,32 +154,25 @@ public class BTree {
    */
   private static <T> Object[] fullyBuild(BulkIterator<T> sortedBulk, int height) {
 
-    int childStart = MAX_TUPLES; /* child reference begin at (FANOUT-1/MAX_TUPLES) position in the array */
-    /**
-     * full size node.
-     *  - MAX_TUPLES keys + (MAX_TUPLES+1) descendants + ZoneMap.
-     */
     Object[] internal = new Object[FANOUT*2];
 
     if ( height == 2 ) {
-      int i = 0;
-      while ( i < childStart ) {
-        internal[childStart+i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      for ( int i = 0 ; i < MAX_TUPLES ; i++ ) {
+        internal[MAX_TUPLES+i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
-        i++;
       }
-      internal[childStart + i] = buildLeaf(sortedBulk, MAX_TUPLES);
+      internal[MAX_TUPLES*2] = buildLeaf(sortedBulk, MAX_TUPLES);
+
     } else {
-      int i = 0;
-      while ( i < childStart ) {
-        internal[childStart+i] = fullyBuild(sortedBulk, height-1);
+
+      for ( int i = 0 ; i < MAX_TUPLES ; i++ ) {
+        internal[MAX_TUPLES+i] = fullyBuild(sortedBulk, height-1);
         internal[i] = sortedBulk.next();
-        i++;
       }
-      internal[childStart + i] = fullyBuild(sortedBulk, height-1);
+      internal[MAX_TUPLES*2] = fullyBuild(sortedBulk, height-1);
     }
 
-    // internal[FANOUT*2-1] = new ZoneMap(preSum);
+    internal[MAX_TUPLES*2+1] = new ZoneMap(FULL_PRE_SUM_CACHE[height-2]);
     return internal;
   }
 
@@ -409,6 +404,26 @@ public class BTree {
     if ( isLeaf(tree) ) return getLeafTupleEnd(tree);
     return sizeOfInternal(tree);
   }
+
+  private static int[][] fullPreSumCache(int fanoutShift) {
+    
+    int height = 32/fanoutShift - 1; // Skip height == 1 (LEAF).
+    int childSize = 1 << fanoutShift;
+    int[][] preSum = new int[height][childSize];
+
+    for ( int i = 0 ; i < height ; i++ ) {
+      int size = fullTreeSize(i+1);
+      int aggSum = 0;
+
+      for ( int j = 0 ; j < childSize ; j++ ) {
+        preSum[i][j] = aggSum += size;
+        aggSum++;
+      }
+    }
+
+    return preSum;
+  }
+
 
   private static abstract class NodeBuilder {
 
