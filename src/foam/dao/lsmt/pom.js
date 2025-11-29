@@ -16,6 +16,7 @@ foam.POM({
 
   javaFiles: [
     { name: "btree/BTree" },
+    { name: "btree/BTreeUpdate" },
     { name: "btree/BTreeOutputter" },
     { name: "btree/BTreeCursor" },
     { name: "btree/BTreeFullCursor" },
