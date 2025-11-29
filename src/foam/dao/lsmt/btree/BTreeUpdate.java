@@ -42,7 +42,7 @@ public class BTreeUpdate {
       return count == 0 && !hasOverflow();
     }
 
-    abstract void addTuple(Object[] tuple);
+    abstract void addTuple(Object tuple);
 
     abstract Object[] flush();
     abstract void flushToParent(InternalBuilder parentBuilder);
@@ -74,8 +74,28 @@ public class BTreeUpdate {
       this.buffer = new Object[MAX_TUPLES];
     }
 
-    void addTuple(Object[] tuple) {
-      throw new RuntimeException("TODO");
+    void addTuple(Object tuple) {
+      if ( count == MAX_TUPLES ) {
+        overflow(tuple);
+      } else {
+        buffer[count++] = tuple;
+      }
+    }
+
+    void overflow(Object tuple) {
+
+      if ( hasOverflow() ) {
+        flushOverflow();
+      }
+
+      splitTuple = tuple;
+      readyBuffer = buffer;
+      buffer = new Object[MAX_TUPLES];
+      count = 0;
+    }
+
+    void flushOverflow() {
+
     }
 
     Object[] flush() {
@@ -89,12 +109,23 @@ public class BTreeUpdate {
 
   static class InternalBuilder extends NodeBuilder {
 
+
+
     InternalBuilder(NodeBuilder childBuilder) {
       super(null); //FIXME
     }
 
-    void addTuple(Object[] tuple) {
+    void addTuple(Object tuple) {
       throw new RuntimeException("TODO");
+    }
+
+    void addChild(Object[] child, int childSize) {
+
+    }
+
+    void addChildAndTuple(Object[] child, int childSize, Object tuple) {
+      addChild(child, childSize);
+      addTuple(tuple);
     }
 
     Object[] flush() {
