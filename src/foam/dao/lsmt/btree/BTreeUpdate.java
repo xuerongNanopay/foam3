@@ -18,7 +18,7 @@ public class BTreeUpdate {
     Object[] buffer;
     int count;
 
-    Object[] readyBuffer; // cache precede node.
+    Object[] overflowBuffer; // cache precede node.
     Object splitTuple;
 
     NodeBuilder(NodeBuilder child) {
@@ -89,17 +89,27 @@ public class BTreeUpdate {
       }
 
       splitTuple = tuple;
-      readyBuffer = buffer;
+      overflowBuffer = buffer;
       buffer = new Object[MAX_TUPLES];
       count = 0;
     }
 
     void flushOverflow() {
-
+      parent().addChildAndTuple(overflowBuffer, MAX_TUPLES, splitTuple);
+      overflowBuffer = null;
+      splitTuple = null;
     }
 
     Object[] flush() {
-      throw new RuntimeException("TODO");
+
+      assert !hasOverflow();
+
+      if ( count == 0 ) return empty();
+
+      Object[] leaf = new Object[count|1];
+      System.arraycopy(buffer, 0 , leaf, 0, count);
+      count = 0;
+      return leaf;
     }
 
     void flushToParent(InternalBuilder parentBuilder) {
@@ -120,7 +130,7 @@ public class BTreeUpdate {
     }
 
     void addChild(Object[] child, int childSize) {
-
+      throw new RuntimeException("TODO");
     }
 
     void addChildAndTuple(Object[] child, int childSize, Object tuple) {
