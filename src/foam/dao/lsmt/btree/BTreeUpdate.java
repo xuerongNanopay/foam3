@@ -113,7 +113,21 @@ public class BTreeUpdate {
     }
 
     void flushToParent(InternalBuilder parentBuilder) {
-      throw new RuntimeException("TODO");
+      Object[] leaf;
+      int leafSize;
+
+      if ( mustRebalance() ) {
+        throw new RuntimeException("TODO");
+      } else {
+        if ( hasOverflow() ) {
+          flushOverflow();
+        }
+
+        leafSize = count;
+        leaf = flush();
+      }
+      count = 0;
+      parentBuilder.addChild(leaf, leafSize);
     }
   }
 
