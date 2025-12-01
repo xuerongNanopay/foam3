@@ -19,7 +19,7 @@ public class BTreeUpdate {
     int count;
 
     Object[] overflowBuffer; // cache precede node.
-    Object splitTuple;
+    Object guideTuple;
 
     NodeBuilder(NodeBuilder child) {
       this.child = child;
@@ -27,7 +27,7 @@ public class BTreeUpdate {
     }
 
     final boolean hasOverflow() {
-      return splitTuple != null;
+      return guideTuple != null;
     }
 
     final boolean isSufficient() {
@@ -88,16 +88,16 @@ public class BTreeUpdate {
         flushOverflow();
       }
 
-      splitTuple = tuple;
+      guideTuple = tuple;
       overflowBuffer = buffer;
       buffer = new Object[MAX_TUPLES];
       count = 0;
     }
 
     void flushOverflow() {
-      parent().addChildAndTuple(overflowBuffer, MAX_TUPLES, splitTuple);
+      parent().addChildAndTuple(overflowBuffer, MAX_TUPLES, guideTuple);
       overflowBuffer = null;
-      splitTuple = null;
+      guideTuple = null;
     }
 
     Object[] flush() {
@@ -117,7 +117,22 @@ public class BTreeUpdate {
       int leafSize;
 
       if ( mustRebalance() ) {
-        throw new RuntimeException("TODO");
+        // steel tuples from overflow buffer and guide tuple to make current buffer reach to MIN_TUPLES.
+        leafSize = MIN_TUPLES;
+        leaf = new Object[MIN_TUPLES];
+
+        int diff = MIN_TUPLES - count;
+        System.arraycopy(overflowBuffer, MAX_TUPLES - diff - 1, leaf, 0, diff - 1);
+        leaf[diff-1] = guideTuple;
+        System.arraycopy(buffer, 0, leaf, diff, count);
+
+        // Adjust overflow buffer and guide tuple.
+        int predecessorRemaining = MAX_TUPLES - diff;
+        Object[] predecessor = new Object[predecessorRemaining | 1];
+        System.arraycopy(overflowBuffer, 0, predecessor, 0, predecessorRemaining);
+        parent().addChildAndTuple(predecessor, predecessorRemaining, overflowBuffer[predecessorRemaining]);
+
+        guideTuple = null;
       } else {
         if ( hasOverflow() ) {
           flushOverflow();
