@@ -142,7 +142,40 @@ public class BTreeUpdate {
         leaf = flush();
       }
       count = 0;
-      parentBuilder.addChild(leaf, leafSize);
+      parentBuilder.addChild(leaf, leafSize); //TODO: need parentBuilder? or just parent()
+    }
+
+    void copy(Object[] leaf) {
+      copy(leaf, 0, sizeOfLeaf(leaf));
+    }
+
+    void copy(Object[] leaf, int offset, int size) {
+      if ( count + size > MAX_TUPLES ) {
+        int diff = MAX_TUPLES - size;
+        System.arraycopy(leaf, offset, buffer, count, diff);
+        offset += diff;
+        overflow(leaf[offset++]); // overflow will reset count to 0;
+        size -= diff + 1;
+      }
+
+      System.arraycopy(leaf, offset, buffer, count, size);
+      count += size;
+    }
+
+    void prepend(Object[] predecessor, Object predecessorSplit) {
+
+      assert !hasOverflow();
+
+      int pSize = sizeOfLeaf(predecessor);
+      int newPos = pSize + 1;
+      if ( newPos + count <= MAX_TUPLES ) {
+        System.arraycopy(buffer, 0 , buffer, newPos, count); // shift current buffer to get enough room for predecessor tuples.
+        System.arraycopy(predecessor, 0, buffer, 0, pSize);
+        buffer[pSize] = predecessorSplit;
+        count += newPos;
+      } else {
+        throw new RuntimeException("TODO");
+      }
     }
   }
 
