@@ -360,7 +360,7 @@ public class BTree {
     return getInternalTupleEnd(internal);
   }
 
-  static int intervalTupleSize(Object[] internal) {
+  static int tupleSizeOfInternal(Object[] internal) {
     return getInternalTupleEnd(internal);
   }
 

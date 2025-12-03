@@ -15,6 +15,7 @@ public class BTreeUpdate {
     final NodeBuilder child;
     InternalBuilder parent;
 
+    Object[] origin;
     Object[] buffer;
     int count;
 
@@ -181,20 +182,35 @@ public class BTreeUpdate {
 
   static class InternalBuilder extends NodeBuilder {
 
+    final LeafBuilder leaf;
+
     int[] childSizes;
     int[] overflowChildSizes;
 
     boolean tupleTurn;
 
     InternalBuilder(NodeBuilder childBuilder) {
-      super(null); //FIXME
+      super(childBuilder);
+      buffer = new Object[2 * (MAX_TUPLES + 1)];
+      childSizes = new int[MAX_TUPLES + 1];
+      leaf = childBuilder instanceof LeafBuilder ? (LeafBuilder) childBuilder : ((InternalBuilder) childBuilder).leaf;
+    }
+
+    final void init(Object[] node) {
+
+      assert isEmpty();
+      origin = node;
+      count = tupleSizeOfInternal(node);
+      tupleTurn = true;
+      System.arraycopy(node, 0, buffer, 0, count);
+      System.arraycopy(node, count, buffer, MAX_TUPLES, count+1);
     }
 
     /**
      * Addition should follow below sequence.
      *  child, tuple, child, tuple, ...., tuple, child.
      */
-    void addTuple(Object tuple) {
+    final void addTuple(Object tuple) {
   
       assert tupleTurn;
       tupleTurn = false;
@@ -206,7 +222,7 @@ public class BTreeUpdate {
       }
     }
 
-    void addChild(Object[] child, int childSize) {
+    final void addChild(Object[] child, int childSize) {
       assert !tupleTurn;
       assert child != null;
       tupleTurn = true;
@@ -216,24 +232,28 @@ public class BTreeUpdate {
       maybeRecordChildSize(childSize);
     }
   
-    void maybeRecordChildSize(int childSize) {
+    final void maybeRecordChildSize(int childSize) {
       if ( childSizes != null ) childSizes[count] = childSize;
     }
 
-    void addChildAndTuple(Object[] child, int childSize, Object tuple) {
+    final void addChildAndTuple(Object[] child, int childSize, Object tuple) {
       addChild(child, childSize);
       addTuple(tuple);
     }
 
-    void overflow(Object tuple) {
+    final void overflow(Object tuple) {
       throw new RuntimeException("TODO: overflow");
     }
 
-    Object[] flush() {
+    final void flushOverflow() {
+
+    }
+
+    final Object[] flush() {
       throw new RuntimeException("TODO");
     }
     
-    void flushToParent(InternalBuilder parentBuilder) {
+    final void flushToParent(InternalBuilder parentBuilder) {
       throw new RuntimeException("TODO");
     }
 

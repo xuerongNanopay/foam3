@@ -36,7 +36,7 @@ public class BTreeOutputter {
       }
       sb.append(" ]\n");
     } else {
-      int tupleSize = intervalTupleSize(node);
+      int tupleSize = tupleSizeOfInternal(node);
       int childSize = tupleSize+1;
 
       sb.append(prefix).append(indent);
@@ -74,7 +74,7 @@ public class BTreeOutputter {
     if ( isLeaf(node) ) {
       return String.format("<S:%,d | H:%d>", size(node), height(node));
     } else {
-      return String.format("<T:%d | | S:%,d | H:%d>", intervalTupleSize(node), size(node), height(node));
+      return String.format("<T:%d | | S:%,d | H:%d>", tupleSizeOfInternal(node), size(node), height(node));
     }
   }
 }
