@@ -181,23 +181,52 @@ public class BTreeUpdate {
 
   static class InternalBuilder extends NodeBuilder {
 
+    int[] childSizes;
+    int[] overflowChildSizes;
 
+    boolean tupleTurn;
 
     InternalBuilder(NodeBuilder childBuilder) {
       super(null); //FIXME
     }
 
+    /**
+     * Addition should follow below sequence.
+     *  child, tuple, child, tuple, ...., tuple, child.
+     */
     void addTuple(Object tuple) {
-      throw new RuntimeException("TODO");
+  
+      assert tupleTurn;
+      tupleTurn = false;
+
+      if ( count == MAX_TUPLES ) {
+        overflow(tuple);
+      } else {
+        buffer[count++] = tuple;
+      }
     }
 
     void addChild(Object[] child, int childSize) {
-      throw new RuntimeException("TODO");
+      assert !tupleTurn;
+      assert child != null;
+      tupleTurn = true;
+
+      buffer[count + MAX_TUPLES] = child;
+
+      maybeRecordChildSize(childSize);
+    }
+  
+    void maybeRecordChildSize(int childSize) {
+      if ( childSizes != null ) childSizes[count] = childSize;
     }
 
     void addChildAndTuple(Object[] child, int childSize, Object tuple) {
       addChild(child, childSize);
       addTuple(tuple);
+    }
+
+    void overflow(Object tuple) {
+      throw new RuntimeException("TODO: overflow");
     }
 
     Object[] flush() {
@@ -207,5 +236,7 @@ public class BTreeUpdate {
     void flushToParent(InternalBuilder parentBuilder) {
       throw new RuntimeException("TODO");
     }
+
+
   }
 }
