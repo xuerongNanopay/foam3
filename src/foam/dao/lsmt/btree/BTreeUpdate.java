@@ -257,6 +257,16 @@ public class BTreeUpdate {
       throw new RuntimeException("TODO");
     }
 
+    private static int sizesToPreSumInSitu(int[] sizes, int count) {
+      int total = sizes[0];
+      for ( int i = 1 ; i < count ; ++i ) {
+        sizes[i] = total += 1 + sizes[i];
+      }
+      return total;
+    }
 
+    private static int sizesToPreSumInSitu(int[] sizes) {
+      return sizesToPreSumInSitu(sizes, sizes.length);
+    }
   }
 }
