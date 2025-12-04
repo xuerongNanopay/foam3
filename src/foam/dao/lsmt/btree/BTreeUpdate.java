@@ -5,6 +5,7 @@
 */
 package foam.dao.lsmt.btree;
 
+import java.util.Arrays;
 import static foam.dao.lsmt.btree.BTree.*;
 
 public class BTreeUpdate {
@@ -245,10 +246,6 @@ public class BTreeUpdate {
       throw new RuntimeException("TODO: overflow");
     }
 
-    final void flushOverflow() {
-
-    }
-
     final Object[] flush() {
       throw new RuntimeException("TODO");
     }
@@ -257,7 +254,26 @@ public class BTreeUpdate {
       throw new RuntimeException("TODO");
     }
 
-    private static int sizesToPreSumInSitu(int[] sizes, int count) {
+    final void flushOverflow() {
+      setZoomMap(overflowBuffer, MAX_TUPLES);
+      parent().addChildAndTuple(overflowBuffer, sizeOfInternal(overflowBuffer), guideTuple);
+      guideTuple = null;
+      overflowBuffer = null;
+    }
+
+    void setZoomMap(Object[] internal, int tupleSize) {
+      //IMPROVE: dense case.
+      int[] sizes = overflowChildSizes;
+      if ( tupleSize < MAX_TUPLES ) {
+        sizes = Arrays.copyOf(sizes, tupleSize + 1);
+      } else {
+        overflowChildSizes = null;
+      }
+      convSizesToPreSum(sizes);
+      internal[2*tupleSize + 1] = new ZoneMap(sizes);
+    }
+
+    private static int convSizesToPreSum(int[] sizes, int count) {
       int total = sizes[0];
       for ( int i = 1 ; i < count ; ++i ) {
         sizes[i] = total += 1 + sizes[i];
@@ -265,8 +281,8 @@ public class BTreeUpdate {
       return total;
     }
 
-    private static int sizesToPreSumInSitu(int[] sizes) {
-      return sizesToPreSumInSitu(sizes, sizes.length);
+    private static int convSizesToPreSum(int[] sizes) {
+      return convSizesToPreSum(sizes, sizes.length);
     }
   }
 }
