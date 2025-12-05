@@ -298,7 +298,32 @@ public class BTreeUpdate {
     
     final void flushToParent(InternalBuilder parentBuilder) {
       assert hasEndChild;
-      throw new RuntimeException("TODO");
+
+      int internalSize;
+      Object[] internal;
+
+      if ( mustRebalance() ) {
+        // internalSize = sizeOfInternal(internal);
+        throw new RuntimeException("TODO");
+      } else {
+
+        if ( hasPrecedence() ) {
+          pushPrecedence();
+        }
+
+        assert count > 0;
+        internal = new Object[2 * (count + 1)];
+        System.arraycopy(buffer, 0, internal, 0, count);
+        System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
+        setZoomMap(internal, count, sizes);
+        internalSize = sizeOfInternal(internal);
+      }
+    
+      count = 0;
+      hasEndChild = false;
+      if ( parentBuilder != null ) {
+        parentBuilder.addChild(internal, internalSize);
+      }
     }
 
     void setZoomMap(Object[] internal, int tupleSize, int[] sizes) {
