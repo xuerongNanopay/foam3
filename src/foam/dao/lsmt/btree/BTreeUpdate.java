@@ -185,15 +185,15 @@ public class BTreeUpdate {
 
     final LeafBuilder leaf;
 
-    int[] childSizes;
-    int[] overflowChildSizes;
+    int[] sizes;
+    int[] precedenceSizes;
 
     boolean tupleTurn;
 
     InternalBuilder(NodeBuilder childBuilder) {
       super(childBuilder);
       buffer = new Object[2 * (MAX_TUPLES + 1)];
-      childSizes = new int[MAX_TUPLES + 1];
+      sizes = new int[MAX_TUPLES + 1];
       leaf = childBuilder instanceof LeafBuilder ? (LeafBuilder) childBuilder : ((InternalBuilder) childBuilder).leaf;
     }
 
@@ -241,7 +241,7 @@ public class BTreeUpdate {
     }
   
     final void maybeRecordChildSize(int childSize) {
-      if ( childSizes != null ) childSizes[count] = childSize;
+      if ( sizes != null ) sizes[count] = childSize;
     }
 
     final void batchPrecedence(Object tuple) {
@@ -252,12 +252,12 @@ public class BTreeUpdate {
       }
 
       precedenceBuffer = buffer;
-      overflowChildSizes = childSizes;
+      precedenceSizes = sizes;
       precedenceNext = tuple;
 
       count = 0;
       buffer = new Object[2*(MAX_TUPLES + 1)];
-      childSizes = new int[MAX_TUPLES+1];
+      sizes = new int[MAX_TUPLES+1];
     }
 
     final void pushPrecedence() {
@@ -288,8 +288,8 @@ public class BTreeUpdate {
         System.arraycopy(buffer, 0, internal, 0, count);
         System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
       }
-      //TODO: set zoomap.
-      // setZoomMap(internal, )
+
+      setZoomMap(internal, count, sizes);
 
       count = 0;
       tupleTurn = false;
@@ -300,19 +300,22 @@ public class BTreeUpdate {
       throw new RuntimeException("TODO");
     }
 
-    void setZoomMap(Object[] internal, int tupleSize, int[] childSizes) {
+    void setZoomMap(Object[] internal, int tupleSize, int[] sizes) {
       var childSize = tupleSize + 1;
-      var preSum = new int[childSize];
-      // Array
+      var preSum = Arrays.copyOf(sizes, childSize);
+      convSizesToPreSum(preSum);
+
+      internal[2*tupleSize+1] = new ZoneMap(preSum);
     }
 
     void setZoomMap(Object[] internal, int tupleSize) {
       //IMPROVE: dense case.
-      int[] sizes = overflowChildSizes;
+      int[] sizes = precedenceSizes;
       if ( tupleSize < MAX_TUPLES ) {
         sizes = Arrays.copyOf(sizes, tupleSize + 1);
       } else {
-        overflowChildSizes = null;
+        //Imply: tupleSize == MAX_TUPLES
+        precedenceSizes = null;
       }
       convSizesToPreSum(sizes);
       internal[2*tupleSize + 1] = new ZoneMap(sizes);
