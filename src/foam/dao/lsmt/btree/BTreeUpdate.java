@@ -20,28 +20,28 @@ public class BTreeUpdate {
     Object[] buffer;
     int count;
 
-    Object[] overflowBuffer; // cache precede node.
-    Object guideTuple;
+    Object[] precedenceBuffer; // cache precede node.
+    Object precedenceNext;
 
     NodeBuilder(NodeBuilder child) {
       this.child = child;
       this.height = child == null ? 1 : 1 + child.height;
     }
 
-    final boolean hasOverflow() {
-      return guideTuple != null;
+    final boolean hasPrecedence() {
+      return precedenceNext != null;
     }
 
     final boolean isSufficient() {
-      return count >= MIN_TUPLES || hasOverflow();
+      return count >= MIN_TUPLES || hasPrecedence();
     }
 
     final boolean mustRebalance() {
-      return count < MIN_TUPLES && hasOverflow();
+      return count < MIN_TUPLES && hasPrecedence();
     }
 
     final boolean isEmpty() {
-      return count == 0 && !hasOverflow();
+      return count == 0 && !hasPrecedence();
     }
 
     abstract void addTuple(Object tuple);
@@ -53,7 +53,7 @@ public class BTreeUpdate {
       NodeBuilder cur = this;
 
       while ( true ) {
-        if ( !cur.hasOverflow() ) {
+        if ( !cur.hasPrecedence() ) {
           return cur.flush();
         }
 
@@ -78,33 +78,33 @@ public class BTreeUpdate {
 
     void addTuple(Object tuple) {
       if ( count == MAX_TUPLES ) {
-        overflow(tuple);
+        batchPrecedence(tuple);
       } else {
         buffer[count++] = tuple;
       }
     }
 
-    void overflow(Object tuple) {
+    void batchPrecedence(Object tuple) {
 
-      if ( hasOverflow() ) {
-        flushOverflow();
+      if ( hasPrecedence() ) {
+        pushPrecedence();
       }
 
-      guideTuple = tuple;
-      overflowBuffer = buffer;
+      precedenceNext = tuple;
+      precedenceBuffer = buffer;
       buffer = new Object[MAX_TUPLES];
       count = 0;
     }
 
-    void flushOverflow() {
-      parent().addChildAndTuple(overflowBuffer, MAX_TUPLES, guideTuple);
-      overflowBuffer = null;
-      guideTuple = null;
+    void pushPrecedence() {
+      parent().addChildAndTuple(precedenceBuffer, MAX_TUPLES, precedenceNext);
+      precedenceBuffer = null;
+      precedenceNext = null;
     }
 
     Object[] flush() {
 
-      assert !hasOverflow();
+      assert !hasPrecedence();
 
       if ( count == 0 ) return empty();
 
@@ -124,20 +124,20 @@ public class BTreeUpdate {
         leaf = new Object[MIN_TUPLES];
 
         int diff = MIN_TUPLES - count;
-        System.arraycopy(overflowBuffer, MAX_TUPLES - diff - 1, leaf, 0, diff - 1);
-        leaf[diff-1] = guideTuple;
+        System.arraycopy(precedenceBuffer, MAX_TUPLES - diff - 1, leaf, 0, diff - 1);
+        leaf[diff-1] = precedenceNext;
         System.arraycopy(buffer, 0, leaf, diff, count);
 
         // Adjust overflow buffer and guide tuple.
         int predecessorRemaining = MAX_TUPLES - diff;
         Object[] predecessor = new Object[predecessorRemaining | 1];
-        System.arraycopy(overflowBuffer, 0, predecessor, 0, predecessorRemaining);
-        parent().addChildAndTuple(predecessor, predecessorRemaining, overflowBuffer[predecessorRemaining]);
+        System.arraycopy(precedenceBuffer, 0, predecessor, 0, predecessorRemaining);
+        parent().addChildAndTuple(predecessor, predecessorRemaining, precedenceBuffer[predecessorRemaining]);
 
-        guideTuple = null;
+        precedenceNext = null;
       } else {
-        if ( hasOverflow() ) {
-          flushOverflow();
+        if ( hasPrecedence() ) {
+          pushPrecedence();
         }
 
         leafSize = count;
@@ -156,7 +156,7 @@ public class BTreeUpdate {
         int diff = MAX_TUPLES - size;
         System.arraycopy(leaf, offset, buffer, count, diff);
         offset += diff;
-        overflow(leaf[offset++]); // overflow will reset count to 0;
+        batchPrecedence(leaf[offset++]); // overflow will reset count to 0;
         size -= diff + 1;
       }
 
@@ -164,16 +164,16 @@ public class BTreeUpdate {
       count += size;
     }
 
-    void prepend(Object[] predecessor, Object predecessorSplit) {
+    void prepend(Object[] predecessor, Object precedenceNext) {
 
-      assert !hasOverflow();
+      assert !hasPrecedence();
 
       int pSize = sizeOfLeaf(predecessor);
       int newPos = pSize + 1;
       if ( newPos + count <= MAX_TUPLES ) {
         System.arraycopy(buffer, 0 , buffer, newPos, count); // shift current buffer to get enough room for predecessor tuples.
         System.arraycopy(predecessor, 0, buffer, 0, pSize);
-        buffer[pSize] = predecessorSplit;
+        buffer[pSize] = precedenceNext;
         count += newPos;
       } else {
         throw new RuntimeException("TODO");
@@ -214,51 +214,96 @@ public class BTreeUpdate {
     final void addTuple(Object tuple) {
   
       assert tupleTurn;
-      tupleTurn = false;
 
       if ( count == MAX_TUPLES ) {
-        overflow(tuple);
+        batchPrecedence(tuple);
       } else {
         buffer[count++] = tuple;
       }
+
+      tupleTurn = false;
     }
 
     final void addChild(Object[] child, int childSize) {
       assert !tupleTurn;
       assert child != null;
-      tupleTurn = true;
 
       buffer[count + MAX_TUPLES] = child;
 
       maybeRecordChildSize(childSize);
-    }
-  
-    final void maybeRecordChildSize(int childSize) {
-      if ( childSizes != null ) childSizes[count] = childSize;
+      tupleTurn = true;
+
     }
 
     final void addChildAndTuple(Object[] child, int childSize, Object tuple) {
       addChild(child, childSize);
       addTuple(tuple);
     }
+  
+    final void maybeRecordChildSize(int childSize) {
+      if ( childSizes != null ) childSizes[count] = childSize;
+    }
 
-    final void overflow(Object tuple) {
-      throw new RuntimeException("TODO: overflow");
+    final void batchPrecedence(Object tuple) {
+      assert tupleTurn;
+
+      if ( hasPrecedence() ) {
+        pushPrecedence();
+      }
+
+      precedenceBuffer = buffer;
+      overflowChildSizes = childSizes;
+      precedenceNext = tuple;
+
+      count = 0;
+      buffer = new Object[2*(MAX_TUPLES + 1)];
+      childSizes = new int[MAX_TUPLES+1];
+    }
+
+    final void pushPrecedence() {
+      setZoomMap(precedenceBuffer, MAX_TUPLES);
+      parent().addChildAndTuple(precedenceBuffer, sizeOfInternal(precedenceBuffer), precedenceNext);
+      precedenceNext = null;
+      precedenceBuffer = null;
     }
 
     final Object[] flush() {
-      throw new RuntimeException("TODO");
+
+      assert tupleTurn;
+      assert !hasPrecedence();
+
+      if ( count == 0 ) {
+        // return first child.
+        tupleTurn = false;
+        return (Object[]) buffer[MAX_TUPLES];
+      }
+
+      Object[] internal = new Object[2 * (count + 1)];
+      if ( count == MAX_TUPLES ) {
+        // Skip copy, improve performance.
+        Object[] t = buffer;
+        buffer = internal;
+        internal = t;
+      } else {
+        System.arraycopy(buffer, 0, internal, 0, count);
+        System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
+      }
+      //TODO: set zoomap.
+      // setZoomMap(internal, )
+
+      count = 0;
+      tupleTurn = false;
+      return internal;
     }
     
     final void flushToParent(InternalBuilder parentBuilder) {
       throw new RuntimeException("TODO");
     }
 
-    final void flushOverflow() {
-      setZoomMap(overflowBuffer, MAX_TUPLES);
-      parent().addChildAndTuple(overflowBuffer, sizeOfInternal(overflowBuffer), guideTuple);
-      guideTuple = null;
-      overflowBuffer = null;
+    void setZoomMap(Object[] internal, int tupleSize, int[] childSizes) {
+      var childSize = tupleSize + 1;
+      var preSum = new int[childSize];
+      // Array
     }
 
     void setZoomMap(Object[] internal, int tupleSize) {
