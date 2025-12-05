@@ -188,7 +188,7 @@ public class BTreeUpdate {
     int[] sizes;
     int[] precedenceSizes;
 
-    boolean tupleTurn;
+    boolean hasEndChild;
 
     InternalBuilder(NodeBuilder childBuilder) {
       super(childBuilder);
@@ -202,7 +202,7 @@ public class BTreeUpdate {
       assert isEmpty();
       origin = node;
       count = tupleSizeOfInternal(node);
-      tupleTurn = true;
+      hasEndChild = true;
       System.arraycopy(node, 0, buffer, 0, count);
       System.arraycopy(node, count, buffer, MAX_TUPLES, count+1);
     }
@@ -213,7 +213,8 @@ public class BTreeUpdate {
      */
     final void addTuple(Object tuple) {
   
-      assert tupleTurn;
+      assert hasEndChild;
+      hasEndChild = false;
 
       if ( count == MAX_TUPLES ) {
         batchPrecedence(tuple);
@@ -221,18 +222,17 @@ public class BTreeUpdate {
         buffer[count++] = tuple;
       }
 
-      tupleTurn = false;
     }
 
     final void addChild(Object[] child, int childSize) {
-      assert !tupleTurn;
+      assert !hasEndChild;
       assert child != null;
+      hasEndChild = true;
+
 
       buffer[count + MAX_TUPLES] = child;
 
       maybeRecordChildSize(childSize);
-      tupleTurn = true;
-
     }
 
     final void addChildAndTuple(Object[] child, int childSize, Object tuple) {
@@ -245,7 +245,7 @@ public class BTreeUpdate {
     }
 
     final void batchPrecedence(Object tuple) {
-      assert tupleTurn;
+      assert hasEndChild;
 
       if ( hasPrecedence() ) {
         pushPrecedence();
@@ -268,13 +268,13 @@ public class BTreeUpdate {
     }
 
     final Object[] flush() {
-
-      assert tupleTurn;
+      //IMPROVE: use origin if no change insteand of create new object.
+      assert hasEndChild;
       assert !hasPrecedence();
 
       if ( count == 0 ) {
         // return first child.
-        tupleTurn = false;
+        hasEndChild = false;
         return (Object[]) buffer[MAX_TUPLES];
       }
 
@@ -292,11 +292,12 @@ public class BTreeUpdate {
       setZoomMap(internal, count, sizes);
 
       count = 0;
-      tupleTurn = false;
+      hasEndChild = false;
       return internal;
     }
     
     final void flushToParent(InternalBuilder parentBuilder) {
+      assert hasEndChild;
       throw new RuntimeException("TODO");
     }
 
