@@ -261,7 +261,7 @@ public class BTreeUpdate {
     }
 
     final void pushPrecedence() {
-      setZoomMap(precedenceBuffer, MAX_TUPLES);
+      setZoneMap(precedenceBuffer, MAX_TUPLES);
       parent().addChildAndTuple(precedenceBuffer, sizeOfInternal(precedenceBuffer), precedenceNext);
       precedenceNext = null;
       precedenceBuffer = null;
@@ -289,7 +289,7 @@ public class BTreeUpdate {
         System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
       }
 
-      setZoomMap(internal, count, sizes);
+      setZoneMap(internal, count, sizes);
 
       count = 0;
       hasEndChild = false;
@@ -317,9 +317,17 @@ public class BTreeUpdate {
         int[] childSizes = new int[MIN_TUPLES + 1];
         System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, childSizes, 0, steal);
         System.arraycopy(sizes, 0, childSizes, steal, count + 1);
-        setZoomMap(internal, MIN_TUPLES, childSizes);
+        setZoneMap(internal, MIN_TUPLES, childSizes);
+        internalSize = sizeOfInternal(internal);
 
-        throw new RuntimeException("TODO");
+        // refactor&push precedence to parent.
+        int remainingTuples = MAX_TUPLES - steal;
+        Object[] preInternal = new Object[2 * (remainingTuples + 1)];
+        System.arraycopy(precedenceBuffer, 0, preInternal, 0, remainingTuples);
+        System.arraycopy(precedenceBuffer, MAX_TUPLES, preInternal, remainingTuples, remainingTuples+1);
+        applyPrecedenceZoneMap(preInternal, remainingTuples);
+        parent().addChildAndTuple(preInternal, sizeOfInternal(preInternal), precedenceBuffer[remainingTuples]);
+        precedenceNext = null;
       } else {
 
         if ( hasPrecedence() ) {
@@ -330,7 +338,7 @@ public class BTreeUpdate {
         internal = new Object[2 * (count + 1)];
         System.arraycopy(buffer, 0, internal, 0, count);
         System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
-        setZoomMap(internal, count, sizes);
+        setZoneMap(internal, count, sizes);
         internalSize = sizeOfInternal(internal);
       }
     
@@ -341,7 +349,20 @@ public class BTreeUpdate {
       }
     }
 
-    void setZoomMap(Object[] internal, int tupleSize, int[] sizes) {
+    void applyPrecedenceZoneMap(Object[] internal, int tupleSize) {
+      //IMPROVE: shotcut for full node.
+
+      int[] childSizes = precedenceSizes;
+      if ( tupleSize < MAX_TUPLES ) {
+        sizes = Arrays.copyOf(sizes, tupleSize+1);
+      } else {
+        precedenceSizes = null;
+      }
+      convSizesToPreSum(childSizes);
+      internal[2 * tupleSize + 1] = childSizes;
+    }
+
+    void setZoneMap(Object[] internal, int tupleSize, int[] sizes) {
       var childSize = tupleSize + 1;
       var preSum = Arrays.copyOf(sizes, childSize);
       convSizesToPreSum(preSum);
@@ -349,7 +370,7 @@ public class BTreeUpdate {
       internal[2*tupleSize+1] = new ZoneMap(preSum);
     }
 
-    void setZoomMap(Object[] internal, int tupleSize) {
+    void setZoneMap(Object[] internal, int tupleSize) {
       //IMPROVE: dense case.
       int[] sizes = precedenceSizes;
       if ( tupleSize < MAX_TUPLES ) {
