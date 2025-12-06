@@ -123,13 +123,13 @@ public class BTreeUpdate {
         leafSize = MIN_TUPLES;
         leaf = new Object[MIN_TUPLES];
 
-        int diff = MIN_TUPLES - count;
-        System.arraycopy(precedenceBuffer, MAX_TUPLES - diff - 1, leaf, 0, diff - 1);
-        leaf[diff-1] = precedenceNext;
-        System.arraycopy(buffer, 0, leaf, diff, count);
+        int steal = MIN_TUPLES - count;
+        System.arraycopy(precedenceBuffer, MAX_TUPLES - steal - 1, leaf, 0, steal - 1);
+        leaf[steal-1] = precedenceNext;
+        System.arraycopy(buffer, 0, leaf, steal, count);
 
         // Adjust overflow buffer and guide tuple.
-        int predecessorRemaining = MAX_TUPLES - diff;
+        int predecessorRemaining = MAX_TUPLES - steal;
         Object[] predecessor = new Object[predecessorRemaining | 1];
         System.arraycopy(precedenceBuffer, 0, predecessor, 0, predecessorRemaining);
         parent().addChildAndTuple(predecessor, predecessorRemaining, precedenceBuffer[predecessorRemaining]);
@@ -303,7 +303,22 @@ public class BTreeUpdate {
       Object[] internal;
 
       if ( mustRebalance() ) {
-        // internalSize = sizeOfInternal(internal);
+        int steal = MIN_TUPLES - count;
+        internal = new Object[2 * (MIN_TUPLES + 1)];
+        // steal precedence tuples
+        System.arraycopy(precedenceBuffer, MAX_TUPLES - (steal - 1), internal, 0, steal - 1);
+        internal[steal - 1] = precedenceNext;
+        System.arraycopy(buffer, 0, internal, steal, count);
+        // steal precedence children
+        System.arraycopy(precedenceBuffer, 2 * MAX_TUPLES + 1 - steal, internal, MIN_TUPLES, steal);
+        System.arraycopy(buffer, MAX_TUPLES, internal, MIN_TUPLES + steal, count + 1);
+
+        // Rebalance & create zoomap.
+        int[] childSizes = new int[MIN_TUPLES + 1];
+        System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, childSizes, 0, steal);
+        System.arraycopy(sizes, 0, childSizes, steal, count + 1);
+        setZoomMap(internal, MIN_TUPLES, childSizes);
+
         throw new RuntimeException("TODO");
       } else {
 
