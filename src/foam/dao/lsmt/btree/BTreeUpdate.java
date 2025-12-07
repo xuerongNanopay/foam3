@@ -10,6 +10,10 @@ import static foam.dao.lsmt.btree.BTree.*;
 
 public class BTreeUpdate {
 
+  /**
+   * Reusable builder.
+   * flush and flushParent will reset the builder, so builder can be reuse again.
+   */
   static abstract class NodeBuilder {
 
     final int height;
@@ -26,6 +30,14 @@ public class BTreeUpdate {
     NodeBuilder(NodeBuilder child) {
       this.child = child;
       this.height = child == null ? 1 : 1 + child.height;
+    }
+
+    final void setOrigin(Object[] origin) {
+      this.origin = origin;
+    }
+
+    final void clearOrigin() {
+      this.origin = null;
     }
 
     final boolean hasPrecedence() {
@@ -67,6 +79,10 @@ public class BTreeUpdate {
       if ( parent == null ) parent = new InternalBuilder(this);
       return parent;
     }
+
+    boolean produceFullNode() {
+      return true;
+    }
   }
 
   static class LeafBuilder extends NodeBuilder {
@@ -90,9 +106,13 @@ public class BTreeUpdate {
         pushPrecedence();
       }
 
+      // precedenceBuffer may not be null after previous build, see rebalance.
+      // In this case, we can resuse the buffer instead of creating new Object.
+      var newBuf = precedenceBuffer != null ? precedenceBuffer : new Object[MAX_TUPLES];
+
       precedenceNext = tuple;
       precedenceBuffer = buffer;
-      buffer = new Object[MAX_TUPLES];
+      buffer = newBuf;
       count = 0;
     }
 
@@ -156,7 +176,7 @@ public class BTreeUpdate {
         int diff = MAX_TUPLES - size;
         System.arraycopy(leaf, offset, buffer, count, diff);
         offset += diff;
-        batchPrecedence(leaf[offset++]); // overflow will reset count to 0;
+        batchPrecedence(leaf[offset++]);
         size -= diff + 1;
       }
 
