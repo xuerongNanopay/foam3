@@ -184,19 +184,35 @@ public class BTreeUpdate {
       count += size;
     }
 
-    void prepend(Object[] predecessor, Object precedenceNext) {
+    void prepend(Object[] pred, Object preNext) {
 
       assert !hasPrecedence();
 
-      int pSize = sizeOfLeaf(predecessor);
+      int pSize = sizeOfLeaf(pred);
       int newPos = pSize + 1;
       if ( newPos + count <= MAX_TUPLES ) {
-        System.arraycopy(buffer, 0 , buffer, newPos, count); // shift current buffer to get enough room for predecessor tuples.
-        System.arraycopy(predecessor, 0, buffer, 0, pSize);
-        buffer[pSize] = precedenceNext;
+        System.arraycopy(buffer, 0 , buffer, newPos, count); // shift current buffer to get enough room for pred tuples.
+        System.arraycopy(pred, 0, buffer, 0, pSize);
+        buffer[pSize] = preNext;
         count += newPos;
       } else {
-        throw new RuntimeException("TODO");
+        //IMPLY: buffer has enough tuple to make a FULL precedence.
+        if ( precedenceBuffer == null ) {
+          precedenceBuffer = new Object[MAX_TUPLES];
+        }
+        System.arraycopy(pred, 0, precedenceBuffer, 0, pSize);
+
+        if ( pSize == MAX_TUPLES ) {
+          precedenceNext = preNext;
+        } else {
+          // move tuples from buffer to precedenceBuffer to make precedence a FULL node.
+          int steal = MAX_TUPLES - pSize;
+          count -= steal;
+          precedenceBuffer[pSize] = preNext;
+          System.arraycopy(buffer, 0, precedenceBuffer, pSize + 1, MAX_TUPLES - newPos);
+          precedenceNext = buffer[MAX_TUPLES - newPos];
+          System.arraycopy(buffer, steal, buffer, 0, count);
+        }
       }
     }
   }
