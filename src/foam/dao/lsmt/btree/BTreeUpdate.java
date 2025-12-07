@@ -83,6 +83,13 @@ public class BTreeUpdate {
     boolean produceFullNode() {
       return true;
     }
+
+    static boolean areChildSizesIdentical(int[] a, int aOffset, int[] b, int bOffset, int count) {
+      for ( int i = 0 ; i < count ; i++ ) {
+        if ( a[i+aOffset] != b[i+bOffset] ) return false;
+      }
+      return true;
+    }
   }
 
   static class LeafBuilder extends NodeBuilder {
@@ -90,6 +97,13 @@ public class BTreeUpdate {
     LeafBuilder() {
       super(null);
       this.buffer = new Object[MAX_TUPLES];
+    }
+
+    void initial(Object[] origin) {
+      assert isEmpty();
+      setOrigin(origin);
+      count = sizeOfLeaf(origin);
+      System.arraycopy(origin, 0, buffer, 0, count);
     }
 
     void addTuple(Object tuple) {
@@ -155,6 +169,16 @@ public class BTreeUpdate {
         parent().addChildAndTuple(predecessor, predecessorRemaining, precedenceBuffer[predecessorRemaining]);
 
         precedenceNext = null;
+      
+      } else if ( 
+        ! hasPrecedence() &&
+        origin != null &&
+        count == sizeOfLeaf(origin) &&
+        areNodeIdentical(buffer, 0 , origin, 0, count)
+      ) {
+        // no change on the origin node so just reuse it.
+        leafSize = count;
+        leaf = origin;
       } else {
         if ( hasPrecedence() ) {
           pushPrecedence();
@@ -164,6 +188,7 @@ public class BTreeUpdate {
         leaf = flush();
       }
       count = 0;
+      clearOrigin();
       parentBuilder.addChild(leaf, leafSize); //TODO: need parentBuilder? or just parent()
     }
 

@@ -424,6 +424,15 @@ public class BTree {
     return preSum;
   }
 
+  /**
+   * shadow compare two nodes
+   */
+  static boolean areNodeIdentical(Object[] a, int aOffset, Object[] b, int bOffset, int count) {
+    for ( int i = 0 ; i < count ; i++ ) {
+      if ( a[i+aOffset] != b[i+bOffset] ) return false;
+    }
+    return true;
+  }
 
   private static abstract class NodeBuilder {
 
