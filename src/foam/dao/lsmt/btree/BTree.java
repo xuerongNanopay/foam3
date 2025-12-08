@@ -35,7 +35,7 @@ public class BTree {
 
   private static final Object[] EMPTY_LEAF = new Object[1];
 
-  private static final int[][] FULL_PRE_SUM_CACHE = fullPreSumCache(FANOUT_SHIFT);
+  static final int[][] FULL_PRE_SUM_CACHE = fullPreSumCache(FANOUT_SHIFT);
 
   public static Object[] empty() {
     return EMPTY_LEAF;

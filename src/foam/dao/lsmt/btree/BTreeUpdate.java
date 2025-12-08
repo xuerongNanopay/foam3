@@ -81,7 +81,7 @@ public class BTreeUpdate {
     }
 
     boolean produceFullNode() {
-      return true;
+      return false;
     }
 
     static boolean areChildSizesIdentical(int[] a, int aOffset, int[] b, int bOffset, int count) {
@@ -363,7 +363,7 @@ public class BTreeUpdate {
           System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
         }
 
-        applyZoneMapFromBuffer(internal, count);
+        setFlushZoonMap(internal, count);
       }
 
       count = 0;
@@ -425,8 +425,7 @@ public class BTreeUpdate {
       }
     }
 
-    void applyZoneMapFromBuffer(Object[] toInternal, int tupleSize) {
-      //IMPROVE: FULL NODE short cut.
+    void setFlushZoonMap(Object[] toInternal, int tupleSize) {
       
       int[] preSum = this.sizes;
 
@@ -436,8 +435,7 @@ public class BTreeUpdate {
         this.sizes = new int[MAX_TUPLES+1];
       }
       convSizesToPreSum(preSum, tupleSize + 1);
-      toInternal[2*tupleSize + 1] = preSum;
-
+      toInternal[2*tupleSize + 1] = new ZoneMap(preSum);
     }
 
     void applyPrecedenceZoneMap(Object[] internal, int tupleSize) {
