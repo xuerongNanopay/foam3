@@ -85,7 +85,7 @@ public class BTree {
 
     Object[] internal = new Object[tupleSize * 2];
     int childOffset = tupleSize - 1; /* descend start from second half of internal array. */
-    var preSum = new int[tupleSize];
+    var presum = new int[tupleSize];
 
     if ( height == 2 ) {
 
@@ -97,17 +97,17 @@ public class BTree {
         internal[childOffset + i] = buildLeaf(sortedBulk, MAX_TUPLES);
         internal[i] = sortedBulk.next();
         remaining -= MAX_TUPLES + 1;
-        preSum[i++] = size - (remaining+1);
+        presum[i++] = size - (remaining+1);
       }
       if ( remaining > MAX_TUPLES ) {
         int leafSize = remaining/2;
         internal[childOffset+i] = buildLeaf(sortedBulk, leafSize);
         internal[i] = sortedBulk.next();
         remaining -= leafSize + 1;
-        preSum[i++] = size - (remaining+1);
+        presum[i++] = size - (remaining+1);
       }
       internal[childOffset + i] = buildLeaf(sortedBulk, remaining);
-      preSum[i++] = size;
+      presum[i++] = size;
 
       assert i == tupleSize;
     } else {
@@ -122,7 +122,7 @@ public class BTree {
         internal[childOffset + i] = fullyBuild(sortedBulk, height);
         internal[i] = sortedBulk.next();
         remaining -= fullChildSize + 1;
-        preSum[i++] = size - (remaining+1);
+        presum[i++] = size - (remaining+1);
       }
 
       if ( remaining > fullChildSize ) {
@@ -131,19 +131,19 @@ public class BTree {
         internal[childOffset + i] = denselyBuild(sortedBulk, (int) grandChildTupleSize, grandChildSize, height);
         internal[i] = sortedBulk.next();
         remaining -= grandChildSize + 1;
-        preSum[i++] = size - (remaining+1);
+        presum[i++] = size - (remaining+1);
       }
 
       int grandChildTupleSize = remaining / (fullGrandChildSize + 1) + 1;
       assert grandChildTupleSize >= MIN_TUPLES + 1;
       int grandChildSize = remaining;
       internal[childOffset + i] = denselyBuild(sortedBulk, (int) grandChildTupleSize, grandChildSize, height);
-      preSum[i++] = size;
+      presum[i++] = size;
 
       assert i == tupleSize;
     }
 
-    internal[tupleSize*2 - 1] = new ZoneMap(preSum);
+    internal[tupleSize*2 - 1] = new ZoneMap(presum);
     return internal;
   }
 
@@ -409,19 +409,19 @@ public class BTree {
     
     int height = 32/fanoutShift - 1; // Skip height == 1 (LEAF).
     int childSize = 1 << fanoutShift;
-    int[][] preSum = new int[height][childSize];
+    int[][] presum = new int[height][childSize];
 
     for ( int i = 0 ; i < height ; i++ ) {
       int size = fullTreeSize(i+1);
       int aggSum = 0;
 
       for ( int j = 0 ; j < childSize ; j++ ) {
-        preSum[i][j] = aggSum += size;
+        presum[i][j] = aggSum += size;
         aggSum++;
       }
     }
 
-    return preSum;
+    return presum;
   }
 
   /**

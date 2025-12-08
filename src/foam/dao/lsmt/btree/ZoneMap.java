@@ -6,18 +6,18 @@
 package foam.dao.lsmt.btree;
 
 class ZoneMap {
-  int[] preSum;
+  int[] presum;
 
-  ZoneMap(int[] preSum) {
+  ZoneMap(int[] presum) {
     // record the number of tuple up to current child.
-    this.preSum = preSum;
+    this.presum = presum;
   }
  
   int size() {
-    return preSum[preSum.length-1];
+    return presum[presum.length-1];
   }
 
   int sizeOfChildAt(int i) {
-    return preSum[i];
+    return presum[i];
   }
 }

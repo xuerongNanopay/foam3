@@ -192,10 +192,6 @@ public class BTreeUpdate {
       parentBuilder.addChild(leaf, leafSize); //TODO: need parentBuilder? or just parent()
     }
 
-    void copy(Object[] leaf) {
-      copy(leaf, 0, sizeOfLeaf(leaf));
-    }
-
     void copy(Object[] leaf, int offset, int size) {
       if ( count + size > MAX_TUPLES ) {
         int diff = MAX_TUPLES - size;
@@ -259,7 +255,7 @@ public class BTreeUpdate {
     }
 
     final void initial(Object[] node) {
-
+      //CHECK: sizeMap.
       assert isEmpty();
       origin = node;
       count = tupleSizeOfInternal(node);
@@ -390,11 +386,11 @@ public class BTreeUpdate {
         System.arraycopy(buffer, MAX_TUPLES, internal, MIN_TUPLES + steal, count + 1);
 
         // Rebalance & create zoomap.
-        int[] preSum = new int[MIN_TUPLES + 1];
-        System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, preSum, 0, steal);
-        System.arraycopy(sizes, 0, preSum, steal, count + 1);
-        internalSize = convSizesToPreSum(preSum, MIN_TUPLES + 1);
-        internal[2*MIN_TUPLES + 1] = new ZoneMap(preSum);
+        int[] presum = new int[MIN_TUPLES + 1];
+        System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, presum, 0, steal);
+        System.arraycopy(sizes, 0, presum, steal, count + 1);
+        internalSize = convSizesToPreSum(presum, MIN_TUPLES + 1);
+        internal[2*MIN_TUPLES + 1] = new ZoneMap(presum);
 
         // refactor&push precedence to parent.
         int remainingTuples = MAX_TUPLES - steal;
@@ -427,15 +423,15 @@ public class BTreeUpdate {
 
     void applyBufferZoneMap(Object[] toInternal, int tupleSize) {
       
-      int[] preSum = this.sizes;
+      int[] presum = this.sizes;
 
       if ( tupleSize < MAX_TUPLES ) {
-        preSum = Arrays.copyOf(preSum, tupleSize+1);
+        presum = Arrays.copyOf(presum, tupleSize+1);
       } else {
         this.sizes = new int[MAX_TUPLES+1];
       }
-      convSizesToPreSum(preSum, tupleSize + 1);
-      toInternal[2*tupleSize + 1] = new ZoneMap(preSum);
+      convSizesToPreSum(presum, tupleSize + 1);
+      toInternal[2*tupleSize + 1] = new ZoneMap(presum);
     }
 
     void applyPrecedenceZoneMap(Object[] internal, int tupleSize) {
@@ -458,5 +454,21 @@ public class BTreeUpdate {
       }
       return total;
     }
+
+
+    // private void copyPrecedingNoBatch(Object[] node, int ) {
+
+    //   assert !hasEndChild;
+
+
+    // }
+  
+    void reset() {
+      Arrays.fill(buffer, null);
+      count = 0;
+      hasEndChild = false;
+      clearOrigin();
+    }
+    // void prepend()
   }
 }
