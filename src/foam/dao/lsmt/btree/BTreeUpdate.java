@@ -258,7 +258,7 @@ public class BTreeUpdate {
       leaf = childBuilder instanceof LeafBuilder ? (LeafBuilder) childBuilder : ((InternalBuilder) childBuilder).leaf;
     }
 
-    final void init(Object[] node) {
+    final void initial(Object[] node) {
 
       assert isEmpty();
       origin = node;
@@ -288,11 +288,9 @@ public class BTreeUpdate {
     final void addChild(Object[] child, int childSize) {
       assert !hasEndChild;
       assert child != null;
+
       hasEndChild = true;
-
-
       buffer[count + MAX_TUPLES] = child;
-
       maybeRecordChildSize(childSize);
     }
 
@@ -312,13 +310,16 @@ public class BTreeUpdate {
         pushPrecedence();
       }
 
+      Object[] newBuffer = precedenceBuffer;
+      int[] newSizes = precedenceSizes;
+    
       precedenceBuffer = buffer;
       precedenceSizes = sizes;
       precedenceNext = tuple;
 
+      buffer = newBuffer == null ? new Object[2*(MAX_TUPLES + 1)] : newBuffer;
+      sizes = newSizes == null ? new int[MAX_TUPLES + 1] : newSizes;
       count = 0;
-      buffer = new Object[2*(MAX_TUPLES + 1)];
-      sizes = new int[MAX_TUPLES+1];
     }
 
     final void pushPrecedence() {
