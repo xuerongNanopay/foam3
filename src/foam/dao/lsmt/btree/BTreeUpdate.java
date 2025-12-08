@@ -319,7 +319,7 @@ public class BTreeUpdate {
     }
 
     final void pushPrecedence() {
-      applyPrecedenceZoneMap(precedenceBuffer, MAX_TUPLES);
+      applyPrecedencePresum(precedenceBuffer, MAX_TUPLES);
       parent().addChildAndTuple(precedenceBuffer, sizeOfInternal(precedenceBuffer), precedenceNext);
       precedenceNext = null;
       precedenceBuffer = null;
@@ -359,7 +359,7 @@ public class BTreeUpdate {
           System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
         }
 
-        applyBufferZoneMap(internal, count);
+        applyBufferPresum(internal, count);
       }
 
       count = 0;
@@ -390,14 +390,14 @@ public class BTreeUpdate {
         System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, presum, 0, steal);
         System.arraycopy(sizes, 0, presum, steal, count + 1);
         internalSize = convSizesToPreSum(presum, MIN_TUPLES + 1);
-        internal[2*MIN_TUPLES + 1] = new ZoneMap(presum);
+        internal[2*MIN_TUPLES + 1] = presum;
 
         // refactor&push precedence to parent.
         int remainingTuples = MAX_TUPLES - steal;
         Object[] preInternal = new Object[2 * (remainingTuples + 1)];
         System.arraycopy(precedenceBuffer, 0, preInternal, 0, remainingTuples);
         System.arraycopy(precedenceBuffer, MAX_TUPLES, preInternal, remainingTuples, remainingTuples+1);
-        applyPrecedenceZoneMap(preInternal, remainingTuples);
+        applyPrecedencePresum(preInternal, remainingTuples);
         parent().addChildAndTuple(preInternal, sizeOfInternal(preInternal), precedenceBuffer[remainingTuples]);
         precedenceNext = null;
       } else {
@@ -410,7 +410,7 @@ public class BTreeUpdate {
         internal = new Object[2 * (count + 1)];
         System.arraycopy(buffer, 0, internal, 0, count);
         System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
-        applyBufferZoneMap(internal, count);
+        applyBufferPresum(internal, count);
         internalSize = sizeOfInternal(internal);
       }
     
@@ -421,7 +421,7 @@ public class BTreeUpdate {
       }
     }
 
-    void applyBufferZoneMap(Object[] toInternal, int tupleSize) {
+    void applyBufferPresum(Object[] toInternal, int tupleSize) {
       
       int[] presum = this.sizes;
 
@@ -431,20 +431,20 @@ public class BTreeUpdate {
         this.sizes = new int[MAX_TUPLES+1];
       }
       convSizesToPreSum(presum, tupleSize + 1);
-      toInternal[2*tupleSize + 1] = new ZoneMap(presum);
+      toInternal[2*tupleSize + 1] = presum;
     }
 
-    void applyPrecedenceZoneMap(Object[] internal, int tupleSize) {
+    void applyPrecedencePresum(Object[] internal, int tupleSize) {
       //IMPROVE: shotcut for full node.
 
-      int[] childSizes = precedenceSizes;
+      int[] presum = precedenceSizes;
       if ( tupleSize < MAX_TUPLES ) {
         sizes = Arrays.copyOf(sizes, tupleSize+1);
       } else {
         precedenceSizes = null; // batchProcedence method will initial a new one.
       }
-      convSizesToPreSum(childSizes, tupleSize);
-      internal[2 * tupleSize + 1] = childSizes;
+      convSizesToPreSum(presum, tupleSize);
+      internal[2 * tupleSize + 1] = presum;
     }
 
     private static int convSizesToPreSum(int[] sizeMap, int numOfChild) {
