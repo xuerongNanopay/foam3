@@ -143,7 +143,7 @@ public class BTree {
       assert i == tupleSize;
     }
 
-    internal[tupleSize*2 - 1] = new ZoneMap(presum);
+    internal[tupleSize*2 - 1] = presum;
     return internal;
   }
 
@@ -172,7 +172,7 @@ public class BTree {
       internal[MAX_TUPLES*2] = fullyBuild(sortedBulk, height-1);
     }
 
-    internal[MAX_TUPLES*2+1] = new ZoneMap(FULL_PRE_SUM_CACHE[height-2]);
+    internal[MAX_TUPLES*2+1] = FULL_PRE_SUM_CACHE[height-2];
     return internal;
   }
 
@@ -364,8 +364,8 @@ public class BTree {
     return getInternalTupleEnd(internal);
   }
 
-  static ZoneMap getZoneMap(Object[] internal) {
-    return (ZoneMap) internal[internal.length-1];
+  static int[] getPresum(Object[] internal) {
+    return (int[]) internal[internal.length-1];
   }
 
   public static boolean isEmpty(Object[] tree) {
@@ -382,7 +382,8 @@ public class BTree {
   }
 
   static int sizeOfInternal(Object[] internal) {
-    return getZoneMap(internal).size();
+    int[] presum = getPresum(internal);
+    return presum[presum.length-1];
   }
 
   /**
