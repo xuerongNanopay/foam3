@@ -336,25 +336,39 @@ public class BTreeUpdate {
 
       if ( count == 0 ) {
         // return first child.
+        clearOrigin();
         hasEndChild = false;
         return (Object[]) buffer[MAX_TUPLES];
       }
 
-      Object[] internal = new Object[2 * (count + 1)];
-      if ( count == MAX_TUPLES ) {
-        // Skip copy, improve performance.
-        Object[] t = buffer;
-        buffer = internal;
-        internal = t;
-      } else {
-        System.arraycopy(buffer, 0, internal, 0, count);
-        System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
-      }
+      Object[] internal;
 
-      setZoneMap(internal, count, sizes);
+      if (
+        origin != null &&
+        count == tupleSizeOfInternal(origin) &&
+        BTree.areShadowIdentical(buffer, 0, origin, 0, count) &&
+        BTree.areShadowIdentical(buffer, MAX_TUPLES, origin, count, count + 1)
+      ) {
+        internal = origin;
+      } else {
+
+        internal = new Object[2 * (count + 1)];
+        if ( count == MAX_TUPLES ) {
+          // Skip copy, improve performance.
+          Object[] t = buffer;
+          buffer = internal;
+          internal = t;
+        } else {
+          System.arraycopy(buffer, 0, internal, 0, count);
+          System.arraycopy(buffer, MAX_TUPLES, internal, count, count+1);
+        }
+
+        applyZoneMapFromBuffer(internal, count);
+      }
 
       count = 0;
       hasEndChild = false;
+      clearOrigin();
       return internal;
     }
     
@@ -411,6 +425,21 @@ public class BTreeUpdate {
       }
     }
 
+    void applyZoneMapFromBuffer(Object[] toInternal, int tupleSize) {
+      //IMPROVE: FULL NODE short cut.
+      
+      int[] preSum = this.sizes;
+
+      if ( tupleSize < MAX_TUPLES ) {
+        preSum = Arrays.copyOf(preSum, tupleSize+1);
+      } else {
+        this.sizes = new int[MAX_TUPLES+1];
+      }
+      convSizesToPreSum(preSum, tupleSize + 1);
+      toInternal[2*tupleSize + 1] = preSum;
+
+    }
+
     void applyPrecedenceZoneMap(Object[] internal, int tupleSize) {
       //IMPROVE: shotcut for full node.
 
@@ -420,14 +449,14 @@ public class BTreeUpdate {
       } else {
         precedenceSizes = null;
       }
-      convSizesToPreSum(childSizes);
+      convSizesToPreSum(childSizes, tupleSize);
       internal[2 * tupleSize + 1] = childSizes;
     }
 
     void setZoneMap(Object[] internal, int tupleSize, int[] sizes) {
       var childSize = tupleSize + 1;
       var preSum = Arrays.copyOf(sizes, childSize);
-      convSizesToPreSum(preSum);
+      convSizesToPreSum(preSum, tupleSize+1);
 
       internal[2*tupleSize+1] = new ZoneMap(preSum);
     }
@@ -441,20 +470,20 @@ public class BTreeUpdate {
         //Imply: tupleSize == MAX_TUPLES
         precedenceSizes = null;
       }
-      convSizesToPreSum(sizes);
+      convSizesToPreSum(sizes, tupleSize+1);
       internal[2*tupleSize + 1] = new ZoneMap(sizes);
     }
 
-    private static int convSizesToPreSum(int[] sizes, int count) {
-      int total = sizes[0];
-      for ( int i = 1 ; i < count ; ++i ) {
-        sizes[i] = total += 1 + sizes[i];
+    private static int convSizesToPreSum(int[] sizeMap, int numOfChild) {
+      int total = sizeMap[0];
+      for ( int i = 1 ; i < numOfChild ; ++i ) {
+        sizeMap[i] = total += 1 + sizeMap[i];
       }
       return total;
     }
 
-    private static int convSizesToPreSum(int[] sizes) {
-      return convSizesToPreSum(sizes, sizes.length);
-    }
+    // private static int convSizesToPreSum(int[] sizes) {
+    //   return convSizesToPreSum(sizes, sizes.length);
+    // }
   }
 }

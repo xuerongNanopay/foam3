@@ -434,6 +434,17 @@ public class BTree {
     return true;
   }
 
+  /**
+   * A utility method for shadow comparing a range of two Object arrays.
+   * callar should guarantee not out-of-bound
+   */
+  static boolean areShadowIdentical(Object[] a, int aFrom, Object[] b, int bFrom, int size) {
+    for ( int i = 0 ; i < size ; i++ ) 
+      if ( a[aFrom + i] != b[bFrom + i] )
+        return false;
+    return true;
+  }
+
   private static abstract class NodeBuilder {
 
     final int height;
@@ -454,6 +465,7 @@ public class BTree {
 
     /**
      * A utility method for shadow comparing a range of two Object arrays.
+     * callar should guarantee not out-of-bound
      */
     static boolean areShadowIdentical(Object[] a, int aFrom, Object[] b, int bFrom, int size) {
       for ( int i = 0 ; i < size ; i++ ) 
