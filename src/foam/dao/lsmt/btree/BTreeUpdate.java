@@ -455,13 +455,61 @@ public class BTreeUpdate {
       return total;
     }
 
+    void prepend(Object[] pred, Object predNext) {
+      assert !hasPrecedence();
 
-    // private void copyPrecedingNoBatch(Object[] node, int ) {
+      int preTupleSize = tupleSizeOfInternal(pred);
+      int[] presum = getPresum(pred);
+      int offOrCSize = 1 + preTupleSize; // offset or childSize, both are equal.
 
-    //   assert !hasEndChild;
+      if ( offOrCSize + count <= MAX_TUPLES ) {
+        //IMPL: buffer has enough spaces to store pred without the need from precedenceBuffer.
 
+        // right shift tuples to make room.
+        System.arraycopy(buffer, 0, buffer, offOrCSize, count);
+        System.arraycopy(buffer, 0, buffer, MAX_TUPLES + offOrCSize, count+1);
+        System.arraycopy(sizes, 0, sizes, offOrCSize, count+1); 
 
-    // }
+        // insert pred tuples.
+        System.arraycopy(pred, 0, buffer, 0, preTupleSize);
+        System.arraycopy(pred, preTupleSize, buffer, MAX_TUPLES, offOrCSize);
+        buffer[preTupleSize] = predNext;
+        convPresumToSizes(presum, 0, sizes, 0, offOrCSize);
+
+        count += offOrCSize;
+
+      } else {
+        
+        if ( precedenceBuffer == null ) {
+          precedenceBuffer = new Object[2 * (MAX_TUPLES + 1)];
+          precedenceSizes = new int[MAX_TUPLES + 1];
+        }
+
+        System.arraycopy(pred, 0, precedenceBuffer, 0, preTupleSize);
+        System.arraycopy(pred, preTupleSize, precedenceBuffer, MAX_TUPLES, preTupleSize+1);
+        convPresumToSizes(presum, 0, precedenceSizes, 0, preTupleSize+1);
+
+        if ( preTupleSize == MAX_TUPLES ) {
+          precedenceNext = predNext;
+        } else {
+          // move tuples from buffer to precedence to make precedence a FULL node.
+          
+          int miss = MAX_TUPLES - preTupleSize;
+
+          precedenceBuffer[preTupleSize] = predNext;
+          System.arraycopy(buffer, 0, precedenceBuffer, preTupleSize+1, miss-1);
+          System.arraycopy(buffer, MAX_TUPLES, precedenceBuffer, MAX_TUPLES + preTupleSize +1 , miss);
+          System.arraycopy(sizes, 0, precedenceSizes, preTupleSize+1, miss); 
+          precedenceNext = buffer[miss-1];
+
+          System.arraycopy(buffer, miss, buffer, 0, count-miss);
+          System.arraycopy(buffer, MAX_TUPLES + miss, buffer, MAX_TUPLES, count-miss+1);
+          System.arraycopy(sizes, miss, sizes, 0, count-miss+1);
+          count = count-miss;
+        }
+      }
+    }
+  
     void copyPre(Object[] copy, int tupleSize, int offset, int length) {
   
       assert !hasEndChild;
@@ -477,7 +525,7 @@ public class BTreeUpdate {
         buffer[2*MAX_TUPLES] = copy[tupleSize + offset];
         sizes[MAX_TUPLES] = presum[offset] - (offset > 0 ? (presum[offset-1] + 1) : 0);
 
-        batchPrecedence(copy[offset])
+        batchPrecedence(copy[offset]);
       }
 
       copyPreNoBatch(copy, tupleSize, presum, offset, length);
