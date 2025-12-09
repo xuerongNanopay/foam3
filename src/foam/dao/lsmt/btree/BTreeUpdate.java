@@ -389,7 +389,7 @@ public class BTreeUpdate {
         int[] presum = new int[MIN_TUPLES + 1];
         System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, presum, 0, steal);
         System.arraycopy(sizes, 0, presum, steal, count + 1);
-        internalSize = convSizesToPreSum(presum, MIN_TUPLES + 1);
+        internalSize = convSizesToPresum(presum, MIN_TUPLES + 1);
         internal[2*MIN_TUPLES + 1] = presum;
 
         // refactor&push precedence to parent.
@@ -430,7 +430,7 @@ public class BTreeUpdate {
       } else {
         this.sizes = new int[MAX_TUPLES+1];
       }
-      convSizesToPreSum(presum, tupleSize + 1);
+      convSizesToPresum(presum, tupleSize + 1);
       toInternal[2*tupleSize + 1] = presum;
     }
 
@@ -443,11 +443,11 @@ public class BTreeUpdate {
       } else {
         precedenceSizes = null; // batchProcedence method will initial a new one.
       }
-      convSizesToPreSum(presum, tupleSize);
+      convSizesToPresum(presum, tupleSize);
       internal[2 * tupleSize + 1] = presum;
     }
 
-    private static int convSizesToPreSum(int[] sizeMap, int numOfChild) {
+    static int convSizesToPresum(int[] sizeMap, int numOfChild) {
       int total = sizeMap[0];
       for ( int i = 1 ; i < numOfChild ; ++i ) {
         sizeMap[i] = total += 1 + sizeMap[i];
@@ -462,6 +462,59 @@ public class BTreeUpdate {
 
 
     // }
+    void copyPre(Object[] copy, int tupleSize, int offset, int length) {
+  
+      assert !hasEndChild;
+
+      int[] presum = getPresum(copy);
+      if ( count + length > MAX_TUPLES ) {
+      
+        int diff = MAX_TUPLES - count;
+        copyPreNoBatch(copy, tupleSize, presum,  offset, diff);
+        offset += diff;
+
+        // copy END child.
+        buffer[2*MAX_TUPLES] = copy[tupleSize + offset];
+        sizes[MAX_TUPLES] = presum[offset] - (offset > 0 ? (presum[offset-1] + 1) : 0);
+
+        batchPrecedence(copy[offset])
+      }
+
+      copyPreNoBatch(copy, tupleSize, presum, offset, length);
+    }
+  
+    private void copyPreNoBatch(Object[] copy, int tupleSize, int[] presum, int offset, int length) {
+      assert !hasEndChild;
+
+      if ( length == 0 ) return;
+
+      if ( length == 1 ) {
+        buffer[count] = copy[offset];
+        buffer[MAX_TUPLES + count] = copy[tupleSize + offset];
+        sizes[count] = presum[offset] - (offset > 0 ? (presum[offset-1] + 1) : 0);
+        ++count;
+      } else {
+        System.arraycopy(copy, offset, buffer, count, length);
+        System.arraycopy(copy, tupleSize + offset, buffer, MAX_TUPLES + count, length);
+        convPresumToSizes(presum, offset, sizes, count, length);
+        count += length;
+      }
+
+    }
+
+    static void convPresumToSizes(int[] in, int inOffset, int[] out, int outOffset, int length) {
+      assert length > 0;
+
+      //TODO:
+      if ( inOffset == 0 ) {
+        out[outOffset++] = in[inOffset++];
+        --length;
+      }
+
+      for ( int i = 0 ; i < length ; ++i ) {
+        out[outOffset + i] = in[inOffset + i] - (in[inOffset + i - 1] + 1);
+      }
+    }
   
     void reset() {
       Arrays.fill(buffer, null);
