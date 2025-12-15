@@ -6,10 +6,46 @@
 package foam.dao.lsmt.btree;
 
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import static foam.dao.lsmt.btree.BTree.*;
 
 public class BTreeUpdate {
 
+  public static interface UpdateFunction<V, T> {
+    T insert(V newObj);
+    T merge(T oldTuple, V newObj);
+  }
+
+  public static class SimpleUpdate<T> implements UpdateFunction<T, T> {
+
+    private final BiFunction<T,T,T> wrapped;
+    public SimpleUpdate(BiFunction<T,T,T> wrapped) {
+      this.wrapped = wrapped;
+    }
+
+    @Override
+    public T insert(T newObj) {
+      return newObj;
+    }
+
+    @Override
+    public T merge(T oldTuple, T newObj) {
+      return wrapped.apply(oldTuple, newObj);
+    }
+
+    public static <T> SimpleUpdate<T> of(BiFunction<T,T,T> bf) {
+      return new SimpleUpdate<T>(bf);
+    }
+  }
+
+  // Insert only, update will keep original tuple.
+  static final SimpleUpdate<Object> NO_UPDATE = SimpleUpdate.of((o, n) -> o);
+
+  // public static <C, O extends C, N extends C> Object[] updateLeaves(
+  //   Object[] nNode, Object[] nNode, Comparator<? super C> comparator
+  // ) {
+
+  // }
 
   public static class TreeBuilder<T> extends LeafBuilder implements AutoCloseable {
 
