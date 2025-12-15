@@ -27,7 +27,8 @@ public class BTreeUpdate {
 
     @Override
     final public void close() {
-      //TODO: threadlocal pool.
+      //TODO: threadlocal pool(Object poll).
+      // uncommon below method when reusing builder is done.
       // reset();
     }
 
