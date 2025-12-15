@@ -10,6 +10,38 @@ import static foam.dao.lsmt.btree.BTree.*;
 
 public class BTreeUpdate {
 
+
+  public static class TreeBuilder<T> extends LeafBuilder implements AutoCloseable {
+
+    final LeafBuilder leaf() {
+      return this;
+    }
+
+    final public void add(Object[] src , int offset, int size) {
+      leaf().copy(src, offset, size);
+    }
+
+    final public void add(T tuple) {
+      leaf().addTuple(tuple);
+    }
+
+    @Override
+    final public void close() {
+      //TODO: threadlocal pool.
+      // reset();
+    }
+
+    final void reset() {
+      Arrays.fill(leaf().buffer, null);
+      leaf().count = 0;
+      InternalBuilder internal = leaf().parent;
+      while ( internal != null ) {
+        internal.reset();
+        internal = internal.parent;
+      }
+    }
+  }
+
   /**
    * Reusable builder.
    * flush and flushParent will reset the builder, so builder can be reuse again.
