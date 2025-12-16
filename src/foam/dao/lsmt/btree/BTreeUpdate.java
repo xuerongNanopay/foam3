@@ -336,7 +336,27 @@ public class BTreeUpdate {
     }
 
     <O, N> void copy(Object[] src, int offset, int size, UpdateFunction<O, N> updater) {
+      
+      if ( isSimple(updater) ) {
+        copy(src, offset, size);
+        return;
+      }
 
+      if ( count + size > MAX_TUPLES ) {
+        int diff = MAX_TUPLES - count;
+        for ( int i = 0 ; i < diff ; i++ ) {
+          buffer[count + i] = updater.insert((N) src[offset + i]);
+        }
+        offset += diff;
+        batchPrecedence(updater.insert((N) src[offset++]));
+        size -= diff + 1;
+      }
+
+      for ( int i = 0 ; i < size ; i++ ) {
+        buffer[count + i] = updater.insert((N) src[offset + i]);
+      }
+
+      count += size;
     }
 
     void prepend(Object[] pred, Object preNext) {
