@@ -6,46 +6,107 @@
 package foam.dao.lsmt.btree;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.function.BiFunction;
 import static foam.dao.lsmt.btree.BTree.*;
 
 public class BTreeUpdate {
 
-  public static interface UpdateFunction<V, T> {
-    T insert(V newObj);
-    T merge(T oldTuple, V newObj);
+  public static interface UpdateFunction<O, N> {
+    O insert(N insert);
+    O merge(O exist, N insert);
   }
 
-  public static class SimpleUpdate<T> implements UpdateFunction<T, T> {
+  /**
+   * Insert tuple class is same as tuples in the tree.
+   */
+  public static class SimpleUpdate<N> implements UpdateFunction<N, N> {
 
-    private final BiFunction<T,T,T> wrapped;
-    public SimpleUpdate(BiFunction<T,T,T> wrapped) {
+    private final BiFunction<N,N,N> wrapped;
+    public SimpleUpdate(BiFunction<N,N,N> wrapped) {
       this.wrapped = wrapped;
     }
 
     @Override
-    public T insert(T newObj) {
-      return newObj;
+    public N insert(N insert) {
+      return insert;
     }
 
     @Override
-    public T merge(T oldTuple, T newObj) {
-      return wrapped.apply(oldTuple, newObj);
+    public N merge(N exist, N insert) {
+      return wrapped.apply(exist, insert);
     }
 
-    public static <T> SimpleUpdate<T> of(BiFunction<T,T,T> bf) {
-      return new SimpleUpdate<T>(bf);
+    public static <N> SimpleUpdate<N> of(BiFunction<N,N,N> bf) {
+      return new SimpleUpdate<N>(bf);
     }
   }
 
   // Insert only, update will keep original tuple.
   static final SimpleUpdate<Object> NO_UPDATE = SimpleUpdate.of((o, n) -> o);
 
-  // public static <C, O extends C, N extends C> Object[] updateLeaves(
-  //   Object[] nNode, Object[] nNode, Comparator<? super C> comparator
-  // ) {
+  static boolean isSimple(UpdateFunction<?,?> updater) {
+    return updater instanceof SimpleUpdate;
+  }
 
-  // }
+  public static <C, O extends C, N extends C> Object[] updateLeaves(
+    Object[] oNode, Object[] nNode, Comparator<? super C> comparator, UpdateFunction<O, N> updater
+  ) {
+
+    int oPos = -1, oSize = sizeOfLeaf(oNode);
+    O oPeek = (O) oNode[0];
+
+    int nPos = 0, nSize = sizeOfLeaf(nNode);
+    N nPeek = (N) nNode[0];
+
+    /**
+     * Optimisation: skip tuples in the oNode that can be copy to the result tree directly.
+     * break at position where nPeek < oPeek.
+     */
+    O merged = null;
+    int compRes = -1; // compare(old, new)
+    while ( compRes <= 0 ) {
+      if ( compRes < 0 ) {
+
+        oPos = search(comparator, oNode, oPos + 1, oSize, nPeek);
+        compRes = oPos < 0 ? 1 : 0;
+        if ( oPos < 0 ) {
+          oPos = -(1 + oPos);
+        }
+        // IMPLY: tuples GTE nPos in nNode is greater than tuples in oNode.
+        if ( oPos == oSize ) {
+          break;
+        }
+        oPeek = (O) oNode[oPos];
+      } else {
+        //IMPLY: compRes == 0
+        merged = updater.merge(oPeek, nPeek);
+        if ( merged != oPeek) break;
+        // if new node is exactly equal to old node, then return old node.
+        if ( ++nPos == nSize ) return oNode;
+        // IMPLY: old node is a prefix of new node.
+        if ( ++oPos == oSize ) break; 
+        
+        compRes = comparator.compare(oPeek = (O) oNode[oPos], nPeek = (N) nNode[nPos]);
+      }
+    }
+
+    try ( TreeBuilder<O> builder = createBuilder() ) {
+      if ( oPos > 0 ) {
+        builder.leaf().copy(oNode, 0, oPos);
+      }
+
+
+      if ( nPos < nSize ) {
+        // builder.leaf().copy(nNode, nPos, uSize - nPos, updater);
+      }
+      return builder.build();
+    }
+  }
+
+  static <T> TreeBuilder<T> createBuilder() {
+    return new TreeBuilder();
+  }
 
   public static class TreeBuilder<T> extends LeafBuilder implements AutoCloseable {
 
@@ -161,7 +222,7 @@ public class BTreeUpdate {
     }
   }
 
-  static class LeafBuilder extends NodeBuilder {
+  static abstract class LeafBuilder extends NodeBuilder {
 
     LeafBuilder() {
       super(null);
@@ -261,17 +322,21 @@ public class BTreeUpdate {
       parentBuilder.addChild(leaf, leafSize); //TODO: need parentBuilder? or just parent()
     }
 
-    void copy(Object[] leaf, int offset, int size) {
+    void copy(Object[] src, int offset, int size) {
       if ( count + size > MAX_TUPLES ) {
         int diff = MAX_TUPLES - size;
-        System.arraycopy(leaf, offset, buffer, count, diff);
+        System.arraycopy(src, offset, buffer, count, diff);
         offset += diff;
-        batchPrecedence(leaf[offset++]);
+        batchPrecedence(src[offset++]);
         size -= diff + 1;
       }
 
-      System.arraycopy(leaf, offset, buffer, count, size);
+      System.arraycopy(src, offset, buffer, count, size);
       count += size;
+    }
+
+    <O, N> void copy(Object[] src, int offset, int size, UpdateFunction<O, N> updater) {
+
     }
 
     void prepend(Object[] pred, Object preNext) {
