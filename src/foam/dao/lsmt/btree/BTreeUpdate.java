@@ -126,11 +126,13 @@ public class BTreeUpdate {
           while ( true ) {
 
             if ( compRes == 0 ) {
+
               builder.leaf().addTuple(updater.merge(oPeek, nPeek));
               ++oPos;
               ++nPos;
               if ( oPos == oSize || nPos == nSize ) break;
               compRes = comparator.compare(oPeek = (O) oNode[oPos], nPeek = (N) nNode[nPos]);
+
             } else if ( compRes < 0 ) {
 
               int jump = search(comparator, oNode, oPos + 1, oSize, nPeek);
@@ -141,10 +143,25 @@ public class BTreeUpdate {
               builder.leaf().copy(oNode, oPos, jump - oPos);
               if ( (oPos = jump) == oSize ) break;
               oPeek = (O) oNode[oPos];
+
             } else {
-              throw new RuntimeException("TODO");
+
+              int jump = search(comparator, nNode, nPos + 1, nSize, oPeek);
+              compRes = jump < 0 ? -1 : 0; // jump < 0 => find position in nNode that is greater than oPeek.
+              if ( jump < 0 ) {
+                jump = -(jump + 1);
+              }
+              builder.leaf().copy(nNode, nPos, jump - nPos, updater);
+              if ( (nPos = jump) == nSize ) break;
+              nPeek = (N) nNode[nPos];
+
             }
           }
+        }
+
+        if ( oPos < oSize ) {
+          //IMPLY: all tuples in the nNode are inserted in the tree.
+          builder.leaf().copy(oNode, oPos, oSize - oPos);
         }
       }
 
