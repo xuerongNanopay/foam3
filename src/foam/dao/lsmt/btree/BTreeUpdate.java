@@ -91,14 +91,66 @@ public class BTreeUpdate {
       }
     }
 
+
     try ( TreeBuilder<O> builder = createBuilder() ) {
+
+      /**
+       * upos > 0 => [0, oPos-1] in the oNode can be directly copied to result, 
+       *              as it is less than the smallest tuple in the nNode.
+       */
       if ( oPos > 0 ) {
         builder.leaf().copy(oNode, 0, oPos);
       }
 
+      if ( oPos < oSize ) {
+
+        /**
+         * compRes == 0 => a old tuple is updated with new one.
+         * compRes > 0 => the next tuple is nPeek.
+         */
+        if ( compRes == 0 ) {
+          builder.add(merged);
+          if ( ++oPos < oSize ) {
+            oPeek = (O) oNode[oPos];
+          }
+        } else {
+          builder.add(updater.insert(nPeek));
+        }
+
+        if ( ++nPos < nSize ) nPeek = (N) nNode[nPos];
+
+        if ( oPos < oSize && nPos < nSize ) {
+
+          compRes = comparator.compare(oPeek, nPeek);
+
+          while ( true ) {
+
+            if ( compRes == 0 ) {
+              builder.leaf().addTuple(updater.merge(oPeek, nPeek));
+              ++oPos;
+              ++nPos;
+              if ( oPos == oSize || nPos == nSize ) break;
+              compRes = comparator.compare(oPeek = (O) oNode[oPos], nPeek = (N) nNode[nPos]);
+            } else if ( compRes < 0 ) {
+
+              int jump = search(comparator, oNode, oPos + 1, oSize, nPeek);
+              compRes = jump < 0 ? 1 : 0; // jump < 0 => find position in oNode that is greater than nPeak.
+              if ( jump < 0 ) {
+                jump = -(jump + 1);
+              }
+              builder.leaf().copy(oNode, oPos, jump - oPos);
+              if ( (oPos = jump) == oSize ) break;
+              oPeek = (O) oNode[oPos];
+            } else {
+              throw new RuntimeException("TODO");
+            }
+          }
+        }
+      }
+
 
       if ( nPos < nSize ) {
-        // builder.leaf().copy(nNode, nPos, uSize - nPos, updater);
+        builder.leaf().copy(nNode, nPos, nSize - nPos, updater);
       }
       return builder.build();
     }
