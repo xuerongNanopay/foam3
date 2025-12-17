@@ -92,7 +92,7 @@ public class BTreeUpdate {
     }
 
 
-    try ( TreeBuilder<O> builder = createBuilder() ) {
+    try ( TreeLeafBuilder<O> builder = createBuilder() ) {
 
       /**
        * upos > 0 => [0, oPos-1] in the oNode can be directly copied to result, 
@@ -173,15 +173,21 @@ public class BTreeUpdate {
     }
   }
 
-  static <T> TreeBuilder<T> createBuilder() {
-    return new TreeBuilder();
+  static <T> TreeLeafBuilder<T> createBuilder() {
+    return new TreeLeafBuilder();
   }
 
-  public static class TreeBuilder<T> extends LeafBuilder implements AutoCloseable {
+  private static abstract class AbstractTreeLeafBuilder extends LeafBuilder {
 
     final LeafBuilder leaf() {
       return this;
     }
+
+    abstract void reset();
+
+  }
+
+  public static class TreeLeafBuilder<T> extends AbstractTreeLeafBuilder implements AutoCloseable {
 
     final public void add(Object[] src , int offset, int size) {
       leaf().copy(src, offset, size);
@@ -198,7 +204,8 @@ public class BTreeUpdate {
       // reset();
     }
 
-    final void reset() {
+    @Override
+    void reset() {
       Arrays.fill(leaf().buffer, null);
       leaf().count = 0;
       InternalBuilder internal = leaf().parent;
@@ -208,6 +215,17 @@ public class BTreeUpdate {
       }
     }
   }
+
+  private static abstract class AbstractTreeInternalBuilder extends AbstractTreeLeafBuilder {
+
+    @Override
+    void reset() {
+      throw new RuntimeException("TODO: AbstractTreeInternalBuilder.reset method");
+    }
+
+  }
+
+  // static class Updater
 
   /**
    * Reusable builder.
