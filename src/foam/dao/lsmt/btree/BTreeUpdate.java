@@ -910,7 +910,7 @@ public class BTreeUpdate {
   //   }
   // }
 
-  private static class UpdateTreeIteratorx<C, N extends C> {
+  private static class UpdateTreeIterator<C, N extends C> {
 
     /**
      * depth, levels and position do not count for leaf.
