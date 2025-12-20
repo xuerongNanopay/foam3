@@ -310,7 +310,7 @@ public class BTree {
     assert height * fanoutShift < 32;
   }
 
-  private static int requireHeight(int size) {
+  static int requireHeight(int size) {
     return requireHeight(size, FANOUT_SHIFT);
   }
 

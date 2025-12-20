@@ -225,6 +225,23 @@ public class BTreeUpdate {
 
   }
 
+  static class TreeInternalBuilder<C, O extends C, N extends C> extends AbstractTreeInternalBuilder implements AutoCloseable {
+
+    Object[] update(Object[] oNode, Object[] nNode, Comparator<? super C> comparator, UpdateFunction<O, N> updater) {
+      throw new RuntimeException("TODO: TreeInternalBuilder.update");
+    }
+
+    @Override
+    public void close() {
+      // reset();
+    }
+
+    @Override
+    void reset() {
+      throw new RuntimeException("TODO: TreeInternalBuilder.reset");
+    }
+  }
+
   // static class Updater
 
   /**
@@ -812,5 +829,147 @@ public class BTreeUpdate {
       clearOrigin();
     }
     // void prepend()
+  }
+
+  // private static class TreeStack {
+    
+  //   /**
+  //    * stack the node we are in at each level.
+  //    * 0 => root node.
+  //    */
+  //   Object[][] levels; 
+
+  //   // the indexes in the node array, which
+  //   int[] positions;
+
+  //   /**
+  //    * tree depth = tree height - 1
+  //    * root is depth 0.
+  //    */
+  //   int depth, leafDepth;
+
+  //   void reset() {
+  //     Arrays.fill(levels, 0, leafDepth + 1, null);
+  //   }
+
+  //   Object[] node() {
+  //     return levels[depth];
+  //   }
+
+  //   int position() {
+  //     return positions[depth];
+  //   }
+  // }
+
+  // private static class TreeIterator extends TreeStack {
+
+  //   void init(Object[] tree) {
+  //     int requireHeight = requireHeight(size(tree));
+  //     if ( positions == null || requireHeight >= positions.length ) {
+  //       positions = new int[requireHeight];
+  //       levels = new Object[requireHeight][];
+  //     }
+  //     levels[0] = tree;
+  //   }
+
+  //   /**
+  //    * @return: tree height
+  //    */
+  //   int initRoot(Object[] tree) {
+
+  //     init(tree);
+  //     positions[0] = 0;
+  //     depth = leafDepth = 0;
+
+  //     while ( ! isLeaf(tree) ) {
+  //       tree = (Object[]) tree[sizeOfInternal(tree)];
+  //       ++leafDepth;
+  //     }
+
+  //     return ++leafDepth;
+  //   }
+
+  //   void descendToNextLeaf(Object[] node, int pos, int offset) {
+
+  //   }
+
+  //   /**
+  //    * @return:
+  //    */
+  //   boolean descend(Object[] node, int pos, int offset) {
+  //     positions[depth] = pos;
+  //     ++depth;
+  //     levels[depth] = (Object[]) node[offset + pos];
+  //     positions[depth] = 0;
+  //     return depth == leafDepth;
+  //   }
+
+  //   boolean ascend() {
+  //     if ( depth < 0 ) return false;
+  //     return --depth >= 0;
+  //   }
+  // }
+
+  private static class UpdateTreeIteratorx<C, N extends C> {
+
+    /**
+     * depth, levels and position do not count for leaf.
+     */
+    Object[][] levels;
+    int[] positions; // record index of child it is currectly in in the internal node.
+    int depth;
+
+    Object[] leaf;
+    int leafSize, leafPos;
+
+    void init(Object[] tree) {
+      int minHeight = requireHeight(size(tree));
+      if ( positions == null || minHeight > positions.length ) {
+        positions = new int[minHeight];
+        levels = new Object[minHeight][];
+      }
+      depth = 0;
+      downToLeftMostLeaf(tree);
+    }
+
+    N next() {
+      if ( leafPos < leafSize ) return (N) leaf[leafPos++];
+
+      // complete all node.
+      if ( depth == 0 ) return null;
+
+      Object[] node = levels[depth-1];
+      int position = positions[depth-1];
+      N result = (N) node[position];
+      forwardToNextLeaf(node, position + 1);
+      return result;
+    }
+
+    private void forwardToNextLeaf(Object[] node, int position) {
+      int tupleSize = firstChildOfInternal(node);
+      if ( position < tupleSize ) {
+        positions[depth-1] = position;
+      } else {
+        --depth; // only last child left
+      }
+      downToLeftMostLeaf((Object[]) node[tupleSize + position]);
+    }
+
+    private void downToLeftMostLeaf(Object[] node) {
+      while ( ! isLeaf(node) ) {
+        levels[depth] = node;
+        positions[depth] = 0;
+        node = (Object[]) node[firstChildOfInternal(node)];
+        ++depth;
+      }
+      leaf = node;
+      leafPos = 0;
+      leafSize = sizeOfLeaf(node);
+    }
+
+    void reset() {
+      leaf = null;
+      Arrays.fill(levels, 0, levels.length, null);
+    }
   }
 }
