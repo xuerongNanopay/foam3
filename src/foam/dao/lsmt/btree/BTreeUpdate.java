@@ -60,8 +60,8 @@ public class BTreeUpdate {
     N nPeek = (N) nNode[0];
 
     /**
-     * Optimisation: skip tuples in the oNode that can be copy to the result tree directly.
-     * break at position where nPeek < oPeek.
+     * Optimisation: find postion in the oNode in which preceding tuples can be copy to the result tree directly.
+     * break at position where oPeek > nPeek or oPeek != nPeek.
      */
     O merged = null;
     int compRes = -1; // compare(old, new)
@@ -831,86 +831,7 @@ public class BTreeUpdate {
     // void prepend()
   }
 
-  // private static class TreeStack {
-    
-  //   /**
-  //    * stack the node we are in at each level.
-  //    * 0 => root node.
-  //    */
-  //   Object[][] levels; 
-
-  //   // the indexes in the node array, which
-  //   int[] positions;
-
-  //   /**
-  //    * tree depth = tree height - 1
-  //    * root is depth 0.
-  //    */
-  //   int depth, leafDepth;
-
-  //   void reset() {
-  //     Arrays.fill(levels, 0, leafDepth + 1, null);
-  //   }
-
-  //   Object[] node() {
-  //     return levels[depth];
-  //   }
-
-  //   int position() {
-  //     return positions[depth];
-  //   }
-  // }
-
-  // private static class TreeIterator extends TreeStack {
-
-  //   void init(Object[] tree) {
-  //     int requireHeight = requireHeight(size(tree));
-  //     if ( positions == null || requireHeight >= positions.length ) {
-  //       positions = new int[requireHeight];
-  //       levels = new Object[requireHeight][];
-  //     }
-  //     levels[0] = tree;
-  //   }
-
-  //   /**
-  //    * @return: tree height
-  //    */
-  //   int initRoot(Object[] tree) {
-
-  //     init(tree);
-  //     positions[0] = 0;
-  //     depth = leafDepth = 0;
-
-  //     while ( ! isLeaf(tree) ) {
-  //       tree = (Object[]) tree[sizeOfInternal(tree)];
-  //       ++leafDepth;
-  //     }
-
-  //     return ++leafDepth;
-  //   }
-
-  //   void descendToNextLeaf(Object[] node, int pos, int offset) {
-
-  //   }
-
-  //   /**
-  //    * @return:
-  //    */
-  //   boolean descend(Object[] node, int pos, int offset) {
-  //     positions[depth] = pos;
-  //     ++depth;
-  //     levels[depth] = (Object[]) node[offset + pos];
-  //     positions[depth] = 0;
-  //     return depth == leafDepth;
-  //   }
-
-  //   boolean ascend() {
-  //     if ( depth < 0 ) return false;
-  //     return --depth >= 0;
-  //   }
-  // }
-
-  private static class UpdateTreeIterator<C, N extends C> {
+  private static class TreeIterator<C, N extends C> {
 
     /**
      * depth, levels and position do not count for leaf.
@@ -970,6 +891,41 @@ public class BTreeUpdate {
     void reset() {
       leaf = null;
       Arrays.fill(levels, 0, levels.length, null);
+    }
+
+    /**
+     * @return: 
+     */
+    <O> int copyKeysLT(C bound, Comparator<? super C> comparator, LeafBuilder builder, UpdateFunction<O, N> updater) {
+      while ( true ) {
+        int c = searchWithMaybePosiInfi(comparator, leaf, leafPos, leafSize, bound);
+        int end = c >= 0 ? c : -(c + 1);
+
+        if ( end > leafPos ) {
+          builder.copy(leaf, leafPos, end - leafPos, updater);
+          leafPos = end;
+        }
+
+        if ( end < leafSize ) {
+          // IMPLY: bound hit.
+          // 0: match found, otherwise: -1
+          return c >> 31;
+        }
+
+        // complete all node.
+        if ( depth == 0 ) return -1;
+
+        // IMPLY: bound not hit in current leaf, we can move forward to next leaf.
+
+        Object[] node = levels[depth-1];
+        int position = positions[depth-1];
+        N internalTuple = (N) node[position];
+        c = compareWithMaybePosiInfi(comparator, internalTuple, bound);
+        if ( c >= 0 ) return -c;
+
+        builder.addTuple(isSimple(updater) ? internalTuple : updater.insert(internalTuple));
+        forwardToNextLeaf(node, position - 1);
+      }
     }
   }
 }

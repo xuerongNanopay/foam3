@@ -268,6 +268,22 @@ public class BTree {
     return Arrays.binarySearch((C[])node, from, to, key, comparator);
   }
 
+  /**
+   * if key = null, then key is postive infinite.
+   */
+  static <C> int searchWithMaybePosiInfi(Comparator<? super C> comparator, Object[] node, int from , int to, C key) {
+    if ( key == null ) return -(++to);
+    return Arrays.binarySearch((C[])node, from, to, key, comparator);
+  }
+
+  /**
+   * if b = null, then b is postive infinite.
+   */
+  static <C> int compareWithMaybePosiInfi(Comparator<? super C> comparator, C a, C b) {
+    if ( b == null ) return -1;
+    return comparator.compare(a, b);
+  }
+
   public static <T> T find(Object[] node, T tuple, Comparator<? super T> comparator) {
     while ( true ) {
       int tupleEnd = getTupleEnd(node);
