@@ -406,7 +406,6 @@ public class BTree {
    * Leaf height is 1.
    */
   public static int height(Object[] tree) {
-    if ( isLeaf(tree) ) return 1;
 
     int height = 1;
     while ( ! isLeaf(tree) ) {

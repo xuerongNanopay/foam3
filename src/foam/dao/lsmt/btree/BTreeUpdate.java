@@ -50,7 +50,7 @@ public class BTreeUpdate {
   }
 
   public static <C, O extends C, N extends C> Object[] updateLeaves(
-    Object[] oNode, Object[] nNode, Comparator<? super C> comparator, UpdateFunction<O, N> updater
+    Comparator<? super C> comparator, UpdateFunction<O, N> updater, Object[] oNode, Object[] nNode
   ) {
 
     int oPos = -1, oSize = sizeOfLeaf(oNode);
@@ -227,22 +227,109 @@ public class BTreeUpdate {
 
   static class TreeInternalBuilder<C, O extends C, N extends C> extends AbstractTreeInternalBuilder implements AutoCloseable {
 
-    Object[] update(Object[] oNode, Object[] nNode, Comparator<? super C> comparator, UpdateFunction<O, N> updater) {
-      throw new RuntimeException("TODO: TreeInternalBuilder.update");
+    final TreeIterator<C, N> nIterator = new TreeIterator<>();
+    Comparator<? super C> comparator;
+    UpdateFunction<O,N> updater;
+    
+    Object[] update(Comparator<? super C> comparator, UpdateFunction<O, N> updater, Object[] oNode, Object[] nNode) {
+
+      this.nIterator.init(nNode);
+      this.updater = updater;
+      NodeBuilder builder = leaf();
+
+      assert builder.isEmpty();
+
+      for ( int i = 0 ; i < BTree.height(oNode) - 1 ; i++ ) {
+        InternalBuilder internal = builder.parent();
+        assert internal.isEmpty() && !internal.hasEndChild;
+        builder = internal;
+      }
+
+      N nPeek = this.nIterator.next();
+      nPeek = merge(nPeek, oNode, null, builder);
+      assert nPeek == null;
+      Object[] result = builder.build();
+
+      return result;
+    }
+
+    private N merge(N npeek, Object[] oNode, O oBound, NodeBuilder builder) {
+      return null;
+    }
+
+    private N mergeInternal(N nPeek, Object[] oNode, O oBound, InternalBuilder builder) {
+      return null;
+    }
+
+    private N mergeLeaf(N nPeek, Object[] oNode, O oBound, LeafBuilder builder) {
+
+      int oPos = 0;
+      int oSize = sizeOfLeaf(oNode);
+      O oPeek = (O) oNode[oPos];
+      int c = comparator.compare(oPeek, nPeek);
+
+      /**
+       * c == 0 => oPeek == nPeek
+       * c < 0  => oPeek < nPeek
+       * c > 0  => oPeek > nPeek
+       */
+      while ( true ) {
+        if ( c == 0 ) {
+          leaf().addTuple(updater.merge(oPeek, nPeek));
+          if ( ++oPos < oSize ) {
+            oPeek = (O) oNode[oPos];
+          }
+          nPeek = nIterator.next();
+          if ( nPeek == null ) { // nIterater exhasuted.
+            builder.copy(oNode, oPos, oSize - oPos);
+            return null;
+          }
+          if ( oPos == oSize ) break;
+
+          c = comparator.compare(oPeek, nPeek);
+        } else if ( c < 0 ) {
+          // find offiset in oNode that is also less than nPeek.
+          int oJump = search(comparator, oNode, oPos + 1, oSize, nPeek);
+          c = oJump >= 0 ? 0 : 1;
+          if ( oJump < 0 ) {
+            oJump = -(1 + oJump);
+          }
+          builder.copy(oNode, oPos, oJump - oPos);
+          if ( (oPos = oJump) == oSize ) {
+            break;
+          }
+          oPeek = (O) oNode[oPos];
+        } else {
+          // int copyKeysLT(C upperBound, Comparator<? super C> comparator, LeafBuilder builder, UpdateFunction<O, N> updater)
+          builder.addTuple(isSimple(updater) ? nPeek : updater.insert(nPeek));
+          c = nIterator.copyKeysLT(oPeek, comparator, builder, updater);
+          nPeek = nIterator.next();
+          if ( nPeek == null ) {
+            //IMPLY: nNode is exhausted.
+            builder.copy(oNode, oPos, oSize - oPos);
+            return null;
+          }
+        }
+      }
+
+      /**
+       * oBound == null => oBound == positive infinite.
+       */
+
+      if ( oBound == null || comparator.compare(nPeek, oBound) < 0 ) {
+        builder.addTuple(isSimple(updater) ? nPeek : updater.insert(nPeek));
+        nIterator.copyKeysLT(oBound, comparator, builder, updater);
+        nPeek = nIterator.next();
+      }
+
+      return nPeek;
     }
 
     @Override
     public void close() {
-      // reset();
-    }
 
-    @Override
-    void reset() {
-      throw new RuntimeException("TODO: TreeInternalBuilder.reset");
     }
   }
-
-  // static class Updater
 
   /**
    * Reusable builder.
@@ -894,11 +981,11 @@ public class BTreeUpdate {
     }
 
     /**
-     * @return: 
+     * add all tuples in the iterator that are less than upperBound.
      */
-    <O> int copyKeysLT(C bound, Comparator<? super C> comparator, LeafBuilder builder, UpdateFunction<O, N> updater) {
+    <O> int copyKeysLT(C upperBound, Comparator<? super C> comparator, LeafBuilder builder, UpdateFunction<O, N> updater) {
       while ( true ) {
-        int c = searchWithMaybePosiInfi(comparator, leaf, leafPos, leafSize, bound);
+        int c = searchWithMaybePosiInfi(comparator, leaf, leafPos, leafSize, upperBound);
         int end = c >= 0 ? c : -(c + 1);
 
         if ( end > leafPos ) {
@@ -907,7 +994,7 @@ public class BTreeUpdate {
         }
 
         if ( end < leafSize ) {
-          // IMPLY: bound hit.
+          // IMPLY: upperBound hit.
           // 0: match found, otherwise: -1
           return c >> 31;
         }
@@ -915,12 +1002,12 @@ public class BTreeUpdate {
         // complete all node.
         if ( depth == 0 ) return -1;
 
-        // IMPLY: bound not hit in current leaf, we can move forward to next leaf.
+        // IMPLY: upperBound not hit in current leaf, we can move forward to next leaf.
 
         Object[] node = levels[depth-1];
         int position = positions[depth-1];
         N internalTuple = (N) node[position];
-        c = compareWithMaybePosiInfi(comparator, internalTuple, bound);
+        c = compareWithMaybePosiInfi(comparator, internalTuple, upperBound);
         if ( c >= 0 ) return -c;
 
         builder.addTuple(isSimple(updater) ? internalTuple : updater.insert(internalTuple));
