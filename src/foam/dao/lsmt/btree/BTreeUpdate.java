@@ -253,11 +253,20 @@ public class BTreeUpdate {
       return result;
     }
 
-    private N merge(N npeek, Object[] oNode, O oBound, NodeBuilder builder) {
-      return null;
+    private N merge(N nPeek, Object[] oNode, O oBound, NodeBuilder builder) {
+      return builder == leaf() ?
+        mergeLeaf(nPeek, oNode, oBound, (LeafBuilder) builder) :
+        mergeInternal(nPeek, oNode, oBound, (InternalBuilder) builder);
     }
 
     private N mergeInternal(N nPeek, Object[] oNode, O oBound, InternalBuilder builder) {
+      int uPos = 0;
+      int uSize = tupleSizeOfInternal(oNode);
+
+      while ( nPeek != null ) {
+        // int oJump = searchWithMaybePosiInfi(comparator, oNode, oPos, oSize, oBound);
+        // int c = oJump >= 0 ? 0 : 1;
+      }
       return null;
     }
 

@@ -264,15 +264,49 @@ public class BTree {
     return null;
   }
 
+  /**
+   * to: excluded
+   */
   static <C> int search(Comparator<? super C> comparator, Object[] node, int from , int to, C key) {
     return Arrays.binarySearch((C[])node, from, to, key, comparator);
   }
 
   /**
    * if key = null, then key is postive infinite.
+   * to: excluded
    */
   static <C> int searchWithMaybePosiInfi(Comparator<? super C> comparator, Object[] node, int from , int to, C key) {
     if ( key == null ) return -(++to);
+    return Arrays.binarySearch((C[])node, from, to, key, comparator);
+  }
+
+  /**
+   * to: excluded
+   */
+  static <C> int searchWithUpperBound(Comparator<? super C> comparator, Object[] node,  int from, int to, C upperBound, C key) {
+
+    int step = 0;
+    while ( true ) {
+      int i = from + step;
+      if ( i >= to ) {
+        int c = compareWithMaybePosiInfi(comparator, key, upperBound);
+        if ( c >= 0 ) {
+          // search key is greater and equal to upperBound.
+          // so, the insert postion should be to+1.
+          return -(2 + to);
+        }
+        break;
+      }
+      int c = comparator.compare(key, (C) node[i]);
+      if ( c < 0 ) {
+        to = i;
+        break;
+      }
+      if ( c == 0 ) return i;
+
+      from = i + 1;
+      step = step * 2 + 1;
+    }
     return Arrays.binarySearch((C[])node, from, to, key, comparator);
   }
 
