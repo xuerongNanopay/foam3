@@ -43,13 +43,41 @@ public class BTreeUpdate {
   }
 
   // Insert only, update will keep original tuple.
-  static final SimpleUpdate<Object> NO_UPDATE = SimpleUpdate.of((o, n) -> o);
+  static final SimpleUpdate<Object> NO_OP = SimpleUpdate.of((o, n) -> n);
 
   static boolean isSimple(UpdateFunction<?,?> updater) {
     return updater instanceof SimpleUpdate;
   }
 
-  public static <C, O extends C, N extends C> Object[] updateLeaves(
+  public static <C, O extends C, N extends C> Object[] merge(
+    Comparator<? super C> comparator, UpdateFunction<O, N> updater, Object[] oNode, Object[] nNode
+  ) {
+    if ( isEmpty(nNode) ) return oNode;
+
+    if ( isEmpty(oNode) ) {
+      if ( isSimple(updater) ) {
+        throw new RuntimeException("TODO: transfer function");
+      }
+    }
+
+    if ( isLeaf(oNode) && isLeaf(nNode) ) {
+      if ( updater == NO_OP && oNode.length < nNode.length ) {
+        Object[] tmp = oNode;
+        oNode = nNode;
+        nNode = tmp;
+      }
+
+      return mergeLeaves(comparator, updater, oNode, nNode);
+    }
+
+    //IMPROVE: nNode is not leaf
+
+    try ( TreeInternalBuilder builder = new TreeInternalBuilder() ) {
+      return builder.update(comparator, updater, oNode, nNode);
+    }
+  }
+
+  public static <C, O extends C, N extends C> Object[] mergeLeaves(
     Comparator<? super C> comparator, UpdateFunction<O, N> updater, Object[] oNode, Object[] nNode
   ) {
 
