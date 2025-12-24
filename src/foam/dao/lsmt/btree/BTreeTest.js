@@ -26,7 +26,9 @@ foam.CLASS({
         // btree = BTree.build(bi, len);
         // // System.out.println(BTreeOutputter.stringify(btree));
         // System.out.println("FFFF: " + BTree.find(btree, 11, Integer::compare));
-        test1(x);
+        
+        // test1(x);
+        testInsertAndFind(x);
       `
     },
     {
@@ -45,8 +47,6 @@ foam.CLASS({
       name: 'test1',
       args: 'Context x',
       javaCode: `
-        int len = 32768;
-        var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
 
         int size = 32768;
         var ret = new Object[size];
@@ -77,6 +77,36 @@ foam.CLASS({
           }
         }
 
+      `
+    },
+    {
+      name: 'testInsertAndFind',
+      args: 'Context x',
+      javaCode: `
+        int len = 1000000;
+        var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
+        var btree = BTree.build(bi, len);
+        var ret = true;
+
+        // Runtime.getRuntime().gc();
+
+        long start = System.nanoTime();
+        for ( int i = 1 ; i <= len ; i++ ) {
+          var find = BTree.find(btree, i, Integer::compare);
+          if ( find == null || find != i ) {
+            test(false, String.format("%d is not found in BTree.", i));
+            ret = false;
+            break;
+          }
+        }
+        
+        long end = System.nanoTime();
+        long elapsedNanos = end - start;
+        long elapsedMillis = elapsedNanos / 1_000_000;
+
+        if ( ret ) {
+          test(ret, "BTree testInsertAndFind success, Elapsed: " + elapsedMillis + " ms");
+        }
       `
     }
   ]
