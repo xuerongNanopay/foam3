@@ -260,14 +260,60 @@ public class BTreeUpdate {
     }
 
     private N mergeInternal(N nPeek, Object[] oNode, O oBound, InternalBuilder builder) {
-      int uPos = 0;
-      int uSize = tupleSizeOfInternal(oNode);
+      int oPos = 0;
+      int oSize = tupleSizeOfInternal(oNode);
 
       while ( nPeek != null ) {
-        // int oJump = searchWithMaybePosiInfi(comparator, oNode, oPos, oSize, oBound);
-        // int c = oJump >= 0 ? 0 : 1;
+        
+        int oJump = searchWithUpperBound(comparator, oNode, oPos, oSize, oBound, nPeek);
+        int c = oJump >= 0 ? 0 : -1;
+        if ( oJump < 0 ) {
+          oJump = -(1 + oJump);
+        }
+
+        if ( oJump > oSize ) break; // nPeak is greater than all tuples in oNode.
+
+        if ( oJump > oPos ) {
+          builder.copyPre(oNode, oSize, oPos, oJump - oPos);
+        }
+
+        //IMPLY: oJump must be <= oSize.
+        O nextBound = oJump < oSize ? (O) oNode[oJump] : oBound;
+        Object[] child = (Object[]) oNode[oJump + oSize];
+
+        // c is less or equal to 0.
+
+        if ( c < 0 ) {
+          //IMPLY: the insert position of nPeek is inside the child.
+          NodeBuilder childBuilder = builder.child;
+          //TODO: use origin? how it works?
+          
+          nPeek = merge(nPeek, child, nextBound, childBuilder);
+          childBuilder.flushToParent(builder);
+          if ( oJump == oSize ) {
+            //IMPLY: child is the most left child.
+            return nPeek;
+          }
+          // nNode is exhausted, so set nPeek to infinite.
+          c = nPeek == null ? -1 : comparator.compare(nextBound, nPeek);
+          builder.addTuple(nextBound);
+          
+        } else {
+          // c == 0 => tuples in the child are less than nPeek
+          builder.addChild(child, size(child));
+          builder.addTuple(updater.merge(nextBound, nPeek));
+          nPeek = nIterator.next();
+        }
+
+        oPos = oJump + 1;
       }
-      return null;
+
+      if ( oPos <= oSize ) {
+        builder.copyPre(oNode, oSize, oPos, oSize - oPos);
+        Object[] lastChild = (Object[]) oNode[oSize * 2];
+        builder.addChild(lastChild, size(lastChild));
+      }
+      return nPeek;
     }
 
     private N mergeLeaf(N nPeek, Object[] oNode, O oBound, LeafBuilder builder) {

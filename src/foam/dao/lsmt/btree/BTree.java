@@ -291,7 +291,7 @@ public class BTree {
       if ( i >= to ) {
         int c = compareWithMaybePosiInfi(comparator, key, upperBound);
         if ( c >= 0 ) {
-          // search key is greater and equal to upperBound.
+          // search key is greater or equal to upperBound.
           // so, the insert postion should be to+1.
           return -(2 + to);
         }
