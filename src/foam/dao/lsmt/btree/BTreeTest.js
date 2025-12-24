@@ -12,6 +12,7 @@ foam.CLASS({
   javaImports: [
     'foam.dao.lsmt.utils.*',
     'java.util.Objects',
+    'java.util.Random',
   ],
 
   methods: [
@@ -106,6 +107,30 @@ foam.CLASS({
 
         if ( ret ) {
           test(ret, "BTree testInsertAndFind success, Elapsed: " + elapsedMillis + " ms");
+        }
+      `
+    },
+    {
+      name: 'testUpdateAndFind',
+      args: 'Context x',
+      javaCode: `
+        int len = 1000000;
+        var arrs = generateIntegerArray(len);
+
+
+      `
+    },
+    {
+      name: 'shuffleArray',
+      args: 'Object[] a, int randSeed',
+      javaCode: `
+        Random rnd = new Random(42);
+
+        for (int i = a.length - 1; i > 0; i--) {
+          int j = rnd.nextInt(i + 1);
+          Object tmp = a[i];
+          a[i] = a[j];
+          a[j] = tmp;
         }
       `
     }
