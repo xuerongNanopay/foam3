@@ -30,8 +30,59 @@ foam.CLASS({
         // System.out.println("FFFF: " + BTree.find(btree, 11, Integer::compare));
         
         // test1(x);
-        testInsertAndFind(x);
-        benchMark(x);
+        // testInsertAndFind(x);
+        // benchMark(x);
+        btreeDebug(x);
+      `
+    },
+    {
+      name: 'btreeDebug',
+      args: 'Context x',
+      javaCode: `
+        /**
+         * max: 31, min: 15
+         * - 0
+         * - 1 - 31
+         * - 32 - 63
+         * - 64
+         */ 
+      
+        int size = 0;
+        var batch = generateIntegerArray(size);
+        var btree = insertToBTree(batch);
+        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+
+        size = 1;
+        batch = generateIntegerArray(size);
+        btree = insertToBTree(batch);
+        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+
+        size = 31;
+        batch = generateIntegerArray(size);
+        // batch = generateIntegerArrayReverse(size);
+        // shuffleArray(batch, 43);
+        btree = insertToBTree(batch);
+        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+
+        size = 32;
+        batch = generateIntegerArray(size);
+        // batch = generateIntegerArrayReverse(size);
+        // shuffleArray(batch, 43);
+        btree = insertToBTree(batch);
+        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+      `
+    },
+    {
+      name: 'insertToBTree',
+      args: 'Object[] inserts',
+      type: 'Object[]',
+      javaCode: `
+        var btree = BTree.empty();
+        BTreeUpdate.SimpleUpdate<Integer> intUpdater = BTreeUpdate.SimpleUpdate.of((o, n) -> n);
+        for ( int i = 0 ; i < inserts.length ; i++ ) {
+          btree = BTreeUpdate.merge(Integer::compare, intUpdater, btree, BTree.singleton(inserts[i]));
+        }
+        return btree;
       `
     },
     {
@@ -54,6 +105,18 @@ foam.CLASS({
         var ret = new Object[length];
         for ( int i = 0 ; i < length ; i++ ) {
           ret[i] = i+1;
+        }
+        return ret;
+      `
+    },
+    {
+      name: 'generateIntegerArrayReverse',
+      type: 'Object[]',
+      args: 'int length',
+      javaCode: `
+        var ret = new Object[length];
+        for ( int i = 0 ; i < length ; i++ ) {
+          ret[i] = length - i;
         }
         return ret;
       `

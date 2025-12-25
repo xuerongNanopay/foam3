@@ -56,11 +56,12 @@ public class BTreeUpdate {
 
     if ( isEmpty(oNode) ) {
       if ( isSimple(updater) ) {
-        if ( updater == NO_OP ) {
-          return nNode;
-        } else {
-          throw new RuntimeException("TODO: transfer function");
-        }
+        // if ( updater == NO_OP ) {
+        //   return nNode;
+        // } else {
+        //   throw new RuntimeException("TODO: transfer function");
+        // }
+        return nNode;
       }
     }
 
@@ -562,17 +563,17 @@ public class BTreeUpdate {
       int leafSize;
 
       if ( mustRebalance() ) {
-        // steel tuples from overflow buffer and guide tuple to make current buffer reach to MIN_TUPLES.
+        // steal tuples from precedence buffer to make last node reach to MIN_TUPLES.
         leafSize = MIN_TUPLES;
         leaf = new Object[MIN_TUPLES];
 
-        int steal = MIN_TUPLES - count;
-        System.arraycopy(precedenceBuffer, MAX_TUPLES - steal - 1, leaf, 0, steal - 1);
-        leaf[steal-1] = precedenceNext;
-        System.arraycopy(buffer, 0, leaf, steal, count);
+        int diff = MIN_TUPLES - count;
+        System.arraycopy(precedenceBuffer, MAX_TUPLES - diff + 1, leaf, 0, diff - 1); // steal one less for precedenceNext.
+        leaf[diff-1] = precedenceNext;
+        System.arraycopy(buffer, 0, leaf, diff, count);
 
-        // Adjust overflow buffer and guide tuple.
-        int predecessorRemaining = MAX_TUPLES - steal;
+        // Adjust precedence buffer and guide tuple.
+        int predecessorRemaining = MAX_TUPLES - diff;
         Object[] predecessor = new Object[predecessorRemaining | 1];
         System.arraycopy(precedenceBuffer, 0, predecessor, 0, predecessorRemaining);
         parent().addChildAndTuple(predecessor, predecessorRemaining, precedenceBuffer[predecessorRemaining]);
@@ -711,7 +712,7 @@ public class BTreeUpdate {
       } else {
         buffer[count++] = tuple;
       }
-      
+
       hasEndChild = false;
     }
 
