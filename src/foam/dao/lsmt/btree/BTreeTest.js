@@ -13,6 +13,7 @@ foam.CLASS({
     'foam.dao.lsmt.utils.*',
     'java.util.Objects',
     'java.util.Random',
+    'foam.dao.index.*',
   ],
 
   methods: [
@@ -30,6 +31,19 @@ foam.CLASS({
         
         // test1(x);
         testInsertAndFind(x);
+        benchMark(x);
+      `
+    },
+    {
+      name: 'generateTestObjects',
+      type: 'BTreeObject[]',
+      args: 'int size',
+      javaCode: `
+        var ret = new BTreeObject[size];
+        for ( int i = 0 ; i < size ; i++ ) {
+          ret[i] = new BTreeObject(i);
+        }
+        return ret;
       `
     },
     {
@@ -84,7 +98,7 @@ foam.CLASS({
       name: 'testInsertAndFind',
       args: 'Context x',
       javaCode: `
-        int len = 1000000;
+        int len = 100000;
         var bi = BulkIterator.<Integer>of(generateIntegerArray(len));
         var btree = BTree.build(bi, len);
         var ret = true;
@@ -114,17 +128,51 @@ foam.CLASS({
       name: 'testUpdateAndFind',
       args: 'Context x',
       javaCode: `
-        int len = 1000000;
+        int len = 100000;
         var arrs = generateIntegerArray(len);
 
 
       `
     },
     {
+      name: 'benchMark',
+      args: 'Context x',
+      javaCode: `
+        long start = 0;
+        long end = 0;
+        long elapsedNanos = 0;
+        long elapsedMillis = 0;
+
+        int size = 100000;
+        var testObjs = generateTestObjects(size);
+        shuffleArray(testObjs, 43);
+        var treeIndex = new TreeIndex(BTreeObject.ID, true);
+        Object treeState = null;
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          treeState = treeIndex.put(treeState, testObjs[i]);
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark AATree index insert, Elapsed: " + elapsedMillis + " ms");
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          treeIndex.find(treeState, i);
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark AATree index insert, Elapsed: " + elapsedMillis + " ms");
+      `
+    },
+    {
       name: 'shuffleArray',
       args: 'Object[] a, int randSeed',
       javaCode: `
-        Random rnd = new Random(42);
+        Random rnd = new Random(randSeed);
 
         for (int i = a.length - 1; i > 0; i--) {
           int j = rnd.nextInt(i + 1);

@@ -11,7 +11,8 @@ foam.POM({
   ],
 
   files: [
-    { name: "btree/BTreeTest",  flags: "java&test" },
+    { name: "btree/BTreeTest",    flags: "java&test" },
+    { name: "btree/BTreeObject",  flags: "java" },
   ],
 
   javaFiles: [
