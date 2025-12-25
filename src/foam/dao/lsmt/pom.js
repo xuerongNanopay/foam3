@@ -23,6 +23,7 @@ foam.POM({
     { name: "btree/BTreeFullCursor" },
     { name: "btree/BTreeLeafCursor" },
     { name: "btree/ZoneMap" },
+    { name: "btree/BTreeIndex" },
     { name: "utils/BulkIterator" },
     { name: "utils/ArrayUtil" },
   ]
