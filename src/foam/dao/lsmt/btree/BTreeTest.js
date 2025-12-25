@@ -145,7 +145,7 @@ foam.CLASS({
 
         int size = 100000;
         var testObjs = generateTestObjects(size);
-        shuffleArray(testObjs, 43);
+        // shuffleArray(testObjs, 43);
         var treeIndex = new TreeIndex(BTreeObject.ID, true);
         Object treeState = null;
 
@@ -165,7 +165,22 @@ foam.CLASS({
         end = System.nanoTime();
         elapsedNanos = end - start;
         elapsedMillis = elapsedNanos / 1_000_000;
-        test(true, "benchMark AATree index insert, Elapsed: " + elapsedMillis + " ms");
+        test(true, "benchMark AATree index find, Elapsed: " + elapsedMillis + " ms");
+
+        var btreeIndex = new BTreeIndex(BTreeObject.ID);
+        Object btreeStatus = null;
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          btreeStatus = btreeIndex.put(btreeStatus, testObjs[i]);
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark BTree index insert, Elapsed: " + elapsedMillis + " ms");
+
+        //TODO: fix bug.
+        System.out.println("AAAA: " + BTree.size((Object[]) btreeStatus));
       `
     },
     {

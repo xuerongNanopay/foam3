@@ -297,6 +297,8 @@ public class BTree {
         }
         break;
       }
+      // System.out.println("AAAA: " + key + ", i: " + i +  ", node.length: " + node.length + ", from: " + from + ", to: " + to);
+      // System.out.println("key: " + key + ", node[i]: " + node[i]);
       int c = comparator.compare(key, (C) node[i]);
       if ( c < 0 ) {
         to = i;

@@ -56,7 +56,11 @@ public class BTreeUpdate {
 
     if ( isEmpty(oNode) ) {
       if ( isSimple(updater) ) {
-        throw new RuntimeException("TODO: transfer function");
+        if ( updater == NO_OP ) {
+          return nNode;
+        } else {
+          throw new RuntimeException("TODO: transfer function");
+        }
       }
     }
 
@@ -263,6 +267,7 @@ public class BTreeUpdate {
 
       this.nIterator.init(nNode);
       this.updater = updater;
+      this.comparator = comparator;
       NodeBuilder builder = leaf();
 
       assert builder.isEmpty();
@@ -598,7 +603,8 @@ public class BTreeUpdate {
 
     void copy(Object[] src, int offset, int size) {
       if ( count + size > MAX_TUPLES ) {
-        int diff = MAX_TUPLES - size;
+        int diff = MAX_TUPLES - count;
+        // System.out.println("AAA: " + src.length + " , offset: " + offset + ", size: " + size + ", diff: " + diff + ", count: " + count);
         System.arraycopy(src, offset, buffer, count, diff);
         offset += diff;
         batchPrecedence(src[offset++]);
@@ -699,14 +705,14 @@ public class BTreeUpdate {
     final void addTuple(Object tuple) {
   
       assert hasEndChild;
-      hasEndChild = false;
 
       if ( count == MAX_TUPLES ) {
         batchPrecedence(tuple);
       } else {
         buffer[count++] = tuple;
       }
-
+      
+      hasEndChild = false;
     }
 
     final void addChild(Object[] child, int childSize) {
