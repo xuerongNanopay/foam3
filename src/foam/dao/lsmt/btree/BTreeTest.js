@@ -44,7 +44,7 @@ foam.CLASS({
          * - 0
          * - 1 - 31
          * - 32 - 63
-         * - 64
+         * - 558
          */ 
       
         int size = 0;
@@ -55,21 +55,42 @@ foam.CLASS({
         size = 1;
         batch = generateIntegerArray(size);
         btree = insertToBTree(batch);
-        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+        System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
 
         size = 31;
         batch = generateIntegerArray(size);
         // batch = generateIntegerArrayReverse(size);
         // shuffleArray(batch, 43);
         btree = insertToBTree(batch);
-        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+        System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
 
         size = 32;
+        // batch = generateIntegerArray(size);
+        batch = generateIntegerArrayReverse(size);
+        shuffleArray(batch, 64);
+        btree = insertToBTree(batch);
+        System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
+
+        size = 47;
         batch = generateIntegerArray(size);
         // batch = generateIntegerArrayReverse(size);
-        // shuffleArray(batch, 43);
+        // shuffleArray(batch, 23);
         btree = insertToBTree(batch);
-        System.out.println("size: " + size + "\\n" + BTreeOutputter.stringify(btree));
+        System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
+
+        size = 255;
+        // batch = generateIntegerArray(size);
+        batch = generateIntegerArrayReverse(size);
+        shuffleArray(batch, 46);
+        btree = insertToBTree(batch);
+        System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
+
+        size = 560;
+        batch = generateIntegerArray(size);
+        // batch = generateIntegerArrayReverse(size);
+        // shuffleArray(batch, 46);
+        btree = insertToBTree(batch);
+        System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
       `
     },
     {

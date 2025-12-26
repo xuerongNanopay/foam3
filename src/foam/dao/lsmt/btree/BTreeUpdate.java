@@ -754,7 +754,7 @@ public class BTreeUpdate {
     }
 
     final void pushPrecedence() {
-      applyPrecedencePresum(precedenceBuffer, MAX_TUPLES);
+      copyPrecedencePresum(precedenceBuffer, MAX_TUPLES);
       parent().addChildAndTuple(precedenceBuffer, sizeOfInternal(precedenceBuffer), precedenceNext);
       precedenceNext = null;
       precedenceBuffer = null;
@@ -810,29 +810,29 @@ public class BTreeUpdate {
       Object[] internal;
 
       if ( mustRebalance() ) {
-        int steal = MIN_TUPLES - count;
+        int diff = MIN_TUPLES - count;
         internal = new Object[2 * (MIN_TUPLES + 1)];
-        // steal precedence tuples
-        System.arraycopy(precedenceBuffer, MAX_TUPLES - (steal - 1), internal, 0, steal - 1);
-        internal[steal - 1] = precedenceNext;
-        System.arraycopy(buffer, 0, internal, steal, count);
-        // steal precedence children
-        System.arraycopy(precedenceBuffer, 2 * MAX_TUPLES + 1 - steal, internal, MIN_TUPLES, steal);
-        System.arraycopy(buffer, MAX_TUPLES, internal, MIN_TUPLES + steal, count + 1);
+        // diff precedence tuples
+        System.arraycopy(precedenceBuffer, MAX_TUPLES - (diff - 1), internal, 0, diff - 1);
+        internal[diff - 1] = precedenceNext;
+        System.arraycopy(buffer, 0, internal, diff, count);
+        // diff precedence children
+        System.arraycopy(precedenceBuffer, 2 * MAX_TUPLES + 1 - diff, internal, MIN_TUPLES, diff);
+        System.arraycopy(buffer, MAX_TUPLES, internal, MIN_TUPLES + diff, count + 1);
 
         // Rebalance & create zoomap.
         int[] presum = new int[MIN_TUPLES + 1];
-        System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - steal, presum, 0, steal);
-        System.arraycopy(sizes, 0, presum, steal, count + 1);
+        System.arraycopy(precedenceSizes, MAX_TUPLES + 1 - diff, presum, 0, diff);
+        System.arraycopy(sizes, 0, presum, diff, count + 1);
         internalSize = convSizesToPresum(presum, MIN_TUPLES + 1);
         internal[2*MIN_TUPLES + 1] = presum;
 
         // refactor&push precedence to parent.
-        int remainingTuples = MAX_TUPLES - steal;
+        int remainingTuples = MAX_TUPLES - diff;
         Object[] preInternal = new Object[2 * (remainingTuples + 1)];
         System.arraycopy(precedenceBuffer, 0, preInternal, 0, remainingTuples);
         System.arraycopy(precedenceBuffer, MAX_TUPLES, preInternal, remainingTuples, remainingTuples+1);
-        applyPrecedencePresum(preInternal, remainingTuples);
+        copyPrecedencePresum(preInternal, remainingTuples);
         parent().addChildAndTuple(preInternal, sizeOfInternal(preInternal), precedenceBuffer[remainingTuples]);
         precedenceNext = null;
       } else {
@@ -869,16 +869,17 @@ public class BTreeUpdate {
       toInternal[2*tupleSize + 1] = presum;
     }
 
-    void applyPrecedencePresum(Object[] internal, int tupleSize) {
+    void copyPrecedencePresum(Object[] internal, int tupleSize) {
       //IMPROVE: shotcut for full node.
 
       int[] presum = precedenceSizes;
       if ( tupleSize < MAX_TUPLES ) {
-        sizes = Arrays.copyOf(sizes, tupleSize+1);
+        presum = Arrays.copyOf(presum, tupleSize+1);
       } else {
         precedenceSizes = null; // batchProcedence method will initial a new one.
       }
-      convSizesToPresum(presum, tupleSize);
+
+      convSizesToPresum(presum, tupleSize+1);
       internal[2 * tupleSize + 1] = presum;
     }
 
