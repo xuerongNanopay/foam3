@@ -85,9 +85,9 @@ foam.CLASS({
         btree = insertToBTree(batch);
         System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));
 
-        size = 560;
+        size = 558;
         batch = generateIntegerArray(size);
-        // batch = generateIntegerArrayReverse(size);
+        batch = generateIntegerArrayReverse(size);
         // shuffleArray(batch, 46);
         btree = insertToBTree(batch);
         System.out.println("size: " + BTree.size(btree) + "\\n" + BTreeOutputter.stringify(btree));

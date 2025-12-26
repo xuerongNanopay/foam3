@@ -706,6 +706,7 @@ public class BTreeUpdate {
     final void addTuple(Object tuple) {
   
       assert hasEndChild;
+      hasEndChild = false;
 
       if ( count == MAX_TUPLES ) {
         batchPrecedence(tuple);
@@ -713,7 +714,6 @@ public class BTreeUpdate {
         buffer[count++] = tuple;
       }
 
-      hasEndChild = false;
     }
 
     final void addChild(Object[] child, int childSize) {
@@ -735,7 +735,7 @@ public class BTreeUpdate {
     }
 
     final void batchPrecedence(Object tuple) {
-      assert hasEndChild;
+      assert !hasEndChild;
 
       if ( hasPrecedence() ) {
         pushPrecedence();
@@ -810,6 +810,7 @@ public class BTreeUpdate {
       Object[] internal;
 
       if ( mustRebalance() ) {
+        System.out.println("AAAAA");
         int diff = MIN_TUPLES - count;
         internal = new Object[2 * (MIN_TUPLES + 1)];
         // diff precedence tuples
@@ -946,12 +947,12 @@ public class BTreeUpdate {
       }
     }
   
-    void copyPre(Object[] copy, int tupleSize, int offset, int length) {
+    void copyPre(Object[] copy, int tupleSize, int offset, int size) {
   
       assert !hasEndChild;
 
       int[] presum = getPresum(copy);
-      if ( count + length > MAX_TUPLES ) {
+      if ( count + size > MAX_TUPLES ) {
       
         int diff = MAX_TUPLES - count;
         copyPreNoBatch(copy, tupleSize, presum,  offset, diff);
@@ -962,9 +963,12 @@ public class BTreeUpdate {
         sizes[MAX_TUPLES] = presum[offset] - (offset > 0 ? (presum[offset-1] + 1) : 0);
 
         batchPrecedence(copy[offset]);
+
+        size -= diff + 1;
+        ++offset;
       }
 
-      copyPreNoBatch(copy, tupleSize, presum, offset, length);
+      copyPreNoBatch(copy, tupleSize, presum, offset, size);
     }
   
     private void copyPreNoBatch(Object[] copy, int tupleSize, int[] presum, int offset, int length) {
