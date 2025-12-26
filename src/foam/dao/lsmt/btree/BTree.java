@@ -297,8 +297,7 @@ public class BTree {
         }
         break;
       }
-      // System.out.println("AAAA: " + key + ", i: " + i +  ", node.length: " + node.length + ", from: " + from + ", to: " + to);
-      // System.out.println("key: " + key + ", node[i]: " + node[i]);
+
       int c = comparator.compare(key, (C) node[i]);
       if ( c < 0 ) {
         to = i;
@@ -320,7 +319,7 @@ public class BTree {
     return comparator.compare(a, b);
   }
 
-  public static <T> T find(Object[] node, T tuple, Comparator<? super T> comparator) {
+  public static <T> T find(Comparator<? super T> comparator, Object[] node, T tuple) {
     while ( true ) {
       int tupleEnd = getTupleEnd(node);
       int i = Arrays.binarySearch((T[]) node, 0, tupleEnd, tuple, comparator); /* find matched tuple in the key range. */

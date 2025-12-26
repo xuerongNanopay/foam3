@@ -810,7 +810,6 @@ public class BTreeUpdate {
       Object[] internal;
 
       if ( mustRebalance() ) {
-        System.out.println("AAAAA");
         int diff = MIN_TUPLES - count;
         internal = new Object[2 * (MIN_TUPLES + 1)];
         // diff precedence tuples

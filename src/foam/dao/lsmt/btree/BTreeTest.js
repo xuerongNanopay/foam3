@@ -31,8 +31,8 @@ foam.CLASS({
         
         // test1(x);
         // testInsertAndFind(x);
-        // benchMark(x);
-        btreeDebug(x);
+        benchMark(x);
+        // btreeDebug(x);
       `
     },
     {
@@ -158,13 +158,13 @@ foam.CLASS({
         
         for ( int i = 0 ; i < size*2 ; i++ ) {
           if ( i%2 == 0 ) {
-            var equal = Objects.equals(i, BTree.find(btree, i, Integer::compare));
+            var equal = Objects.equals(i, BTree.find(Integer::compare, btree, i));
             if ( !equal ) {
               test(equal, String.format("%d is not found in tree.", i));
               break;
             }
           } else {
-            var equal = Objects.equals(null, BTree.find(btree, i, Integer::compare));
+            var equal = Objects.equals(null, BTree.find(Integer::compare, btree, i));
             if ( !equal ) {
               test(equal, String.format("%d should't be in tree.", i));
               break;
@@ -191,7 +191,7 @@ foam.CLASS({
 
         long start = System.nanoTime();
         for ( int i = 1 ; i <= len ; i++ ) {
-          var find = BTree.find(btree, i, Integer::compare);
+          var find = BTree.find(Integer::compare, btree, i);
           if ( find == null || find != i ) {
             test(false, String.format("%d is not found in BTree.", i));
             ret = false;
@@ -227,9 +227,9 @@ foam.CLASS({
         long elapsedNanos = 0;
         long elapsedMillis = 0;
 
-        int size = 100000;
+        int size = 10000000;
         var testObjs = generateTestObjects(size);
-        // shuffleArray(testObjs, 43);
+        shuffleArray(testObjs, 64);
         var treeIndex = new TreeIndex(BTreeObject.ID, true);
         Object treeState = null;
 
@@ -244,7 +244,9 @@ foam.CLASS({
 
         start = System.nanoTime();
         for ( int i = 0 ; i < size ; i++ ) {
-          treeIndex.find(treeState, i);
+          if ( treeIndex.find(treeState, testObjs[i].getId()) == null ) {
+            throw new RuntimeException("AAAAA11");
+          }
         }
         end = System.nanoTime();
         elapsedNanos = end - start;
@@ -263,8 +265,17 @@ foam.CLASS({
         elapsedMillis = elapsedNanos / 1_000_000;
         test(true, "benchMark BTree index insert, Elapsed: " + elapsedMillis + " ms");
 
-        //TODO: fix bug.
-        System.out.println("AAAA: " + BTree.size((Object[]) btreeStatus));
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          if ( btreeIndex.find(btreeStatus, testObjs[i]) == null ) {
+            throw new RuntimeException("hahahh: " + i + ", " + testObjs[0]);
+          }
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark BTree index find, Elapsed: " + elapsedMillis + " ms");
+
       `
     },
     {

@@ -23,12 +23,12 @@ public class BTreeIndex extends foam.dao.index.AbstractIndex {
   }
   
   public Object put(Object btree, FObject value) {
-    if ( btree == null ) return BTree.empty();
+    if ( btree == null ) btree = BTree.empty();
     return BTreeUpdate.merge(this.propertyInfo_, BTreeUpdate.NO_OP, (Object[]) btree, BTree.singleton(value));
   }
 
   public FObject find(Object state, Object key) {
-    throw new RuntimeException("AA");
+    return (FObject) BTree.find(this.propertyInfo_, (Object[]) state, key);
   }
 
   public Object remove(Object state, FObject value) {
