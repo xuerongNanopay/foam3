@@ -31,8 +31,13 @@ foam.CLASS({
         
         // test1(x);
         // testInsertAndFind(x);
-        benchMark(x);
+        // benchMark(x);
         // btreeDebug(x);
+
+        for ( int i = 0 ; i < 100 ; i++ ) {
+          verifyAAtree(200000, i);
+          verifyBtree(200000, i);
+        }
       `
     },
     {
@@ -227,9 +232,10 @@ foam.CLASS({
         long elapsedNanos = 0;
         long elapsedMillis = 0;
 
-        int size = 10000000;
+        int size = 1000000;
         var testObjs = generateTestObjects(size);
         shuffleArray(testObjs, 64);
+
         var treeIndex = new TreeIndex(BTreeObject.ID, true);
         Object treeState = null;
 
@@ -279,6 +285,79 @@ foam.CLASS({
       `
     },
     {
+      name: 'verifyAAtree',
+      args: 'int size, int seed',
+      javaCode: `
+        var testObjs = generateTestObjects(size);
+        shuffleArray(testObjs, seed);
+
+        long start = 0;
+        long end = 0;
+        long elapsedNanos = 0;
+        long elapsedMillis = 0;
+
+                var treeIndex = new TreeIndex(BTreeObject.ID, true);
+        Object treeState = null;
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          treeState = treeIndex.put(treeState, testObjs[i]);
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark AATree index insert, Elapsed: " + elapsedMillis + " ms, size: " + size + ", seed: " + seed);
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          if ( treeIndex.find(treeState, testObjs[i].getId()) == null ) {
+            throw new RuntimeException("AAAAA11");
+          }
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark AATree index find, Elapsed: " + elapsedMillis + " ms, size: " + size + ", seed: " + seed);
+      `
+    },
+    {
+      name: 'verifyBtree',
+      args: 'int size, int seed',
+      javaCode: `
+        var testObjs = generateTestObjects(size);
+        shuffleArray(testObjs, seed);
+
+        long start = 0;
+        long end = 0;
+        long elapsedNanos = 0;
+        long elapsedMillis = 0;
+
+        var btreeIndex = new BTreeIndex(BTreeObject.ID);
+        Object btreeStatus = null;
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          btreeStatus = btreeIndex.put(btreeStatus, testObjs[i]);
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark BTree index insert, Elapsed: " + elapsedMillis + " ms, size: " + size + ", seed: " + seed);
+
+        start = System.nanoTime();
+        for ( int i = 0 ; i < size ; i++ ) {
+          if ( btreeIndex.find(btreeStatus, testObjs[i]) == null ) {
+            throw new RuntimeException("no found with size: " + size + ", seed: " + seed);
+          }
+        }
+        end = System.nanoTime();
+        elapsedNanos = end - start;
+        elapsedMillis = elapsedNanos / 1_000_000;
+        test(true, "benchMark BTree index find, Elapsed: " + elapsedMillis + " ms, size: " + size + ", seed: " + seed);
+
+      `
+    },
+    {
       name: 'shuffleArray',
       args: 'Object[] a, int randSeed',
       javaCode: `
@@ -292,5 +371,7 @@ foam.CLASS({
         }
       `
     }
-  ]
+  ],
+  javaCode: `
+  `
 })

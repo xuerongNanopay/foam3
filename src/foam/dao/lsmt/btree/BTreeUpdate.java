@@ -55,13 +55,16 @@ public class BTreeUpdate {
     if ( isEmpty(nNode) ) return oNode;
 
     if ( isEmpty(oNode) ) {
-      if ( isSimple(updater) ) {
+      //TODO: Transform logic.
+      if ( isSimple(updater) && size(nNode) == 1) {
         // if ( updater == NO_OP ) {
         //   return nNode;
         // } else {
         //   throw new RuntimeException("TODO: transfer function");
         // }
         return nNode;
+      } else {
+        throw new RuntimeException("TODO: merge transform");
       }
     }
 
