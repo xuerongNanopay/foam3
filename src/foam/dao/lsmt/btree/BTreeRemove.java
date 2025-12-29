@@ -63,19 +63,90 @@ public class BTreeRemove {
   /**
    * inOrderIndex must be between 0 to size(btree) - 1.
    */
-  private static Object[] removeTuple(Object[] btree, int inOrderIndex) {
+  // private static Object[] removeTuple(Object[] btree, int inOrderIndex) {
 
-    Object[] node = btree;
-    Object[] parent = null;
+  //   Object[] node = btree;
+  //   Object[] parent = null;
 
-    while ( ! isLeaf(node) ) {
-      break;
+  //   while ( ! isLeaf(node) ) {
+  //     break;
+  //   }
+
+  //   int tupleSize = sizeOfLeaf(node);
+  //   Object[] newLeaf = new Object[(tupleSize & 1) == 1 ? tupleSize : tupleSize - 1];
+
+  //   return null;
+  // }
+
+  /**
+   * node must be a internal node.
+   */
+  // private static Object[] rotateRight(Object[] node, int childIdx) {
+
+  //   int childOffset = firstChildOfInternal(node);
+  //   Object[] child = (Object[]) node[childOffset + childIdx];
+  //   Object[] rightSibling = (Object[]) node[childOffset + childIdx + 1];
+
+  //   boolean isLeafChild = isLeaf(child);
+  //   int childTupleEnd = getTupleEnd(child);
+  //   Object[] newChild = isLeafChild ? null : (Object[]) rightSibling[]
+
+  // }
+
+  /**
+   * make a new node with tuple and child inserting into given index.
+   * childInsertIdx: base on 0 ofsset, not tuple size.
+   */
+  private static Object[] insertTupleOrChild(Object[] node, int tupleInsertIdx, Object tuple, int childInsertIdx, Object[] child) {
+
+    boolean isLeaf = isLeaf(node);
+    int tupleSize = getTupleEnd(node);
+
+    Object[] ret;
+
+    if ( isLeaf ) {
+      // ensure leaf length is odd.
+      ret = new Object[tupleSize + ((tupleSize & 1) == 1 ? 2 : 1)];
+    } else {
+      ret = new Object[node.length + 2];
     }
 
-    int tupleSize = sizeOfLeaf(node);
-    Object[] newLeaf = new Object[(tupleSize & 1) == 1 ? tupleSize : tupleSize - 1];
+    if ( tupleInsertIdx > 0 ) {
+      System.arraycopy(node, 0, ret, 0, tupleInsertIdx);
+    }
+    if ( tupleInsertIdx < tupleSize ) {
+      System.arraycopy(node, tupleInsertIdx, ret, tupleInsertIdx + 1, tupleSize - tupleInsertIdx);
+    }
+    ret[tupleInsertIdx] = tuple;
 
-    return null;
+    // Insert child.
+    if ( ! isLeaf ) {
+
+      if ( childInsertIdx > 0 ) {
+        System.arraycopy(node, tupleSize, ret, tupleSize + 1, childInsertIdx);
+      }
+      if ( childInsertIdx < tupleSize + 1 ) {
+        System.arraycopy(node, tupleSize + childInsertIdx, ret, tupleSize + childInsertIdx + 2, tupleSize - childInsertIdx + 1);
+      }
+      ret[tupleSize + 1 + childInsertIdx] = child;
+
+      int[] presum = getPresum(node);
+      int[] retPresum = new int[presum.length + 1];
+
+      if ( childInsertIdx > 0 ) {
+        System.arraycopy(presum, 0, retPresum, 0, childInsertIdx);
+      }
+      int childSize = size(child);
+
+      // calculate new presum.
+      retPresum[childInsertIdx] = childSize + (childInsertIdx == 0 ? 0 : retPresum[childInsertIdx - 1] + 1);
+      for ( int i = childInsertIdx + 1 ; i < retPresum.length ; ++i ) {
+        retPresum[i] = presum[i - 1] + childSize + 1;
+      }
+      ret[ret.length - 1] = retPresum;
+    }
+
+    return ret;
   }
 
   /**
