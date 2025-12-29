@@ -125,7 +125,7 @@ public class BTreeRemove {
       if ( childInsertIdx > 0 ) {
         System.arraycopy(node, tupleSize, ret, tupleSize + 1, childInsertIdx);
       }
-      if ( childInsertIdx < tupleSize + 1 ) {
+      if ( childInsertIdx <= tupleSize ) {
         System.arraycopy(node, tupleSize + childInsertIdx, ret, tupleSize + childInsertIdx + 2, tupleSize - childInsertIdx + 1);
       }
       ret[tupleSize + 1 + childInsertIdx] = child;
@@ -142,6 +142,51 @@ public class BTreeRemove {
       retPresum[childInsertIdx] = childSize + (childInsertIdx == 0 ? 0 : retPresum[childInsertIdx - 1] + 1);
       for ( int i = childInsertIdx + 1 ; i < retPresum.length ; ++i ) {
         retPresum[i] = presum[i - 1] + childSize + 1;
+      }
+      ret[ret.length - 1] = retPresum;
+    }
+
+    return ret;
+  }
+
+  private static Object[] removeTupleOrChild(Object[] node, int tupleRemoveIdx, int childRemoveIdx) {
+
+    boolean isLeaf = isLeaf(node);
+    int tupleSize = getTupleEnd(node);
+    Object[] ret;
+
+    if ( isLeaf ) {
+      ret = new Object[tupleSize + ((tupleSize & 1) == 1 ? 0 : 1)];
+    } else {
+      ret = new Object[node.length - 2];
+    }
+
+    if ( tupleRemoveIdx > 0 ) {
+      System.arraycopy(node, 0, ret, 0, tupleRemoveIdx);
+    }
+    if ( tupleRemoveIdx + 1 < tupleSize ) {
+      System.arraycopy(node, tupleRemoveIdx + 1, ret, tupleRemoveIdx, tupleSize - tupleRemoveIdx - 1);
+    }
+
+    if ( ! isLeaf ) {
+
+      if ( childRemoveIdx > 0 ) {
+        System.arraycopy(node, tupleSize, ret, tupleSize - 1, childRemoveIdx);
+      }
+      if ( childRemoveIdx + 1 <= tupleSize ) {
+        System.arraycopy(node, tupleSize + childRemoveIdx + 1, ret, tupleSize - 1 + childRemoveIdx, tupleSize - childRemoveIdx);
+      }
+
+      int[] presum = getPresum(node);
+      int[] retPresum = new int[presum.length - 1];
+
+      int removeSize = size((Object[]) node[firstChildOfInternal(node) + childRemoveIdx]) + 1;
+      
+      if ( childRemoveIdx > 0 ) {
+        System.arraycopy(presum, 0, retPresum, 0, childRemoveIdx);
+      }
+      for ( int i = childRemoveIdx + 1 ; i < retPresum.length ; ++i ) {
+        retPresum[i] = presum[i + 1] - removeSize;
       }
       ret[ret.length - 1] = retPresum;
     }
