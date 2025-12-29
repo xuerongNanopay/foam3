@@ -5,7 +5,7 @@
 */
 package foam.dao.lsmt.btree;
 
-import foam.mlang.order.Comparator;
+import java.util.Comparator;
 import foam.mlang.predicate.*;
 import foam.dao.Sink;
 import foam.dao.index.*;
@@ -15,11 +15,13 @@ import foam.lang.FObject;
 import foam.lang.PropertyInfo;
 
 public class BTreeIndex extends foam.dao.index.AbstractIndex {
-  protected PropertyInfo  propertyInfo_;
+  final protected PropertyInfo  propertyInfo_;
   // protected 
+  final protected Comparator<Object> asymmetricComparator_;
 
   public BTreeIndex(PropertyInfo info) {
     propertyInfo_ = info;
+    asymmetricComparator_ = (f, k) -> (-propertyInfo_.comparePropertyToObject(k, f));
   }
   
   public Object put(Object btree, FObject value) {
@@ -28,7 +30,7 @@ public class BTreeIndex extends foam.dao.index.AbstractIndex {
   }
 
   public FObject find(Object state, Object key) {
-    return (FObject) BTree.find(this.propertyInfo_, (Object[]) state, key);
+    return (FObject) BTree.find(this.asymmetricComparator_, (Object[]) state, key);
   }
 
   public Object remove(Object state, FObject value) {
@@ -43,8 +45,7 @@ public class BTreeIndex extends foam.dao.index.AbstractIndex {
     return BTree.size((Object[]) btree);
   }
 
-  @Override
-  public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
+  public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, foam.mlang.order.Comparator order, Predicate predicate) {
     throw new RuntimeException("AA");
   }
 }

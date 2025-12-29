@@ -35,8 +35,8 @@ foam.CLASS({
         // btreeDebug(x);
 
         for ( int i = 0 ; i < 100 ; i++ ) {
-          verifyAAtree(200000, i);
-          verifyBtree(200000, i);
+          verifyAAtree(500000, i);
+          verifyBtree(500000, i);
         }
       `
     },
@@ -273,7 +273,7 @@ foam.CLASS({
 
         start = System.nanoTime();
         for ( int i = 0 ; i < size ; i++ ) {
-          if ( btreeIndex.find(btreeStatus, testObjs[i]) == null ) {
+          if ( btreeIndex.find(btreeStatus, testObjs[i].getId()) == null ) {
             throw new RuntimeException("hahahh: " + i + ", " + testObjs[0]);
           }
         }
@@ -346,8 +346,9 @@ foam.CLASS({
 
         start = System.nanoTime();
         for ( int i = 0 ; i < size ; i++ ) {
-          if ( btreeIndex.find(btreeStatus, testObjs[i]) == null ) {
-            throw new RuntimeException("no found with size: " + size + ", seed: " + seed);
+          if ( btreeIndex.find(btreeStatus, testObjs[i].getId()) != testObjs[i]) {
+            System.out.println(BTreeOutputter.stringify((Object[]) btreeStatus));
+            throw new RuntimeException("" + testObjs[i] + " no found with size: " + size + ", seed: " + seed);
           }
         }
         end = System.nanoTime();

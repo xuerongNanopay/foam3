@@ -386,7 +386,7 @@ public class BTree {
     return ( 1 << ( height * fanoutShift ) ) - 1;
   }
 
-  private static int getTupleEnd(Object[] node) {
+  static int getTupleEnd(Object[] node) {
     if ( isLeaf(node) ) return getLeafTupleEnd(node);
     return getInternalTupleEnd(node);
   }
