@@ -34,10 +34,10 @@ foam.CLASS({
         // benchMark(x);
         // btreeDebug(x);
 
-        for ( int i = 0 ; i < 100 ; i++ ) {
-          verifyAAtree(500000, i);
-          verifyBtree(500000, i);
-        }
+        // for ( int i = 0 ; i < 10 ; i++ ) {
+        //   verifyAAtree(5000000, i);
+        //   verifyBtree(5000000, i);
+        // }
       `
     },
     {

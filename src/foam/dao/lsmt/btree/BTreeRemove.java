@@ -79,6 +79,42 @@ public class BTreeRemove {
   }
 
   /**
+   * merge two trees.
+   */
+  private static Object[] mergeMinNode(Object[] left, Object[] right, Object midTuple) {
+
+    assert getTupleEnd(left) == MIN_TUPLES;
+    assert getTupleEnd(right) == MIN_TUPLES;
+
+    boolean isLeaf = isLeaf(left);
+    Object[] ret;
+
+    if ( isLeaf ) {
+      ret = new Object[MIN_TUPLES * 2 + 1];
+    } else {
+      ret = new Object[left.length + right.length];
+    }
+    int offset = 0;
+    offset = copyTuples(left, ret, offset);
+    ret[offset++] = midTuple;
+    offset = copyTuples(right, ret, offset);
+
+    if ( ! isLeaf ) {
+      offset = copyChildren(left, ret, offset);
+      offset = copyChildren(right, ret, offset);
+      int[] lPresum = getPresum(left);
+      int[] rPresum = getPresum(right);
+      int[] retPresum = new int[lPresum.length + rPresum.length];
+      offset = 0;
+      offset = copyPresum(lPresum, retPresum, offset, 0);
+      offset = copyPresum(rPresum, retPresum, offset, lPresum[lPresum.length-1] + 1);
+      ret[ret.length-1] = retPresum;
+    }
+
+    return ret;
+  }
+
+  /**
    * @return: ending position after copy done.
    */
   private static int copyTuples(Object[] from, Object[] to, int offset, int skip) {
@@ -125,9 +161,38 @@ public class BTreeRemove {
   /**
    * @return: ending position after copy done.
    */
-  // private static int copyChildren(Object[] from, Object[] to, int offset)v{
+  private static int copyChildren(Object[] from, Object[] to, int offset) {
 
-  //   assert !isLeaf(from);
+    assert !isLeaf(from);
 
-  // }
+    int childStart = tupleSizeOfInternal(from);
+    int childSize = childStart + 1;
+    System.arraycopy(from, childStart, to, offset, childSize);
+
+    return offset + childSize;
+  }
+
+  private static int copyPresum(int[] from, int[] to, int offset, int addition) {
+
+    for ( int i = 0 ; i < from.length ; i++ ) {
+      to[offset + i] = from[i] + addition;
+    }
+    return offset + from.length;
+  }
+
+  private static Object[] maybeCopy(Object[] node, boolean need) {
+
+    if ( ! need ) return node;
+
+    Object[] newNode = new Object[node.length];
+    System.arraycopy(node, 0, newNode, 0, node.length);
+    if ( ! isLeaf(node) ) {
+      int[] presum = getPresum(node);
+      int[] newPresum = new int[presum.length];
+      System.arraycopy(presum, 0, newPresum, 0, presum.length);
+      newNode[newNode.length-1] = newPresum;
+    }
+    return newNode;
+  }
+
 }
