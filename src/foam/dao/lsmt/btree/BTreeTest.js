@@ -397,5 +397,37 @@ foam.CLASS({
 
       return cHeight + 1;
     }
+
+    boolean verifyLeafTuple(Object[] leaf) {
+      if ( (leaf.length & 1) != 1 ) return false;
+      if ( sizeOfLeaf(leaf) < MIN_TUPLES ) return false;
+      if ( sizeOfLeaf(leaf) > MAX_TUPLES ) return false;
+
+      return true;
+    }
+
+    boolean verifyInternalTuple(Object[] internal) {
+      if ( tupleSizeOfInternal(internal) < MIN_TUPLES ) return false;
+      if ( tupleSizeOfInternal(internal) > MAX_TUPLES ) return false;
+
+      return true;
+    }
+
+    boolean verifyBTreeTuple(Object[] btree) {
+      if ( isLeaf(btree) ) verifyLeafTuple(btree);
+
+      var ret = verifyInternalTuple(btree);
+      if ( ret == false ) return false;
+
+      int childOffset = firstChildOfInternal(btree);
+      int childSize = childOffset + 1;
+
+      for ( int i = 0 ; i < childSize ; i++ ) {
+        ret = verifyBTreeTuple((Object[]) btree[childOffset + i]);
+        if ( ret == false ) return false;
+      }
+
+      return true;
+    }
   `
 })
