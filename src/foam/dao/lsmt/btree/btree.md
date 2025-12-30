@@ -9,4 +9,5 @@ BTree
         - array length must be odd
         - eg: [ key1, key2, ..... , keyN ] where N is odd
               [ key1, key2, ..... , keyN, null ] where N id even.
-- better performance when there is big number of keys, like 1 MILLION.
+- reduce memory lookup.
+- better lookup performance.

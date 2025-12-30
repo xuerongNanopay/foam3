@@ -94,6 +94,61 @@ public class BTreeRemove {
   // }
 
   /**
+   * In-place node mutation.
+   * Clone a new internal before call this method.
+   * idx: [1, childSize - 1]
+   */
+  private static Object[] stealFromRightInSitu(Object[] internal, int idx) {
+
+    int childOffset = firstChildOfInternal(internal);
+    Object[] lNode = (Object[]) internal[childOffset + idx];
+    Object[] rNode = (Object[]) internal[childOffset + idx + 1];
+    boolean isLeaf = isLeaf(lNode);
+    int lSize = getTupleEnd(lNode);
+
+    // Steal most left tuple/child from right node.
+    Object[] stealChild = isLeaf ? null : (Object[]) rNode[firstChildOfInternal(rNode)];
+    Object[] newLNode = insertTupleOrChild(lNode, lSize, internal[idx], lSize + 1, stealChild);
+
+    // update internal in-place.
+    internal[idx] = rNode[0];
+
+    // Remove most left fhild from right node.
+    internal[childOffset + idx + 1] = removeTupleOrChild(rNode, 0, 0);
+
+    //FIXME: investigate why lNode doesn't need to assign.
+
+
+    // update internal presum.
+    getPresum(internal)[idx] += isLeaf ? 1 : 1 + size((Object[]) newLNode[newLNode.length - 2]);
+    
+    return newLNode;
+  }
+
+  /**
+   * In-place node mutation.
+   * Clone a new internal before call this method.
+   */
+  private static Object[] stealFromLeftInSitu(Object[] internal, int idx) {
+
+    int childOffset = firstChildOfInternal(internal);
+    Object[] rNode = (Object[]) internal[childOffset + idx];
+    Object[] lNode = (Object[]) internal[childOffset + idx - 1];
+    boolean isLeaf = isLeaf(rNode);
+    int lSize = getTupleEnd(lNode);
+
+    Object[] stealChild = isLeaf ? null : (Object[]) lNode[lNode.length - 2];
+    Object[] newRNode = insertTupleOrChild(rNode, 0, internal[idx-1], 0, stealChild);
+
+    internal[idx - 1] = lNode[lSize - 1];
+
+    internal[childOffset + idx - 1] = removeTupleOrChild(lNode, lSize - 1, lSize);
+    getPresum(internal)[idx - 1] -= isLeaf ? 1 : 1 + getPresum(newRNode)[0];
+
+    return newRNode;
+  }
+
+  /**
    * make a new node with tuple and child inserting into given index.
    * childInsertIdx: base on 0 ofsset, not tuple size.
    */
@@ -296,7 +351,7 @@ public class BTreeRemove {
     return offset + from.length;
   }
 
-  private static Object[] maybeCopy(Object[] node, boolean need) {
+  private static Object[] needClone(Object[] node, boolean need) {
 
     if ( ! need ) return node;
 
