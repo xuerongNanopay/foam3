@@ -376,22 +376,22 @@ foam.CLASS({
   ],
   javaCode: `
     int doVerifyBtreeDepth(Object[] btree) {
-      int h = getAndTestHeight(btree);
+      int h = testHeight(btree);
       return h;
       // return h > 0 && h <= 6 ? true : false;
     }
-    int getAndTestHeight(Object[] btree) {
+    int testHeight(Object[] btree) {
       if ( isLeaf(btree) ) return 1;
 
       int childOffset = firstChildOfInternal(btree);
       int childSize = childOffset + 1;
 
-      int cHeight = getAndTestHeight((Object[]) btree[childOffset]);
+      int cHeight = testHeight((Object[]) btree[childOffset]);
 
       if ( cHeight == -1 ) return cHeight;
 
       for ( int i = 1 ; i < childSize ; i++ ) {
-        int h = getAndTestHeight((Object[]) btree[childOffset + i]);
+        int h = testHeight((Object[]) btree[childOffset + i]);
         if ( h == -1 || h != cHeight ) return -1;
       }
 
