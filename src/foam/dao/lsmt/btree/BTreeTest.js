@@ -14,6 +14,7 @@ foam.CLASS({
     'java.util.Objects',
     'java.util.Random',
     'foam.dao.index.*',
+    'static foam.dao.lsmt.btree.BTree.*'
   ],
 
   methods: [
@@ -34,10 +35,10 @@ foam.CLASS({
         // benchMark(x);
         // btreeDebug(x);
 
-        // for ( int i = 0 ; i < 10 ; i++ ) {
-        //   verifyAAtree(5000000, i);
-        //   verifyBtree(5000000, i);
-        // }
+        for ( int i = 0 ; i < 50 ; i++ ) {
+          verifyAAtree(1000000, i);
+          verifyBtree(1000000, i);
+        }
       `
     },
     {
@@ -354,7 +355,7 @@ foam.CLASS({
         end = System.nanoTime();
         elapsedNanos = end - start;
         elapsedMillis = elapsedNanos / 1_000_000;
-        test(true, "benchMark BTree index find, Elapsed: " + elapsedMillis + " ms, size: " + size + ", seed: " + seed);
+        test(true, "benchMark BTree index find, Elapsed: " + elapsedMillis + " ms, size: " + size + ", seed: " + seed + ", height: " + doVerifyBtreeDepth((Object[]) btreeStatus));
 
       `
     },
@@ -371,8 +372,30 @@ foam.CLASS({
           a[j] = tmp;
         }
       `
-    }
+    },
   ],
   javaCode: `
+    int doVerifyBtreeDepth(Object[] btree) {
+      int h = getAndTestHeight(btree);
+      return h;
+      // return h > 0 && h <= 6 ? true : false;
+    }
+    int getAndTestHeight(Object[] btree) {
+      if ( isLeaf(btree) ) return 1;
+
+      int childOffset = firstChildOfInternal(btree);
+      int childSize = childOffset + 1;
+
+      int cHeight = getAndTestHeight((Object[]) btree[childOffset]);
+
+      if ( cHeight == -1 ) return cHeight;
+
+      for ( int i = 1 ; i < childSize ; i++ ) {
+        int h = getAndTestHeight((Object[]) btree[childOffset + i]);
+        if ( h == -1 || h != cHeight ) return -1;
+      }
+
+      return cHeight + 1;
+    }
   `
 })
