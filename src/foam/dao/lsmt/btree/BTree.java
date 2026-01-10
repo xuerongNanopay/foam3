@@ -396,22 +396,24 @@ public class BTree {
     return leaf[length-1] == null ? length - 1 : length; /* Leaf is made up to be odd, if it is even. */
   }
 
-  static int leafTupleSize(Object[] internal) {
-    return getLeafTupleEnd(internal);
-  }
-
-  /**
-   * Exclude end index.
-   */
   private static int getInternalTupleEnd(Object[] internal) {
     return (internal.length / 2) - 1; /* internal node size must be even. */
   }
 
-  static int firstChildOfInternal(Object[] internal) {
-    return getInternalTupleEnd(internal);
+  static int tupleSize(Object[] node) {
+    if ( isLeaf(node) ) return getLeafTupleEnd(node);
+    return getInternalTupleEnd(node);
+  }
+
+  static int tupleSizeOfLeaf(Object[] internal) {
+    return getLeafTupleEnd(internal);
   }
 
   static int tupleSizeOfInternal(Object[] internal) {
+    return getInternalTupleEnd(internal);
+  }
+
+  static int firstChildOfInternal(Object[] internal) {
     return getInternalTupleEnd(internal);
   }
 

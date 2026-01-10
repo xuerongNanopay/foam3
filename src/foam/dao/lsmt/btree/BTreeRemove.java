@@ -61,37 +61,72 @@ public class BTreeRemove {
   }
 
   /**
-   * inOrderIndex must be between 0 to size(btree) - 1.
+   * inOrderIdx: must be the in-order index for the tuple in the leaf.
    */
-  // private static Object[] removeTuple(Object[] btree, int inOrderIndex) {
+  private static Object[] removeTupleInLeaf(Object[] tree, int inOrderIdx) {
 
-  //   Object[] node = btree;
-  //   Object[] parent = null;
+    Object[] newTree = null;
+    Object[] node = tree;
 
-  //   while ( ! isLeaf(node) ) {
-  //     break;
-  //   }
+    boolean requireClone = true;
 
-  //   int tupleSize = sizeOfLeaf(node);
-  //   Object[] newLeaf = new Object[(tupleSize & 1) == 1 ? tupleSize : tupleSize - 1];
+    while ( ! isLeaf(node) ) {
 
-  //   return null;
-  // }
+      int tupleSize = tupleSize(node);
+      int[] presum = getPresum(node);
+      int i = Arrays.binarySearch(presum, inOrderIdx); // caller guarantee i is always negative.
+      assert i < 0;
+      i = -1 - i;
+      if ( i > 0 ) {
+        inOrderIdx -= presum[i - 1] + 1;
+      }
 
-  /**
-   * node must be a internal node.
-   */
-  // private static Object[] rotateRight(Object[] node, int childIdx) {
+      Object[] descendNode = (Object[]) node[tupleSize + i];
+      boolean descendNodeRequireClone = true;
 
-  //   int childOffset = firstChildOfInternal(node);
-  //   Object[] child = (Object[]) node[childOffset + childIdx];
-  //   Object[] rightSibling = (Object[]) node[childOffset + childIdx + 1];
+      if ( tupleSize(descendNode) > MIN_TUPLES ) {
+        // delete tuple is inside descendTree
+        // descendNode has enough tuples to ensure at lest min_tuples.
+        node = needClone(node, requireClone);
+      } else if ( i > 0 && tupleSize((Object[]) node[tupleSize + i - 1]) > MIN_TUPLES ) {
+        // delete tuple is inside descendTree
+        // descendNode does not have eough node, then steal from left sibling.
+        node = needClone(node, requireClone);
+        Object[] leftSibling = (Object[]) node[tupleSize + i -1];
 
-  //   boolean isLeafChild = isLeaf(child);
-  //   int childTupleEnd = getTupleEnd(child);
-  //   Object[] newChild = isLeafChild ? null : (Object[]) rightSibling[]
+        // add back steal size.
+        ++inOrderIdx;
+        if ( ! isLeaf(leftSibling) ) {
+          inOrderIdx += size((Object[]) leftSibling[leftSibling.length - 2]);
+        }
 
-  // }
+        descendNode = stealFromLeftInSitu(node, i);
+      } else if ( i < tupleSize && tupleSize((Object[]) node[tupleSize + i + 1]) > MIN_TUPLES ) {
+        // delete tuple is inside descendTree
+        // descendNode does not have eough node, then steal from right sibling.
+        node = needClone(node, requireClone);
+        descendNode = stealFromRightInSitu(node, i);
+
+      } else {
+        descendNodeRequireClone = false;
+        if ( i > 0 ) {
+          // merge with left sibling.
+          Object[] leftSibling = (Object[]) node[tupleSize + i - 1];
+          Object sperateTuple = node[i - 1];
+          
+          // node = tupleSize ;
+
+        } else {
+          // merge with right sibling.
+        }
+      }
+
+  
+      break;
+    }
+
+    return newTree;
+  }
 
   /**
    * In-place node mutation.
@@ -114,7 +149,7 @@ public class BTreeRemove {
     internal[idx] = rNode[0];
 
     // Remove most left fhild from right node.
-    internal[childOffset + idx + 1] = removeTupleOrChild(rNode, 0, 0);
+    internal[childOffset + idx + 1] = removeTupleOrChild(rNode, 0, 0, true);
 
     //FIXME: investigate why lNode doesn't need to assign.
 
@@ -142,7 +177,7 @@ public class BTreeRemove {
 
     internal[idx - 1] = lNode[lSize - 1];
 
-    internal[childOffset + idx - 1] = removeTupleOrChild(lNode, lSize - 1, lSize);
+    internal[childOffset + idx - 1] = removeTupleOrChild(lNode, lSize - 1, lSize, true);
     getPresum(internal)[idx - 1] -= isLeaf ? 1 : 1 + getPresum(newRNode)[0];
 
     return newRNode;
@@ -204,7 +239,7 @@ public class BTreeRemove {
     return ret;
   }
 
-  private static Object[] removeTupleOrChild(Object[] node, int tupleRemoveIdx, int childRemoveIdx) {
+  private static Object[] removeTupleOrChild(Object[] node, int tupleRemoveIdx, int childRemoveIdx, boolean adjustPresum) {
 
     boolean isLeaf = isLeaf(node);
     int tupleSize = getTupleEnd(node);
@@ -240,8 +275,9 @@ public class BTreeRemove {
       if ( childRemoveIdx > 0 ) {
         System.arraycopy(presum, 0, retPresum, 0, childRemoveIdx);
       }
+    
       for ( int i = childRemoveIdx + 1 ; i < retPresum.length ; ++i ) {
-        retPresum[i] = presum[i + 1] - removeSize;
+        retPresum[i-1] = adjustPresum ? presum[i] - removeSize : presum[i];
       }
       ret[ret.length - 1] = retPresum;
     }
