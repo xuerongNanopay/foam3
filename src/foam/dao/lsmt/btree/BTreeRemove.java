@@ -74,25 +74,25 @@ public class BTreeRemove {
 
       int tupleSize = tupleSize(node);
       int[] presum = getPresum(node);
-      int i = Arrays.binarySearch(presum, inOrderIdx); // caller guarantee i is always negative.
-      assert i < 0;
-      i = -1 - i;
-      if ( i > 0 ) {
-        inOrderIdx -= presum[i - 1] + 1;
+      int insertP = Arrays.binarySearch(presum, inOrderIdx);
+      assert insertP < 0; // caller guarantee inOrderIdx in the index for tuple in the leaf.
+      insertP = -1 - insertP;
+      if ( insertP > 0 ) {
+        inOrderIdx -= presum[insertP - 1] + 1;
       }
 
-      Object[] descendNode = (Object[]) node[tupleSize + i];
+      Object[] descendNode = (Object[]) node[tupleSize + insertP];
       boolean descendNodeRequireClone = true;
 
       if ( tupleSize(descendNode) > MIN_TUPLES ) {
         // delete tuple is inside descendTree
         // descendNode has enough tuples to ensure at lest min_tuples.
         node = needClone(node, requireClone);
-      } else if ( i > 0 && tupleSize((Object[]) node[tupleSize + i - 1]) > MIN_TUPLES ) {
+      } else if ( insertP > 0 && tupleSize((Object[]) node[tupleSize + insertP - 1]) > MIN_TUPLES ) {
         // delete tuple is inside descendTree
         // descendNode does not have eough node, then steal from left sibling.
         node = needClone(node, requireClone);
-        Object[] leftSibling = (Object[]) node[tupleSize + i -1];
+        Object[] leftSibling = (Object[]) node[tupleSize + insertP -1];
 
         // add back steal size.
         ++inOrderIdx;
@@ -100,19 +100,19 @@ public class BTreeRemove {
           inOrderIdx += size((Object[]) leftSibling[leftSibling.length - 2]);
         }
 
-        descendNode = stealFromLeftInSitu(node, i);
-      } else if ( i < tupleSize && tupleSize((Object[]) node[tupleSize + i + 1]) > MIN_TUPLES ) {
+        descendNode = stealFromLeftInSitu(node, insertP);
+      } else if ( insertP < tupleSize && tupleSize((Object[]) node[tupleSize + insertP + 1]) > MIN_TUPLES ) {
         // delete tuple is inside descendTree
         // descendNode does not have eough node, then steal from right sibling.
         node = needClone(node, requireClone);
-        descendNode = stealFromRightInSitu(node, i);
+        descendNode = stealFromRightInSitu(node, insertP);
 
       } else {
         descendNodeRequireClone = false;
-        if ( i > 0 ) {
+        if ( insertP > 0 ) {
           // merge with left sibling.
-          Object[] leftSibling = (Object[]) node[tupleSize + i - 1];
-          Object sperateTuple = node[i - 1];
+          Object[] leftSibling = (Object[]) node[tupleSize + insertP - 1];
+          Object sperateTuple = node[insertP - 1];
           
           // node = tupleSize ;
 
