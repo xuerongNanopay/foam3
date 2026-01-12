@@ -337,6 +337,35 @@ public class BTree {
     }
   }
 
+  static <T> T findByInOrderIndex(Object[] tree, int inOrderIdx) {
+
+    assert inOrderIdx > 0 && inOrderIdx < size(tree) 
+      : inOrderIdx + " must be in the range [0, " + (size(tree) - 1) + "]";
+
+
+    while ( true ) {
+      if ( isLeaf(tree) ) {
+        int tupleSize = tupleSizeOfLeaf(tree);
+        assert inOrderIdx < tupleSize;
+        return (T) tree[inOrderIdx];
+      }
+
+      int[] presum = getPresum(tree);
+      int find = Arrays.binarySearch(presum, inOrderIdx);
+      if ( find >= 0 ) {
+        assert find < presum.length - 1;
+        return (T) tree[find];
+      }
+
+      find = -find -1;
+      
+      assert find < presum.length;
+      inOrderIdx -= (find == 0 ? 0 : presum[find-1] + 1);
+
+      tree = (Object[]) tree[firstChildOfInternal(tree) + find];
+    }
+  }
+
   private static <T> int findInNode(Object[] node, T key, Comparator<? super T> comparator) {
     int keyEndIdx = getTupleEnd(node);
     return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
@@ -405,8 +434,8 @@ public class BTree {
     return getInternalTupleEnd(node);
   }
 
-  static int tupleSizeOfLeaf(Object[] internal) {
-    return getLeafTupleEnd(internal);
+  static int tupleSizeOfLeaf(Object[] leaf) {
+    return getLeafTupleEnd(leaf);
   }
 
   static int tupleSizeOfInternal(Object[] internal) {

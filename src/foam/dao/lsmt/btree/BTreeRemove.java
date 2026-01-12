@@ -11,41 +11,50 @@ import static foam.dao.lsmt.btree.BTree.*;
 
 public class BTreeRemove {
 
+  /**
+   * Remove tuple from btree.
+   * If the tuple is insde a leaf node, directly remove from leaf.
+   * Otherwise, swap with tuple that is just less than it, and then delete tuple from leaf.
+   */
   public static <T> Object[] remove(Comparator<? super T> comparator, Object[] btree, T tuple) {
 
     if ( isEmpty(btree) ) {
       return btree;
     }
 
-    int treeIndex = -1;
-    int lSize = 0;
-    T requireSwap = null;
+    int removeIdx = -1;
+    int accSum = 0;
+    T swapTuple = null;
     var node = btree;
 
-    // Finding position where the tuple should be removed in BTree, assign to treeIndex.
+    // Finding position where the tuple should be removed in BTree, assign to removeIdx.
     while ( true ) {
       int tupleSize = getTupleEnd(btree);
-      // Casting to T is ok here, as it only touches tuples. 
+      // Casting to T is ok here, as it only searchs in tuples. 
       int find = Arrays.binarySearch((T[]) node, 0, tupleSize, tuple, comparator);
 
       if ( find >= 0 ) {
-        // tuple found in current node.
         if ( isLeaf(node) ) {
-          treeIndex = lSize + find;
+          /**
+           * Removing tuple is in leaf node.
+           */
+          removeIdx = accSum + find;
         } else {
-          int presum = getPresum(node)[find];
-          treeIndex = lSize + presum - 1;
-          //TODO: fix.
-          requireSwap = (T) node[find];
+          /**
+           * Removing tuple is in internal node.
+           */
+          int nodePresum = getPresum(node)[find];
+          removeIdx = accSum + nodePresum - 1;
+          //TODO: add moethod to get last tuple directly.
+          swapTuple = findByInOrderIndex(node, nodePresum - 1);
         }
         break;
       }
 
-      // Tuple no found in the btree, so return the original tree.
       if ( isLeaf(node) ) return btree;
 
-      find = -(find + 1);
-      if ( find > 0 ) lSize += getPresum(node)[find - 1] + 1;
+      find = -find - 1; // convert to insert position.
+      if ( find > 0 ) accSum += getPresum(node)[find - 1] + 1;
 
       node = (Object[]) node[tupleSize + find];
     }
