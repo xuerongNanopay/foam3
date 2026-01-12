@@ -51,22 +51,21 @@ public class BTreeRemove {
         break;
       }
 
-      if ( isLeaf(node) ) return btree;
+      if ( isLeaf(node) ) return btree; // delete tuple no found, return original tree.
 
-      find = -find - 1; // convert to insert position.
-      if ( find > 0 ) accSum += getPresum(node)[find - 1] + 1;
+      find = -find - 1;
+      accSum += (find > 0 ? getPresum(node)[find - 1] + 1 : 0);
 
       node = (Object[]) node[tupleSize + find];
     }
 
     if ( size(btree) == 1 ) return empty();
-
-    return null;
-    // if ( requireSwap == null ) {
-    //   return removeFromLeaf();
-    // } else {
-    //   throw new RuntimeException("TODO: BTree remove");
-    // }
+    Object[] ret = removeTupleInLeaf(btree, removeIdx);
+    
+    if ( swapTuple != null ) {
+      throw new RuntimeException("TODO: swap");
+    }
+    return ret;
   }
 
   /**
