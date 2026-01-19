@@ -45,7 +45,6 @@ public class BTreeRemove {
            */
           int nodePresum = getPresum(node)[find];
           removeIdx = accSum + nodePresum - 1;
-          //TODO: add moethod to get last tuple directly.
           swapTuple = findByInOrderIndex(node, nodePresum - 1);
         }
         break;
@@ -60,12 +59,13 @@ public class BTreeRemove {
     }
 
     if ( size(btree) == 1 ) return empty();
-    Object[] ret = removeTupleInLeaf(btree, removeIdx);
+
+    Object[] removedTuple = removeTupleInLeaf(btree, removeIdx);
     
     if ( swapTuple != null ) {
-      throw new RuntimeException("TODO: swap");
+      replaceInSitu(btree, removeIdx, swapTuple);
     }
-    return ret;
+    return removedTuple;
   }
 
   /**

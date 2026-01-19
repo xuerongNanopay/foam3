@@ -249,39 +249,65 @@ public class BTree {
     }
   }
 
-  static <T> T findByInOrderIndex(Object[] tree, int inOrderIdx) {
+  static <T> T findByInOrderIndex(Object[] node, int inOrderIdx) {
 
-    assert inOrderIdx > 0 && inOrderIdx < size(tree) 
-      : inOrderIdx + " must be in the range [0, " + (size(tree) - 1) + "]";
+    assert inOrderIdx > 0 && inOrderIdx < size(node) 
+      : inOrderIdx + " must be in the range [0, " + (size(node) - 1) + "]";
 
 
     while ( true ) {
-      if ( isLeaf(tree) ) {
-        int tupleSize = tupleSizeOfLeaf(tree);
+      if ( isLeaf(node) ) {
+        int tupleSize = tupleSizeOfLeaf(node);
         assert inOrderIdx < tupleSize;
-        return (T) tree[inOrderIdx];
+        return (T) node[inOrderIdx];
       }
 
-      int[] presum = getPresum(tree);
+      int[] presum = getPresum(node);
       int find = Arrays.binarySearch(presum, inOrderIdx);
       if ( find >= 0 ) {
         assert find < presum.length - 1;
-        return (T) tree[find];
+        return (T) node[find];
       }
 
-      find = -find -1;
+      int descend = -find -1;
       
-      assert find < presum.length;
-      inOrderIdx -= (find == 0 ? 0 : presum[find-1] + 1);
+      assert descend < presum.length;
+      inOrderIdx -= (descend == 0 ? 0 : presum[descend-1] + 1);
 
-      tree = (Object[]) tree[firstChildOfInternal(tree) + find];
+      node = (Object[]) node[firstChildOfInternal(node) + descend];
     }
   }
 
-  private static <T> int findInNode(Object[] node, T key, Comparator<? super T> comparator) {
-    int keyEndIdx = getTupleEnd(node);
-    return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
+  static <T> void replaceInSitu(Object[] node, int inOrderIdx, T newTuple) {
+
+    assert inOrderIdx > 0 && inOrderIdx < size(node) 
+      : inOrderIdx + " must be in the range [0, " + (size(node) - 1) + "]";
+
+    while ( ! isLeaf(node) ) {
+
+      int[] presum = getPresum(node);
+      int find = Arrays.binarySearch(presum, inOrderIdx);
+
+      if ( find >= 0 ) {
+        assert find < presum.length - 1;
+        node[find] = newTuple;
+        return;
+      }
+
+      int descend = -find - 1;
+      assert descend < presum.length;
+      inOrderIdx -= (descend == 0 ? 0 : presum[descend-1] + 1);
+      node = (Object[]) node[firstChildOfInternal(node) + descend];
+    }
+
+    assert inOrderIdx < getLeafTupleEnd(node);
+    node[inOrderIdx] = newTuple;
   }
+
+  // private static <T> int findInNode(Object[] node, T key, Comparator<? super T> comparator) {
+  //   int keyEndIdx = getTupleEnd(node);
+  //   return Arrays.binarySearch((T[]) node, 0, keyEndIdx, key, comparator);
+  // }
 
   /**
    * Hard limit of the tree:
