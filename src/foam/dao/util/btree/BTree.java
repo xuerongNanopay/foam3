@@ -400,6 +400,19 @@ public class BTree {
     return presum[presum.length-1];
   }
 
+  static int inOrderIndex(Object[] node, int tupleIdx) {
+    
+    if ( isLeaf(node) ) {
+      assert tupleIdx >= 0 && tupleIdx < tupleSizeOfLeaf(node);
+      return tupleIdx;
+    }
+
+    int[] presum = getPresum(node);
+    assert tupleIdx >= 0 && tupleIdx < presum.length - 1;
+
+    return presum[tupleIdx];
+  }
+
   /**
    * Leaf height is 1.
    */
