@@ -19,5 +19,6 @@ foam.POM({
     { name: "btree/BTreeOutputter" },
     { name: "btree/BTreeIndex" },
     { name: "btree/BTreeLoader" },
+    { name: "btree/BTreeLeafCursor" },
   ]
 });
