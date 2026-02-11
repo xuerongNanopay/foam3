@@ -20,5 +20,6 @@ foam.POM({
     { name: "btree/BTreeIndex" },
     { name: "btree/BTreeLoader" },
     { name: "btree/BTreeLeafCursor" },
+    { name: "btree/BTreeInternalCursor" },
   ]
 });
